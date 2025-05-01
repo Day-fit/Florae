@@ -1,40 +1,50 @@
 package pl.Dayfit.Florae.Controllers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
+import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.Services.PlantsService;
 
 @RestController
 @RequiredArgsConstructor
 class PlantsController {
-    private final PlantsService filesService;
+    private final PlantsService plantsService;
 
-    @PostMapping("/api/v1/upload-photo")
-    public ResponseEntity<Map<String, String>> uploadPhoto(@RequestParam MultipartFile file)
+    @PostMapping("/api/v1/upload-photos")
+    public ResponseEntity<Map<String, String>> uploadPhoto(@RequestParam ArrayList<MultipartFile> photos)
     {
         try{
-            filesService.saveToServer(file);
+            if(!plantsService.saveAndRecognise(photos))
+            {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "No matches found"));
+            }
         } catch(IOException exception){
-           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Upload failed !")); 
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Upload failed"));
+        } catch (IllegalStateException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "No matches found"));
         }
 
         return ResponseEntity.ok(Map.of("message", "Uploaded successfully"));
     }
 
-    @PostMapping("/api/v1/upload-diagnosis")
-    public ResponseEntity<Map<String, String>> uploadDiagnosis(@RequestParam MultipartFile file)
+    @GetMapping("/api/v1/plant/{id}")
+    public ResponseEntity<Plant> getPlant(@PathVariable Integer id)
     {
+        Plant response = plantsService.getPlantById(id);
 
+        if(response == null)
+        {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
 
-        return ResponseEntity.ok(Map.of("message", "Uploaded successfully"));
+        return ResponseEntity.ok(response);
     }
 }

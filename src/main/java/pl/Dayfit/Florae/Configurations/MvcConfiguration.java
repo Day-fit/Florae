@@ -6,9 +6,9 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class RestApiConfiguration implements WebMvcConfigurer {
+public class MvcConfiguration implements WebMvcConfigurer {
 
-    @Value("${ALLOWED_ORIGINS_PATTERNS}:localhost*")
+    @Value("${allowed.origins.patterns}:localhost*")
     private String[] ALLOWED_ORIGINS_PATTERNS;
 
     public void addCorsMappings(CorsRegistry registry)

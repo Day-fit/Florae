@@ -1,43 +1,78 @@
 package pl.Dayfit.Florae.Services;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.Base64;
 
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import pl.Dayfit.Florae.Entities.Plant;
+import pl.Dayfit.Florae.DTOs.PlantResponseDTO;
+import pl.Dayfit.Florae.Repositories.PlantRepository;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class PlantsService {
-    public final Path FILES_SAVE_PATH = Path.of("Photos");
+    private final PlantRepository plantRepository;
+    private final PlantRequirementsService plantRequirementsService;
+    private final RestTemplate restTemplate;
+    private final HttpHeaders headers = new HttpHeaders();
 
-    public void saveToServer(MultipartFile file) throws IOException
+    @PostConstruct
+    private void init()
     {
-        if(!Files.isDirectory(FILES_SAVE_PATH)){
-            throw new RuntimeException("File of " + FILES_SAVE_PATH.toAbsolutePath().toString() + " is not a directory!");
-        }
-
-        if (!FILES_SAVE_PATH.toFile().exists()) {
-            Files.createDirectory(FILES_SAVE_PATH);
-        }
-
-        UUID uuid = UUID.randomUUID();
-
-        file.transferTo(new File(FILES_SAVE_PATH + uuid.toString()));
-
-        //TODO: change to saving in database
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
     }
 
-    public String diagnose(MultipartFile file)
-    {
-        RestTemplate template = new RestTemplate();
-        
-        
-        //TODO: add api diagnose (PLANTNET API IS DEAD AT THIS MOMENT)
+    @Value("${plant.net.api.key}")
+    private String PLANT_NET_API_KEY;
 
-        return "";
+    public boolean saveAndRecognise(ArrayList<MultipartFile> photos) throws IllegalStateException, IOException {
+        final MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
+
+        photos.forEach(photo -> {
+            multipartBodyBuilder.part("images", photo.getResource());
+            multipartBodyBuilder.part("organs", "auto");
+        });
+
+        HttpEntity<MultiValueMap<String, HttpEntity<?>>> requestEntity = new HttpEntity<>(multipartBodyBuilder.build(), headers);
+        PlantResponseDTO response = restTemplate.postForObject("https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=false&nb-results=1&lang=en&type=kt&api-key="+PLANT_NET_API_KEY, requestEntity, PlantResponseDTO.class);
+
+        if (response == null)
+        {
+            return false;
+        }
+
+        String plantSlug = response.getResults().getFirst().getSpecies().getScientificNameWithoutAuthor().toLowerCase().replaceAll(" ", "-");
+
+        Plant plant = new Plant();
+        plant.setSpeciesName(response.getBestMatch());
+        plant.setSlug(plantSlug);
+        plant.setPrimaryPhoto(Base64.getEncoder().encodeToString(photos.getFirst().getBytes()));
+
+        plant.setRequirements(plantRequirementsService.getPlantRequirements(plantSlug));
+
+        plantRepository.save(plant);
+        return true;
+    }
+
+    public Plant getPlantById(Integer id)
+    {
+        if (id==null) {
+            return null;
+        }
+
+        return plantRepository.findById(id).orElse(null);
     }
 }
