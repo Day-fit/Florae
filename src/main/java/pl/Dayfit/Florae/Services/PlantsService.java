@@ -65,7 +65,7 @@ public class PlantsService {
             return plant.getSpeciesName();
         }
 
-        log.debug("Florae cound not recognise any plant at given photos");
+        log.debug("Florae could not recognise any plant at given photos");
         throw new IllegalStateException("No matches found");
     }
 
