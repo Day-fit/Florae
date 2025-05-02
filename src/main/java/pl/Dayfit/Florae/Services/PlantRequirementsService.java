@@ -37,7 +37,7 @@ public class PlantRequirementsService {
     {
         PlantRequirements plantRequirements = plantRequirementsRepository.getPlantRequirementsByPid(pid);
 
-        if (plantRequirementsRepository.getPlantRequirementsByPid(pid) != null)
+        if (plantRequirements != null)
         {
             return plantRequirements;
         }
