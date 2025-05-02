@@ -36,7 +36,7 @@ public class PlantsService {
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
     }
 
-    @Value("${plant.net.api.key}")
+    @Value("${plant.net.api}")
     private String PLANT_NET_API_KEY;
 
     public String saveAndRecognise(ArrayList<MultipartFile> photos) throws NoSuchElementException, IOException {

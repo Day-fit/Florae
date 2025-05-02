@@ -23,7 +23,7 @@ public class PlantRequirementsService {
     private final PlantRequirementsRepository plantRequirementsRepository;
     private final RestTemplate restTemplate;
 
-    @Value("${flora.codex.api}")
+    @Value("${plant.book.api}")
     private String PLANT_BOOK_API;
     private final HttpHeaders headers = new HttpHeaders();
 
