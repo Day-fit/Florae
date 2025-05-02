@@ -3,6 +3,7 @@ package pl.Dayfit.Florae.Services;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.NoSuchElementException;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,7 @@ public class PlantsService {
     @Value("${plant.net.api.key}")
     private String PLANT_NET_API_KEY;
 
-    public boolean saveAndRecognise(ArrayList<MultipartFile> photos) throws IllegalStateException, IOException {
+    public String saveAndRecognise(ArrayList<MultipartFile> photos) throws NoSuchElementException, IOException {
         final MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
 
         photos.forEach(photo -> {
@@ -49,22 +50,23 @@ public class PlantsService {
         HttpEntity<MultiValueMap<String, HttpEntity<?>>> requestEntity = new HttpEntity<>(multipartBodyBuilder.build(), headers);
         PlantResponseDTO response = restTemplate.postForObject("https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=false&nb-results=1&lang=en&type=kt&api-key="+PLANT_NET_API_KEY, requestEntity, PlantResponseDTO.class);
 
-        if (response == null)
+        if (response != null)
         {
-            return false;
+            String pid = response.getResults().getFirst().getSpecies().getScientificNameWithoutAuthor().toLowerCase();
+
+            Plant plant = new Plant();
+            plant.setSpeciesName(response.getBestMatch());
+            plant.setPid(pid);
+            plant.setPrimaryPhoto(Base64.getEncoder().encodeToString(photos.getFirst().getBytes()));
+
+            plant.setRequirements(plantRequirementsService.getPlantRequirements(pid));
+
+            plantRepository.save(plant);
+            return plant.getSpeciesName();
         }
 
-        String plantSlug = response.getResults().getFirst().getSpecies().getScientificNameWithoutAuthor().toLowerCase().replaceAll(" ", "-");
-
-        Plant plant = new Plant();
-        plant.setSpeciesName(response.getBestMatch());
-        plant.setSlug(plantSlug);
-        plant.setPrimaryPhoto(Base64.getEncoder().encodeToString(photos.getFirst().getBytes()));
-
-        plant.setRequirements(plantRequirementsService.getPlantRequirements(plantSlug));
-
-        plantRepository.save(plant);
-        return true;
+        log.debug("Florae cound not recognise any plant at given photos");
+        throw new IllegalStateException("No matches found");
     }
 
     public Plant getPlantById(Integer id)

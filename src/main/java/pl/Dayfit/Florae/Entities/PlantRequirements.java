@@ -3,9 +3,6 @@ package pl.Dayfit.Florae.Entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import pl.Dayfit.Florae.Enums.AtmosphericHumidity;
-import pl.Dayfit.Florae.Enums.SoilHumidity;
-import pl.Dayfit.Florae.POJOs.TemperatureRequirements;
 
 @Entity
 @Getter
@@ -16,27 +13,17 @@ public class PlantRequirements {
     private Integer id;
 
     @Column(unique=true, nullable=false)
-    private String slug;
+    private String pid;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "deg_f", column = @Column(name = "min_deg_f")),
-            @AttributeOverride(name = "deg_c", column = @Column(name = "min_deg_c")),
-    })
-    private TemperatureRequirements minTemperatureRequirements;
+    private Integer maxTemperatureRequirements;
+    private Integer minTemperatureRequirements;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "deg_f", column = @Column(name = "max_deg_f")),
-            @AttributeOverride(name = "deg_c", column = @Column(name = "max_deg_c")),
-    })
-    private TemperatureRequirements maxTemperatureRequirements;
+    private Integer maxEnvHumid;
+    private Integer minEnvHumid;
 
-    private Double phMaximum;
-    private Double phMinimum;
+    private Integer maxSoilMoist;
+    private Integer minSoilMoist;
 
-    @Enumerated(EnumType.STRING)
-    private AtmosphericHumidity recommendedHumidity;
-    @Enumerated(EnumType.STRING)
-    private SoilHumidity recommendedSoilState;
+    private Integer maxLightLux;
+    private Integer minLightLux;
 }

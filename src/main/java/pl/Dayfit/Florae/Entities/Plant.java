@@ -14,10 +14,12 @@ public class Plant {
 
     @Column(nullable = false, length = 50)
     private String speciesName;
-    private String slug;
+
+    @Column(nullable = false, length = 50)
+    private String pid;
 
     @OneToOne
-    private Esp linked_esp;
+    private Esp linkedEsp;
 
     @ManyToOne
     @JoinColumn(nullable = false)

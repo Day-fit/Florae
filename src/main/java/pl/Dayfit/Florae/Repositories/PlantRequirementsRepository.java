@@ -9,6 +9,6 @@ import pl.Dayfit.Florae.Entities.PlantRequirements;
 @Repository
 public interface PlantRequirementsRepository extends JpaRepository<PlantRequirements, Integer> {
     @Query("SELECT r FROM PlantRequirements r " +
-            "WHERE r.slug = :slug")
-    PlantRequirements getPlantRequirementsBySlug(@Param("slug") String slug);
+            "WHERE r.pid = :pid")
+    PlantRequirements getPlantRequirementsByPid(@Param("pid") String pid);
 }

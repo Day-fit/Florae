@@ -1,16 +1,20 @@
 package pl.Dayfit.Florae.Services;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import pl.Dayfit.Florae.DTOs.PlantRequirementsResponseDTO;
 import pl.Dayfit.Florae.Entities.PlantRequirements;
-import pl.Dayfit.Florae.Enums.AtmosphericHumidity;
-import pl.Dayfit.Florae.Enums.SoilHumidity;
-import pl.Dayfit.Florae.POJOs.PlantGrowth;
 import pl.Dayfit.Florae.Repositories.PlantRequirementsRepository;
+
+import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
@@ -19,78 +23,70 @@ public class PlantRequirementsService {
     private final PlantRequirementsRepository plantRequirementsRepository;
     private final RestTemplate restTemplate;
 
-    @Value("${trefle.api.key}")
-    private String TREFLE_API_KEY;
+    @Value("${flora.codex.api}")
+    private String PLANT_BOOK_API;
+    private final HttpHeaders headers = new HttpHeaders();
 
-    public PlantRequirements getPlantRequirements(String slug) throws IllegalStateException
+    @PostConstruct
+    private void innit()
     {
-        PlantRequirements plantRequirements = plantRequirementsRepository.getPlantRequirementsBySlug(slug);
+        headers.add("Authorization", "Token " + PLANT_BOOK_API);
+    }
 
-        if (plantRequirementsRepository.getPlantRequirementsBySlug(slug) != null)
+    public PlantRequirements getPlantRequirements(String pid) throws NoSuchElementException
+    {
+        PlantRequirements plantRequirements = plantRequirementsRepository.getPlantRequirementsByPid(pid);
+
+        if (plantRequirementsRepository.getPlantRequirementsByPid(pid) != null)
         {
             return plantRequirements;
         }
 
-        saveRequirements(slug);
+        saveRequirements(pid);
 
-        plantRequirements = plantRequirementsRepository.getPlantRequirementsBySlug(slug);
+        plantRequirements = plantRequirementsRepository.getPlantRequirementsByPid(pid);
         return plantRequirements;
     }
 
-    private void saveRequirements(String slug) throws IllegalStateException
+    private void saveRequirements(String pid) throws NoSuchElementException
     {
-        PlantRequirementsResponseDTO response = restTemplate.getForObject("https://trefle.io/api/v1/plants/"+slug+"?token="+ TREFLE_API_KEY, PlantRequirementsResponseDTO.class);
+        ResponseEntity<PlantRequirementsResponseDTO> responseEntity;
 
-        if (response == null || response.getData() == null || response.getData().getMain_species().getGrowth() == null)
+        try {
+            responseEntity = restTemplate.exchange("https://open.plantbook.io/api/v1/plant/detail/"+pid+"/", org.springframework.http.HttpMethod.GET, new HttpEntity<>(headers), PlantRequirementsResponseDTO.class);
+        } catch (HttpClientErrorException exception) {
+            log.debug("Plant requirement with pid {} not found", pid);
+            throw new NoSuchElementException("Plant "+pid+" is not supported");
+        }
+        PlantRequirementsResponseDTO response = responseEntity.getBody();
+
+        if (response == null)
         {
-            log.debug("Plant requirement slug {} not found", slug);
-            throw new IllegalStateException("Plant "+slug+" is not supported");
+            log.debug("Plant requirement with pid {} not found", pid);
+            throw new NoSuchElementException("Plant "+pid+" is not supported");
         }
 
-        PlantRequirements plantRequirements = fetchPlantRequirements(slug, response);
-
+        PlantRequirements plantRequirements = fetchPlantRequirements(pid, response);
         plantRequirementsRepository.save(plantRequirements);
     }
 
-    private PlantRequirements fetchPlantRequirements(String slug, PlantRequirementsResponseDTO response) {
-        PlantGrowth responseGrowth = response.getData().getMain_species().getGrowth();
+    private PlantRequirements fetchPlantRequirements(String pid, PlantRequirementsResponseDTO response) {
         PlantRequirements plantRequirements = new PlantRequirements();
-        plantRequirements.setSlug(slug);
 
-        plantRequirements.setRecommendedHumidity(getRecommendedHumidityEnum(responseGrowth.getAtmospheric_humidity()));
+        plantRequirements.setPid(pid);
 
-        plantRequirements.setMinTemperatureRequirements(responseGrowth.getMinimum_temperature());
-        plantRequirements.setMaxTemperatureRequirements(responseGrowth.getMaximum_temperature());
+        plantRequirements.setMaxEnvHumid(response.getMaxEnvHumid());
+        plantRequirements.setMinEnvHumid(response.getMinEnvHumid());
 
-        plantRequirements.setRecommendedSoilState(getRecommendedSoilHumidityEnum(responseGrowth.getSoil_humidity()));
+        plantRequirements.setMaxSoilMoist(response.getMaxSoilMoist());
+        plantRequirements.setMinSoilMoist(response.getMinSoilMoist());
 
-        plantRequirements.setPhMinimum(responseGrowth.getPh_minimum());
-        plantRequirements.setPhMaximum(responseGrowth.getPh_maximum());
+        plantRequirements.setMinTemperatureRequirements(response.getMinTemp());
+        plantRequirements.setMaxTemperatureRequirements(response.getMaxTemp());
+
+        plantRequirements.setMaxLightLux(response.getMaxLightLux());
+        plantRequirements.setMinLightLux(response.getMinLightLux());
 
         return plantRequirements;
-    }
-
-    private SoilHumidity getRecommendedSoilHumidityEnum(Integer rawData)
-    {
-        if (rawData == null)
-        {
-            return SoilHumidity.UNKNOWN;
-        }
-
-        int humidity = Math.round((float) rawData / 2);
-
-        return SoilHumidity.values()[humidity];
-    }
-
-    private AtmosphericHumidity getRecommendedHumidityEnum(Integer rawData)
-    {
-        if (rawData == null)
-        {
-            return AtmosphericHumidity.UNKNOWN;
-        }
-
-        int humidity = Math.round((float) rawData / 2);
-
-        return AtmosphericHumidity.values()[humidity];
     }
 }

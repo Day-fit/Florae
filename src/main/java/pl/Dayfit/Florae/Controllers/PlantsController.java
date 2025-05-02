@@ -3,6 +3,7 @@ package pl.Dayfit.Florae.Controllers;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,17 +23,12 @@ class PlantsController {
     public ResponseEntity<Map<String, String>> uploadPhoto(@RequestParam ArrayList<MultipartFile> photos)
     {
         try{
-            if(!plantsService.saveAndRecognise(photos))
-            {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "No matches found"));
-            }
+            return ResponseEntity.ok(Map.of("speciesName", plantsService.saveAndRecognise(photos)));
         } catch(IOException exception){
-           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Upload failed"));
-        } catch (IllegalStateException exception) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "No matches found"));
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Failed at uploading photos"));
+        } catch (NoSuchElementException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "No matches or requirements found"));
         }
-
-        return ResponseEntity.ok(Map.of("message", "Uploaded successfully"));
     }
 
     @GetMapping("/api/v1/plant/{id}")
