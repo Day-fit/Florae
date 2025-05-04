@@ -27,7 +27,7 @@ public class FloraeUserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Username is not valid"));
         }
 
-        if (floraeUserRequestDTO.getEmail() == null || floraeUserRequestDTO.getEmail().isBlank() || !floraeUserRequestDTO.getEmail().matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") || floraeUserRequestDTO.getEmail().length() >= FloraeUser.MAX_EMAIL_LENGTH)
+        if (floraeUserRequestDTO.getEmail() == null || floraeUserRequestDTO.getEmail().isBlank() || !floraeUserRequestDTO.getEmail().matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") || floraeUserRequestDTO.getEmail().length() > FloraeUser.MAX_EMAIL_LENGTH)
         {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Email is not valid"));
         }
