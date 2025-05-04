@@ -42,7 +42,7 @@ public class PlantsService {
     @Value("${plant.net.api}")
     private String PLANT_NET_API_KEY;
 
-    public String saveAndRecognise(ArrayList<MultipartFile> photos, String username) throws NoSuchElementException, IOException {
+    public String saveAndRecognise(List<MultipartFile> photos, String username) throws NoSuchElementException, IOException {
         final MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
         final FloraeUser floraeUser = floraeUserRepository.findByUsername(username);
 
