@@ -23,6 +23,10 @@ public class Plant {
 
     @ManyToOne
     @JoinColumn(nullable = false)
+    private FloraeUser linkedUser;
+
+    @ManyToOne
+    @JoinColumn(nullable = false)
     private PlantRequirements requirements;
 
     @Lob

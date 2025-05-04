@@ -17,8 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.DTOs.PlantResponseDTO;
+import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
 import pl.Dayfit.Florae.Repositories.PlantRepository;
 
 @Slf4j
@@ -26,6 +28,7 @@ import pl.Dayfit.Florae.Repositories.PlantRepository;
 @RequiredArgsConstructor
 public class PlantsService {
     private final PlantRepository plantRepository;
+    private final FloraeUserRepository floraeUserRepository;
     private final PlantRequirementsService plantRequirementsService;
     private final RestTemplate restTemplate;
     private final HttpHeaders headers = new HttpHeaders();
@@ -39,8 +42,9 @@ public class PlantsService {
     @Value("${plant.net.api}")
     private String PLANT_NET_API_KEY;
 
-    public String saveAndRecognise(ArrayList<MultipartFile> photos) throws NoSuchElementException, IOException {
+    public String saveAndRecognise(ArrayList<MultipartFile> photos, String username) throws NoSuchElementException, IOException {
         final MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
+        final FloraeUser floraeUser = floraeUserRepository.findByUsername(username);
 
         photos.forEach(photo -> {
             multipartBodyBuilder.part("images", photo.getResource());
@@ -58,7 +62,7 @@ public class PlantsService {
             plant.setSpeciesName(response.getBestMatch());
             plant.setPid(pid);
             plant.setPrimaryPhoto(Base64.getEncoder().encodeToString(photos.getFirst().getBytes()));
-
+            plant.setLinkedUser(floraeUser);
             plant.setRequirements(plantRequirementsService.getPlantRequirements(pid));
 
             plantRepository.save(plant);
