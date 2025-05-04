@@ -32,7 +32,7 @@ public class FloraeUserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Email is not valid"));
         }
 
-        if (floraeUserRequestDTO.getPassword() == null || floraeUserRequestDTO.getPassword().isBlank() || floraeUserRequestDTO.getPassword().getBytes(StandardCharsets.UTF_8).length >= FloraeUser.MAX_PASSWORD_LENGTH)
+        if (floraeUserRequestDTO.getPassword() == null || floraeUserRequestDTO.getPassword().isBlank() || floraeUserRequestDTO.getPassword().getBytes(StandardCharsets.UTF_8).length > FloraeUser.MAX_PASSWORD_LENGTH)
         {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Password is not valid"));
         }
