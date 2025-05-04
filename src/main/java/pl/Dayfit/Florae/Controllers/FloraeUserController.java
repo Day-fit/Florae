@@ -22,7 +22,7 @@ public class FloraeUserController {
     @PostMapping("/api/v1/register")
     public ResponseEntity<Map<String, String>> registerUser(@RequestBody FloraeUserRequestDTO floraeUserRequestDTO)
     {
-        if (floraeUserRequestDTO.getUsername() == null ||floraeUserRequestDTO.getUsername().isBlank() || !floraeUserRequestDTO.getUsername().matches("[a-zA-Z0-9_]+") || floraeUserRequestDTO.getUsername().length() >= FloraeUser.MAX_USERNAME_LENGTH)
+        if (floraeUserRequestDTO.getUsername() == null ||floraeUserRequestDTO.getUsername().isBlank() || !floraeUserRequestDTO.getUsername().matches("[a-zA-Z0-9_]+") || floraeUserRequestDTO.getUsername().length() > FloraeUser.MAX_USERNAME_LENGTH)
         {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Username is not valid"));
         }
