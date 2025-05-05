@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.Callable;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,23 +23,26 @@ class PlantsController {
     private final PlantsService plantsService;
 
     @PostMapping("/api/v1/upload-photos")
-    public ResponseEntity<Map<String, String>> uploadPhoto(@RequestParam ArrayList<MultipartFile> photos, @AuthenticationPrincipal UserPrincipal user)
+    public Callable<ResponseEntity<Map<String, String>>> uploadPhoto(@RequestParam ArrayList<MultipartFile> photos, @AuthenticationPrincipal UserPrincipal user)
     {
-
-
         if (photos == null || photos.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "No photos provided"));
+            return () -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "No photos provided"));
         }
-        
-        try{
-            return ResponseEntity.ok(Map.of("speciesName", plantsService.saveAndRecognise(photos, user.getUsername())));
-        } catch(IOException exception){
-           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Failed at uploading photos"));
-        } catch (NoSuchElementException | IllegalStateException exception) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "No matches or requirements found"));
-        } catch (IllegalArgumentException exception) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Invalid photo format"));
-        }
+
+        return () -> {
+            try {
+                return ResponseEntity.ok(Map.of("speciesName", plantsService.saveAndRecognise(photos, user.getUsername())));
+            } catch(IOException exception) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", "Failed at uploading photos"));
+            } catch (NoSuchElementException | IllegalStateException exception) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "No matches or requirements found"));
+            } catch (IllegalArgumentException exception) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Invalid photo format"));
+            }
+        };
     }
 
     @GetMapping("/api/v1/plant/{id}")
