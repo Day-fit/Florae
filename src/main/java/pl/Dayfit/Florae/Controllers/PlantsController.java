@@ -28,7 +28,7 @@ class PlantsController {
     private final PlantsService plantsService;
 
     @PostMapping("/api/v1/add-plant")
-    public Callable<ResponseEntity<Map<String, String>>> uploadPhoto(@RequestParam List<MultipartFile> photos, @AuthenticationPrincipal UserPrincipal user)
+    public Callable<ResponseEntity<Map<String, String>>> addPlant(@RequestParam List<MultipartFile> photos, @AuthenticationPrincipal UserPrincipal user)
     {
         if (photos == null || photos.isEmpty()) {
             return () -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "No photos provided"));
