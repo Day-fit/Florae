@@ -9,20 +9,31 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import pl.Dayfit.Florae.DTOs.PlantRequirementsDTO;
+import pl.Dayfit.Florae.DTOs.PlantResponseDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Entities.Plant;
-import pl.Dayfit.Florae.DTOs.PlantResponseDTO;
+import pl.Dayfit.Florae.DTOs.PlantFetchDTO;
+import pl.Dayfit.Florae.Entities.PlantRequirements;
 import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
 import pl.Dayfit.Florae.Repositories.PlantRepository;
+import pl.Dayfit.Florae.Utils.ImageOptimizer;
 
+/**
+ * Service class responsible for managing plants data and interactions with the plant identification API.
+ * It provides functionality for saving plant information, recognizing plant species from photos,
+ * retrieving plant details by ID, and listing plants associated with a specific user.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -42,17 +53,24 @@ public class PlantsService {
     @Value("${plant.net.api}")
     private String PLANT_NET_API_KEY;
 
+    @Transactional
     public String saveAndRecognise(List<MultipartFile> photos, String username) throws NoSuchElementException, IOException {
         final MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
         final FloraeUser floraeUser = floraeUserRepository.findByUsername(username);
 
-        photos.forEach(photo -> {
-            multipartBodyBuilder.part("images", photo.getResource());
+        for (MultipartFile photo : photos)
+        {
+            multipartBodyBuilder.part("images", new ByteArrayResource(ImageOptimizer.optimizeImage(photo, .7f)) {
+                @Override
+                public String getFilename() {
+                    return "image." + photo.getContentType();
+                }
+            });
             multipartBodyBuilder.part("organs", "auto");
-        });
+        }
 
         HttpEntity<MultiValueMap<String, HttpEntity<?>>> requestEntity = new HttpEntity<>(multipartBodyBuilder.build(), headers);
-        PlantResponseDTO response = restTemplate.postForObject("https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=false&nb-results=1&lang=en&type=kt&api-key="+PLANT_NET_API_KEY, requestEntity, PlantResponseDTO.class);
+        PlantFetchDTO response = restTemplate.postForObject("https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=false&nb-results=1&lang=en&type=kt&api-key="+PLANT_NET_API_KEY, requestEntity, PlantFetchDTO.class);
 
         if (response != null)
         {
@@ -61,7 +79,7 @@ public class PlantsService {
             Plant plant = new Plant();
             plant.setSpeciesName(response.getBestMatch());
             plant.setPid(pid);
-            plant.setPrimaryPhoto(Base64.getEncoder().encodeToString(photos.getFirst().getBytes()));
+            plant.setPrimaryPhoto(Base64.getEncoder().encodeToString(ImageOptimizer.optimizeImage(photos.getFirst(), .7f)));
             plant.setLinkedUser(floraeUser);
             plant.setRequirements(plantRequirementsService.getPlantRequirements(pid));
 
@@ -73,12 +91,44 @@ public class PlantsService {
         throw new IllegalStateException("No matches found");
     }
 
-    public Plant getPlantById(Integer id)
+    public PlantResponseDTO getPlantById(Integer id)
     {
-        if (id==null) {
+        Plant plant = plantRepository.findById(id).orElse(null);
+        return mapPlantDTO(plant);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PlantResponseDTO> getPlantsByUsername(String username)
+    {
+        return plantRepository.getPlantsByUsername(username).stream().map(this::mapPlantDTO).toList();
+    }
+
+    private PlantResponseDTO mapPlantDTO(Plant plant)
+    {
+        if(plant == null){
             return null;
         }
 
-        return plantRepository.findById(id).orElse(null);
+        PlantRequirements plantRequirements = plant.getRequirements();
+        PlantResponseDTO mappedElement = new PlantResponseDTO();
+        mappedElement.setOwner(plant.getLinkedUser().getUsername());
+        mappedElement.setSpeciesName(plant.getSpeciesName());
+        mappedElement.setPrimaryPhoto(plant.getPrimaryPhoto());
+        mappedElement.setLinkedEsp(plant.getLinkedEsp());
+        mappedElement.setRequirements(
+                new PlantRequirementsDTO(
+                        null,
+                        plantRequirements.getMaxLightLux(),
+                        plantRequirements.getMinLightLux(),
+                        plantRequirements.getMaxTemp(),
+                        plantRequirements.getMinTemp(),
+                        plantRequirements.getMaxEnvHumid(),
+                        plantRequirements.getMinEnvHumid(),
+                        plantRequirements.getMaxSoilMoist(),
+                        plantRequirements.getMinSoilMoist()
+                )
+        );
+
+        return mappedElement;
     }
 }

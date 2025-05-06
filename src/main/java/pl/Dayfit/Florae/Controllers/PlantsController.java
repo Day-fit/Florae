@@ -1,7 +1,7 @@
 package pl.Dayfit.Florae.Controllers;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
@@ -14,16 +14,21 @@ import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
-import pl.Dayfit.Florae.Entities.Plant;
+import pl.Dayfit.Florae.DTOs.PlantResponseDTO;
 import pl.Dayfit.Florae.Services.PlantsService;
 
+/**
+ * Controller for handling operations related to plants. It provides endpoints
+ * for uploading plant photos for recognition, retrieving plant data by ID, and
+ * fetching plants associated with a user's account.
+ */
 @RestController
 @RequiredArgsConstructor
 class PlantsController {
     private final PlantsService plantsService;
 
-    @PostMapping("/api/v1/upload-photos")
-    public Callable<ResponseEntity<Map<String, String>>> uploadPhoto(@RequestParam ArrayList<MultipartFile> photos, @AuthenticationPrincipal UserPrincipal user)
+    @PostMapping("/api/v1/add-plant")
+    public Callable<ResponseEntity<Map<String, String>>> addPlant(@RequestParam List<MultipartFile> photos, @AuthenticationPrincipal UserPrincipal user)
     {
         if (photos == null || photos.isEmpty()) {
             return () -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "No photos provided"));
@@ -45,16 +50,41 @@ class PlantsController {
         };
     }
 
-    @GetMapping("/api/v1/plant/{id}")
-    public ResponseEntity<Plant> getPlant(@PathVariable Integer id)
+    @GetMapping("/api/v1/plant/{id:\\d+}")
+    public ResponseEntity<?> getPlantById(@PathVariable Integer id)
     {
-        Plant response = plantsService.getPlantById(id);
+        if(id == null)
+        {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Invalid id"));
+        }
+
+        PlantResponseDTO response = plantsService.getPlantById(id);
 
         if(response == null)
         {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Plant not found"));
         }
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/api/v1/plants")
+    public ResponseEntity<?> getPlantsByUsername(@AuthenticationPrincipal UserPrincipal userPrincipal)
+    {
+        String username = userPrincipal.getUsername();
+
+        if(username == null)
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "User is not logged in"));
+        }
+
+        List<PlantResponseDTO> plants = plantsService.getPlantsByUsername(username);
+
+        if (plants == null)
+        {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "No plants found"));
+        }
+
+        return ResponseEntity.ok(plants);
     }
 }

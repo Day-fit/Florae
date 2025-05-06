@@ -8,6 +8,27 @@ import pl.Dayfit.Florae.DTOs.FloraeUserRequestDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
 
+/**
+ * Service class for handling user-related operations in the Florae system.
+ * This class manages the registration of new users and ensures unique constraints
+ * on usernames and email addresses.
+
+ * Dependencies:
+ * - {@code FloraeUserRepository}: Provides access to database operations for {@code FloraeUser} entities.
+ * - {@code BCryptPasswordEncoder}: Used for securely encoding user passwords.
+
+ * Responsibilities:
+ * - Registering new users in the system.
+ * - Validating the uniqueness of email addresses and usernames during user registration.
+
+ * Annotations:
+ * - {@code @Service}: Marks this class as a Spring service component.
+ * - {@code @RequiredArgsConstructor}: Generates a constructor with required dependencies through Lombok.
+
+ * Methods:
+ * - {@code registerUser(FloraeUserRequestDTO)}: Registers a new user and stores the user data in the database.
+ *   Throws {@code DuplicateKeyException} if the username or email is already in use.
+ */
 @Service
 @RequiredArgsConstructor
 public class FloraeUserService {

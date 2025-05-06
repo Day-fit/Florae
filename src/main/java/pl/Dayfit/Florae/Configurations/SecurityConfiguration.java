@@ -13,6 +13,25 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+/**
+ * Configuration class for setting up Spring Security within the application.
+
+ * This class provides the necessary configurations required for securing REST APIs,
+ * specifically configuring authentication, password encoding, and defining
+ * security rules for incoming HTTP requests.
+
+ * Components provided in this class:
+ * - SecurityFilterChain: Specifies security rules such as which endpoints are
+ *   accessible without authentication and the default security mechanism to use.
+ * - BCryptPasswordEncoder: Configures a password encoder for encrypting user credentials.
+ * - AuthenticationProvider: Specifies the authentication provider with user details
+ *   service and password encoder for validating user credentials.
+
+ * Key Features:
+ * - CSRF protection is disabled.
+ * - Basic HTTP Authentication is enabled.
+ * - Open access configured for specific endpoints like user registration.
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor

@@ -1,12 +1,14 @@
 package pl.Dayfit.Florae.DTOs;
 
 import lombok.Data;
-import pl.Dayfit.Florae.POJOs.Results;
-
-import java.util.List;
+import pl.Dayfit.Florae.Entities.Esp;
 
 @Data
-public class PlantResponseDTO {
-    private String bestMatch;
-    private List<Results> results;
+public class PlantResponseDTO
+{
+    private String owner;
+    private String speciesName;
+    private Esp linkedEsp;
+    private String primaryPhoto;
+    private PlantRequirementsDTO requirements;
 }
