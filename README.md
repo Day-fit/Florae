@@ -20,7 +20,7 @@ This repository contains the application's source code, allowing you to host it 
 
 - Full source code of the application.
 - Instructions for setup and configuration.
-- Frontend files that should be placed in the directory: **`frontend/`**.
+- Frontend files that should be placed in the directory: **`docs/`**.
 
 ## Requirements
 
