@@ -14,6 +14,10 @@ import pl.Dayfit.Florae.Services.FloraeUserService;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+/**
+ * Controller to handle user-related operations for the Florae application.
+ * This class provides an endpoint to register a new user with validation checks.
+ */
 @Controller
 @RequiredArgsConstructor
 public class FloraeUserController {
