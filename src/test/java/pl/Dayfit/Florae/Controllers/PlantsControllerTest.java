@@ -59,7 +59,7 @@ class PlantsControllerTest {
             MockMultipartFile photo = new MockMultipartFile(
                     "photos","photo.jpg",MediaType.IMAGE_JPEG_VALUE,"data".getBytes());
 
-            mockMvc.perform(multipart("/api/v1/upload-photos")
+            mockMvc.perform(multipart("/api/v1/add-plant")
                             .file(photo)
                             .with(SecurityMockMvcRequestPostProcessors.user(principal())))
                     .andExpect(status().isOk())

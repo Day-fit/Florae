@@ -34,6 +34,7 @@ class PlantsController {
             return () -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "No photos provided"));
         }
 
+
         return () -> {
             try {
                 return ResponseEntity.ok(Map.of("speciesName", plantsService.saveAndRecognise(photos, user.getUsername())));

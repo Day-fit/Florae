@@ -2,38 +2,37 @@ package pl.Dayfit.Florae.Services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.Dayfit.Florae.DTOs.FloraeUserRequestDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
 
-/**
- * Service class for handling user-related operations in the Florae system.
- * This class manages the registration of new users and ensures unique constraints
- * on usernames and email addresses.
 
- * Dependencies:
- * - {@code FloraeUserRepository}: Provides access to database operations for {@code FloraeUser} entities.
- * - {@code BCryptPasswordEncoder}: Used for securely encoding user passwords.
+/**
+ * Service class responsible for user-related operations in the Florae system.
+ * Handles user registration, authentication, and token generation.
 
  * Responsibilities:
- * - Registering new users in the system.
- * - Validating the uniqueness of email addresses and usernames during user registration.
+ * - Registering a new user with validation to ensure unique email and username.
+ * - Validating user credentials during login.
+ * - Generating JWT tokens for authenticated users.
 
- * Annotations:
- * - {@code @Service}: Marks this class as a Spring service component.
- * - {@code @RequiredArgsConstructor}: Generates a constructor with required dependencies through Lombok.
-
- * Methods:
- * - {@code registerUser(FloraeUserRequestDTO)}: Registers a new user and stores the user data in the database.
- *   Throws {@code DuplicateKeyException} if the username or email is already in use.
+ * Dependencies:
+ * - {@code FloraeUserRepository}: Used for accessing and managing user data in the database.
+ * - {@code BCryptPasswordEncoder}: Used for encrypting user passwords.
+ * - {@code AuthenticationManager}: Used for authenticating user credentials.
+ * - {@code JWTService}: Used for generating JSON Web Token (JWT) for user authentication.
  */
 @Service
 @RequiredArgsConstructor
 public class FloraeUserService {
     private final FloraeUserRepository floraeUserRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final AuthenticationManager authManager;
+    private final JWTService jwtService;
 
     public void registerUser(FloraeUserRequestDTO floraeUserRequestDTO) throws DuplicateKeyException
     {
@@ -49,5 +48,17 @@ public class FloraeUserService {
         floraeUser.setRoles("USER");
 
         floraeUserRepository.save(floraeUser);
+    }
+
+    public boolean isValid(FloraeUserRequestDTO floraeUserRequestDTO) {
+        try {
+            return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserRequestDTO.getUsername(), floraeUserRequestDTO.getPassword())).isAuthenticated();
+        } catch (AuthenticationException e) {
+            return false;
+        }
+    }
+
+    public String getToken(String username) {
+        return jwtService.generateToken(username);
     }
 }

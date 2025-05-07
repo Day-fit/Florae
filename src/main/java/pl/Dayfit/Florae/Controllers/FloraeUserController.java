@@ -14,9 +14,25 @@ import pl.Dayfit.Florae.Services.FloraeUserService;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+
 /**
- * Controller to handle user-related operations for the Florae application.
- * This class provides an endpoint to register a new user with validation checks.
+ * Controller for handling user-related operations in the Florae system.
+ * Provides endpoints for user registration and authentication.
+
+ * Endpoints:
+ * - /register: Registers a new user with provided details.
+ * - /login: Authenticates a user and provides a JSON Web Token (JWT) upon successful login.
+
+ * Dependencies:
+ * - {@code FloraeUserService}: Service layer responsible for handling user operations such as registration,
+ *   validation, and token generation.
+
+ * Validations:
+ * - Ensures that the username, email, and password provided during registration meet the specified format
+ *   and length requirements.
+
+ * Error Handling:
+ * - Returns appropriate HTTP status codes and error messages for validation failures and duplicate entries.
  */
 @Controller
 @RequiredArgsConstructor
@@ -26,7 +42,7 @@ public class FloraeUserController {
     private static final String USERNAME_REGEX = "[a-zA-Z0-9_]+";
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
 
-    @PostMapping("/api/v1/register")
+    @PostMapping("/register")
     public ResponseEntity<Map<String, String>> registerUser(@RequestBody FloraeUserRequestDTO floraeUserRequestDTO)
     {
         if (floraeUserRequestDTO.getUsername() == null ||floraeUserRequestDTO.getUsername().isBlank() || !floraeUserRequestDTO.getUsername().matches(USERNAME_REGEX) || floraeUserRequestDTO.getUsername().length() > FloraeUser.MAX_USERNAME_LENGTH)
@@ -50,6 +66,17 @@ public class FloraeUserController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", exception.getMessage()));
         }
 
-        return ResponseEntity.ok(Map.of("message", "User registered successfully"));
+        return ResponseEntity.ok(Map.of("message", "User registered successfully. Please check your email for verification."));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(@RequestBody FloraeUserRequestDTO floraeUserRequestDTO)
+    {
+        if (!floraeUserService.isValid(floraeUserRequestDTO)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid username or password"));
+        }
+
+        String token = floraeUserService.getToken(floraeUserRequestDTO.getUsername());
+        return ResponseEntity.ok(Map.of("token", token));
     }
 }
