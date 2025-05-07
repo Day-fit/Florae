@@ -79,7 +79,7 @@ public class PlantsService {
         try{
             response = restTemplate.postForObject("https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=false&nb-results=1&lang=en&type=kt&api-key="+PLANT_NET_API_KEY, requestEntity, PlantFetchDTO.class);
         } catch (HttpClientErrorException | HttpServerErrorException ex) {
-            log.error("PlantNet API error: {}", ex.getStatusCode());
+            log.error("PlantNet API error: Status Code: {}, Message: {}", ex.getStatusCode(), ex.getMessage());
             throw new IllegalStateException("External API call failed");
         }
 
