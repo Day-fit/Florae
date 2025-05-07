@@ -51,7 +51,11 @@ public class FloraeUserService {
     }
 
     public boolean isValid(FloraeUserRequestDTO floraeUserRequestDTO) {
-        return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserRequestDTO.getUsername(), floraeUserRequestDTO.getPassword())).isAuthenticated();
+        try {
+            return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserRequestDTO.getUsername(), floraeUserRequestDTO.getPassword())).isAuthenticated();
+        } catch (AuthenticationException e) {
+            return false;
+        }
     }
 
     public String getToken(String username) {
