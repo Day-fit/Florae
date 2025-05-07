@@ -17,6 +17,8 @@ import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import pl.Dayfit.Florae.DTOs.PlantRequirementsDTO;
@@ -29,10 +31,11 @@ import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
 import pl.Dayfit.Florae.Repositories.PlantRepository;
 import pl.Dayfit.Florae.Utils.ImageOptimizer;
 
+
 /**
- * Service class responsible for managing plants data and interactions with the plant identification API.
- * It provides functionality for saving plant information, recognizing plant species from photos,
- * retrieving plant details by ID, and listing plants associated with a specific user.
+ * Service class responsible for handling operations related to plants.
+ * This class includes features for recognizing plants, saving plant data,
+ * and fetching plants associated with users.
  */
 @Slf4j
 @Service
@@ -70,7 +73,15 @@ public class PlantsService {
         }
 
         HttpEntity<MultiValueMap<String, HttpEntity<?>>> requestEntity = new HttpEntity<>(multipartBodyBuilder.build(), headers);
-        PlantFetchDTO response = restTemplate.postForObject("https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=false&nb-results=1&lang=en&type=kt&api-key="+PLANT_NET_API_KEY, requestEntity, PlantFetchDTO.class);
+
+        PlantFetchDTO response;
+
+        try{
+            response = restTemplate.postForObject("https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=false&nb-results=1&lang=en&type=kt&api-key="+PLANT_NET_API_KEY, requestEntity, PlantFetchDTO.class);
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            log.error("PlantNet API error: {}", ex.getStatusCode());
+            throw new IllegalStateException("External API call failed");
+        }
 
         if (response != null)
         {
