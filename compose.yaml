@@ -1,6 +1,6 @@
 services:
   spring:
-    image: ghcr.io/day-fit/florae:lastest
+    image: 'ghcr.io/day-fit/florae:lastest'
     depends_on:
       - postgres
     environment:
