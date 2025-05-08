@@ -3,8 +3,6 @@ name: Java CI with Maven
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   build:
@@ -29,5 +27,7 @@ jobs:
       with:
         image: ghcr.io/day-fit/florae
         registry: ghcr.io
+        tag: latest
+        dockerfile: './dockerfiles/spring/Dockerfile'
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}

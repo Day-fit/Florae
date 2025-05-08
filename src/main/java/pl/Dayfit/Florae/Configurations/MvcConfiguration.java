@@ -15,14 +15,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class MvcConfiguration implements WebMvcConfigurer {
 
-    @Value("${allowed.origins.patterns}:localhost*")
-    private String[] ALLOWED_ORIGINS_PATTERNS;
+    @Value("${allowed.origins.patterns:localhost*}")
+    private String ALLOWED_ORIGINS_PATTERNS;
 
+    @Override
     public void addCorsMappings(CorsRegistry registry)
     {
+        String[] origins = ALLOWED_ORIGINS_PATTERNS.split(",");
+
         registry
-            .addMapping("/**")
-            .allowCredentials(true)
-            .allowedOriginPatterns(ALLOWED_ORIGINS_PATTERNS);
-    }    
+                .addMapping("/**")
+                .allowCredentials(true)
+                .allowedOriginPatterns(origins);
+    }
 }
