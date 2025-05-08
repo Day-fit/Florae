@@ -2,10 +2,10 @@ package pl.Dayfit.Florae.Controllers;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +17,7 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import pl.Dayfit.Florae.Auth.UserPrincipal;
@@ -52,36 +53,37 @@ class PlantsControllerTest {
         return new UserPrincipal(u);
     }
 
-    @Nested class UploadPhoto {
-        @Test void shouldReturnSpecies() throws Exception {
-            when(plantsService.saveAndRecognise(any(), eq("testUser"))).thenReturn("rose");
+    @Test void shouldReturnSpecies() throws Exception {
+        when(plantsService.saveAndRecognise(any(), eq("testUser"))).thenReturn("rose");
 
-            MockMultipartFile photo = new MockMultipartFile(
-                    "photos","photo.jpg",MediaType.IMAGE_JPEG_VALUE,"data".getBytes());
+        MockMultipartFile photo = new MockMultipartFile(
+                "photos","photo.jpg",MediaType.IMAGE_JPEG_VALUE,"data".getBytes());
 
-            mockMvc.perform(multipart("/api/v1/add-plant")
-                            .file(photo)
-                            .with(SecurityMockMvcRequestPostProcessors.user(principal())))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.speciesName").value("rose"));
-        }
+        MvcResult result = mockMvc.perform(multipart("/api/v1/add-plant")
+                        .file(photo)
+                        .with(SecurityMockMvcRequestPostProcessors.user(principal())))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(result))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.speciesName").value("rose"));
     }
 
-    @Nested class GetPlant {
-        @Test void shouldReturnPlant() throws Exception {
-            Plant p = new Plant();
-            p.setId(1);
-            p.setSpeciesName("Rose");
+    @Test void shouldReturnPlant() throws Exception {
+        Plant p = new Plant();
+        p.setId(1);
+        p.setSpeciesName("Rose");
 
-            PlantResponseDTO dto = new PlantResponseDTO();
-            dto.setSpeciesName(p.getSpeciesName());
+        PlantResponseDTO dto = new PlantResponseDTO();
+        dto.setSpeciesName(p.getSpeciesName());
 
-            when(plantsService.getPlantById(1)).thenReturn(dto);
+        when(plantsService.getPlantById(1)).thenReturn(dto);
 
-            mockMvc.perform(get("/api/v1/plant/1")
-                            .with(SecurityMockMvcRequestPostProcessors.user(principal())))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.speciesName").value("Rose"));
-        }
+        mockMvc.perform(get("/api/v1/plant/1")
+                        .with(SecurityMockMvcRequestPostProcessors.user(principal())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.speciesName").value("Rose"));
     }
 }
