@@ -20,8 +20,9 @@ services:
     environment:
       - 'DOMAIN_NAME=${DOMAIN_NAME}'
     volumes:
-      - 'privkeys:/etc/ssl/private'
+      - 'privkeys:/etc/ssl/privkeys'
       - 'certs:/etc/ssl/certs'
+      - 'nginx.conf:/etc/nginx/nginx.conf'
     profiles:
       - prod
 
