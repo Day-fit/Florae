@@ -11,5 +11,8 @@ RUN apk update && apk upgrade --no-cache
 ## Compile project
 RUN mvn clean package -DskipTests
 
+## Relocate and Rename the Jar-file
+RUN mv /app/target/Florae*.jar Florae.jar
+
 ## Run the jar-file
-CMD sh -c 'java -jar Florae*.jar'
+CMD sh -c 'java -jar Florae.jar'
