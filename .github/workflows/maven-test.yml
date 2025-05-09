@@ -1,4 +1,4 @@
-name: maven-test.yml
+name: Run Maven Tests
 on:
   pull_request:
     branches: ["main"]
