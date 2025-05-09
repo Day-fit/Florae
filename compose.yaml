@@ -1,6 +1,6 @@
 services:
   spring:
-    image: 'ghcr.io/day-fit/florae:lastest'
+    image: 'ghcr.io/day-fit/florae:latest'
     depends_on:
       - postgres
     environment:
@@ -19,7 +19,7 @@ services:
     ports:
       - '443:443'
     environment:
-      - 'DOMAIN_NAME=${DOMAIN_NAME}'
+      - DOMAIN_NAME=${DOMAIN_NAME}
     volumes:
       - 'privkeys:/etc/ssl/privkeys'
       - 'certs:/etc/ssl/certs'
