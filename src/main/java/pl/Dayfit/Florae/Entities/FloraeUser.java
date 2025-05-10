@@ -51,6 +51,6 @@ public class FloraeUser {
     @Column(nullable = false, length = MAX_PASSWORD_LENGTH)
     private String password;
 
-    @Column(nullable = false, columnDefinition = "VARCHAR(256) DEFAULT 'USER'")
-    private String roles;
+    @Column(nullable = false)
+    private String roles = "USER";
 }
