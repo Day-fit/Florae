@@ -10,32 +10,41 @@ import lombok.Setter;
 /**
  * Represents a user in the Florae system.
  * This class is used to map user-related data to the database.
-
- * Fields:
- * - {@code id}: A unique identifier for the user, automatically generated.
- * - {@code username}: The username chosen by the user, unique and required, with a maximum length of 64 characters.
- * - {@code email}: The email address of the user, unique and required, with a maximum length of 254 characters.
- * - {@code password}: The hashed password of the user, required, with a maximum length of 70 characters.
- * - {@code roles}: The roles assigned to the user for authorization purposes, with a default value of 'USER'.
-
- * Constants:
- * - {@code MAX_USERNAME_LENGTH}: Defines the maximum allowed length for the username.
- * - {@code MAX_PASSWORD_LENGTH}: Defines the maximum allowed length for the password.
- * - {@code MAX_EMAIL_LENGTH}: Defines the maximum allowed length for the email address.
-
- * Annotations:
- * - {@code @Entity}: Marks this class as a JPA entity to map to the database.
- * - {@code @Getter} and {@code @Setter}: Lombok annotations to automatically generate getter and setter methods for all fields.
- * - {@code @Id}: Denotes the primary key of the entity.
- * - {@code @GeneratedValue}: Specifies that the primary key is auto-generated.
- * - {@code @Column}: Configures the properties for the associated database columns such as uniqueness, nullability, and length.
+ *
+ * <p>Fields:
+ * <ul>
+ *     <li>{@code id}: A unique identifier for the user, automatically generated</li>
+ *     <li>{@code username}: The username chosen by the user, unique and required, with a maximum length of 64 characters</li>
+ *     <li>{@code email}: The email address of the user, unique and required, with a maximum length of 254 characters</li>
+ *     <li>{@code password}: The hashed password of the user, required, with a maximum length of 70 characters</li>
+ *     <li>{@code salt}: The salt used to hash the password, required, with a maximum length of 60 characters</li>
+ *     <li>{@code roles}: The roles assigned to the user for authorization purposes, with a default value of 'USER'</li>
+ * </ul>
+ *
+ * <p>Constants:
+ * <ul>
+ *     <li>{@code MAX_USERNAME_LENGTH}: Defines the maximum allowed length for the username</li>
+ *     <li>{@code MAX_PASSWORD_LENGTH}: Defines the maximum allowed length for the password</li>
+ *     <li>{@code MAX_EMAIL_LENGTH}: Defines the maximum allowed length for the email address</li>
+ *     <li>{@code MAX_SALT_LENGTH}: Defines the maximum allowed length for the salt</li>
+ * </ul>
+ *
+ * <p>Annotations:
+ * <ul>
+ *     <li>{@code @Entity}: Marks this class as a JPA entity to map to the database</li>
+ *     <li>{@code @Getter} and {@code @Setter}: Lombok annotations to automatically generate getter and setter methods for all fields</li>
+ *     <li>{@code @Id}: Denotes the primary key of the entity</li>
+ *     <li>{@code @GeneratedValue}: Specifies that the primary key is auto-generated</li>
+ *     <li>{@code @Column}: Configures the properties for the associated database columns such as uniqueness, nullability, and length</li>
+ * </ul>
  */
 @Entity
 @Getter
 @Setter
 public class FloraeUser {
     public static final int MAX_USERNAME_LENGTH = 64;
-    public static final int MAX_PASSWORD_LENGTH = 70;
+    public static final int MAX_PASSWORD_LENGTH = 128;
+    public static final int MAX_SALT_LENGTH = 60;
     public static final int MAX_EMAIL_LENGTH = 254;
 
     @Id
@@ -50,6 +59,9 @@ public class FloraeUser {
 
     @Column(nullable = false, length = MAX_PASSWORD_LENGTH)
     private String password;
+
+    @Column(nullable = false, length = MAX_SALT_LENGTH)
+    private String salt;
 
     @Column(nullable = false)
     private String roles = "USER";

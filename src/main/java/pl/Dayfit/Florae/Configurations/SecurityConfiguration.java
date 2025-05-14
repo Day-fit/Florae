@@ -18,31 +18,37 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import pl.Dayfit.Florae.Filters.JWTFilter;
 
+import java.security.SecureRandom;
+
 /**
  * Security configuration class for customizing application security settings.
  * This class is annotated with {@code @Configuration} and {@code @EnableWebSecurity}
  * to indicate that it provides Spring Security configuration.
 
- * Key Responsibilities:
- * - Defines the SecurityFilterChain to configure security policies including CSRF,
- *   authorization rules, and session management.
- * - Integrates a custom JWT filter to validate tokens and ensure stateless security.
- * - Configures authentication mechanisms including password encoding
- *   and data sourcing from UserDetailsService to manage user-specific data.
-
- * Annotations:
- * - {@code @Configuration}: Marks this class as a Spring configuration class.
- * - {@code @EnableWebSecurity}: Enables Spring Security for the application.
- * - {@code @RequiredArgsConstructor}: Generates a constructor for final fields, simplifying dependency injection.
-
- * Beans:
- * - SecurityFilterChain: Configures HTTP security, including authentication rules,
- *   permitted endpoints, session policy, and adding custom filters.
- * - BCryptPasswordEncoder: A password encoder that uses the BCrypt hashing algorithm
- *   for secure password storage.
- * - AuthenticationProvider: Configures authentication via a DAO provider using
- *   the UserDetailsService and password encoder.
- * - AuthenticationManager: Manages authentication through the configuration defined in Spring Security.
+ * <p>Key Responsibilities:</p>
+ * <ul>
+ *  <li> Defines the SecurityFilterChain to configure security policies including CSRF,
+ *   authorization rules, and session management.</li>
+ *  <li> Integrates a custom JWT filter to validate tokens and ensure stateless security.</li>
+ *  <li> Configures authentication mechanisms including password encoding
+ *   and data sourcing from UserDetailsService to manage user-specific data.</li>
+ * </ul>
+ * <p>Annotations:</p>
+ * <ul>
+ * <li> {@code @Configuration}: Marks this class as a Spring configuration class.</li>
+ * <li> {@code @EnableWebSecurity}: Enables Spring Security for the application.</li>
+ * <li> {@code @RequiredArgsConstructor}: Generates a constructor for final fields, simplifying dependency injection.</li>
+ * </ul>
+ * <p>Beans:</p>
+ * <ul>
+ *  <li> SecurityFilterChain: Configures HTTP security, including authentication rules,
+ *   permitted endpoints, session policy, and adding custom filters.</li>
+ *  <li> BCryptPasswordEncoder: A password encoder that uses the BCrypt hashing algorithm
+ *   for secure password storage.</li>
+ *  <li> AuthenticationProvider: Configures authentication via a DAO provider using
+ *   the UserDetailsService and password encoder.</li>
+ *  <li> AuthenticationManager: Manages authentication through the configuration defined in Spring Security.</li>
+ * </ul>
  */
 @Configuration
 @EnableWebSecurity
@@ -79,6 +85,12 @@ public class SecurityConfiguration {
         provider.setPasswordEncoder(bCryptPasswordEncoder());
         provider.setUserDetailsService(userDetailsService);
         return provider;
+    }
+
+    @Bean
+    public SecureRandom secureRandom()
+    {
+        return new SecureRandom();
     }
 
     @Bean
