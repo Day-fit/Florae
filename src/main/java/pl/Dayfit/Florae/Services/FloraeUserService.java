@@ -11,6 +11,9 @@ import pl.Dayfit.Florae.DTOs.FloraeUserRequestDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
 
+import java.security.SecureRandom;
+import java.util.Base64;
+
 
 /**
  * Service class responsible for user-related operations in the Florae system.
@@ -34,6 +37,7 @@ public class FloraeUserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authManager;
     private final JWTService jwtService;
+    private final SecureRandom secureRandom;
 
     public void registerUser(FloraeUserRequestDTO floraeUserRequestDTO) throws DuplicateKeyException
     {
@@ -45,15 +49,18 @@ public class FloraeUserService {
         FloraeUser floraeUser = new FloraeUser();
         floraeUser.setUsername(floraeUserRequestDTO.getUsername());
         floraeUser.setEmail(floraeUserRequestDTO.getEmail());
-        floraeUser.setPassword(bCryptPasswordEncoder.encode(floraeUserRequestDTO.getPassword()));
+        floraeUser.setSalt(generateSalt());
+        floraeUser.setPassword(bCryptPasswordEncoder.encode(floraeUserRequestDTO.getPassword() + floraeUser.getSalt()));
         floraeUser.setRoles("USER");
 
         floraeUserRepository.save(floraeUser);
     }
 
     public boolean isValid(FloraeUserRequestDTO floraeUserRequestDTO) {
+        FloraeUser floraeUser = floraeUserRepository.findByUsername(floraeUserRequestDTO.getUsername());
+
         try {
-            return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserRequestDTO.getUsername(), floraeUserRequestDTO.getPassword())).isAuthenticated();
+            return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserRequestDTO.getUsername(), floraeUserRequestDTO.getPassword() + floraeUser.getSalt())).isAuthenticated();
         } catch (AuthenticationException e) {
             return false;
         }
@@ -61,5 +68,13 @@ public class FloraeUserService {
 
     public String getToken(String username) {
         return jwtService.generateToken(username);
+    }
+
+    private String generateSalt()
+    {
+        byte[] salt = new byte[44];
+        secureRandom.nextBytes(salt);
+
+        return Base64.getEncoder().encodeToString(salt);
     }
 }

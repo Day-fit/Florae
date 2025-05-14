@@ -35,7 +35,8 @@ import lombok.Setter;
 @Setter
 public class FloraeUser {
     public static final int MAX_USERNAME_LENGTH = 64;
-    public static final int MAX_PASSWORD_LENGTH = 70;
+    public static final int MAX_PASSWORD_LENGTH = 128;
+    public static final int MAX_SALT_LENGTH = 60;
     public static final int MAX_EMAIL_LENGTH = 254;
 
     @Id
@@ -50,6 +51,9 @@ public class FloraeUser {
 
     @Column(nullable = false, length = MAX_PASSWORD_LENGTH)
     private String password;
+
+    @Column(nullable = false, length = MAX_SALT_LENGTH)
+    private String salt;
 
     @Column(nullable = false)
     private String roles = "USER";

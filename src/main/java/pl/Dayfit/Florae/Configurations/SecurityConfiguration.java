@@ -18,6 +18,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import pl.Dayfit.Florae.Filters.JWTFilter;
 
+import java.security.SecureRandom;
+
 /**
  * Security configuration class for customizing application security settings.
  * This class is annotated with {@code @Configuration} and {@code @EnableWebSecurity}
@@ -79,6 +81,12 @@ public class SecurityConfiguration {
         provider.setPasswordEncoder(bCryptPasswordEncoder());
         provider.setUserDetailsService(userDetailsService);
         return provider;
+    }
+
+    @Bean
+    public SecureRandom secureRandom()
+    {
+        return new SecureRandom();
     }
 
     @Bean
