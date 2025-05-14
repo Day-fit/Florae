@@ -3,7 +3,7 @@
 Florae is an application that makes plant cultivation incredibly easy! With Florae, you can:
 
 - [X] Upload a photo of a plant, and the app will recognize its species.
-- Get information about the plant's requirements.
+- [X] Get information about the plant's requirements.
 - Compare plant requirements with data from ESP32 sensors.
 - [X] Receive recommendations for addressing deficiencies such as temperature, air humidity, or soil moisture.
 - Diagnose ill plant by a photo
