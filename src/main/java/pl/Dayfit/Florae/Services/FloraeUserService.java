@@ -19,16 +19,21 @@ import java.util.Base64;
  * Service class responsible for user-related operations in the Florae system.
  * Handles user registration, authentication, and token generation.
 
- * Responsibilities:
- * - Registering a new user with validation to ensure unique email and username.
- * - Validating user credentials during login.
- * - Generating JWT tokens for authenticated users.
+ * <p>Responsibilities:</p>
+ * <ul>
+ *  <li> Registering a new user with validation to ensure a unique email and username.</li>
+ *  <li> Validating user credentials during login.</li>
+ *  <li> Generating JWT tokens for authenticated users.</li>
+ * </ul>
 
- * Dependencies:
- * - {@code FloraeUserRepository}: Used for accessing and managing user data in the database.
- * - {@code BCryptPasswordEncoder}: Used for encrypting user passwords.
- * - {@code AuthenticationManager}: Used for authenticating user credentials.
- * - {@code JWTService}: Used for generating JSON Web Token (JWT) for user authentication.
+ * <p>Dependencies:</p>
+ * <ul>
+ *  <li> {@code FloraeUserRepository}: Used for accessing and managing user data in the database.</li>
+ *  <li> {@code BCryptPasswordEncoder}: Used for encrypting user passwords.</li>
+ *  <li> {@code AuthenticationManager}: Used for authenticating user credentials.</li>
+ *  <li> {@code JWTService}: Used for generating JSON Web Token (JWT) for user authentication.</li>
+ *  <li> {@code SecureRandom}: Used for generating random salt values for user passwords.</li>
+ * </ul>
  */
 @Service
 @RequiredArgsConstructor
