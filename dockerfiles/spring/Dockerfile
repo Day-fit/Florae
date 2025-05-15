@@ -5,9 +5,6 @@ COPY ./pom.xml app/
 
 WORKDIR /app
 
-### Update the system
-RUN apk update && apk upgrade --no-cache
-
 ## Compile project
 RUN mvn clean package -DskipTests
 
