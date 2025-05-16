@@ -3,7 +3,10 @@ name: Build and Push Docker Image
 on:
   push:
     branches: [ "main" ]
-
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - 'dockerfiles/spring/Dockerfile'
 jobs:
   build:
     runs-on: ubuntu-latest
