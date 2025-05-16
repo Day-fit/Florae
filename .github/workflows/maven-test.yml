@@ -2,6 +2,9 @@ name: Run Maven Tests
 on:
   pull_request:
     branches: ["main"]
+    paths:
+      - 'src/**'
+      - 'pom.xml'
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -14,4 +17,4 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Build with Maven
-        run: mvn test -Dspring.profiles.active=h2
+        run: mvn test
