@@ -31,8 +31,3 @@ jobs:
           platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: 'ghcr.io/day-fit/florae:latest'
-  skip-build:
-    if: github.ref != 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Skipping building docker image - not a main branch"
