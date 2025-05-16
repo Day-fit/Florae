@@ -1,12 +1,12 @@
 name: Run Maven Tests
 on:
   pull_request:
-    branches: ["main"]
     paths:
       - 'src/**'
       - 'pom.xml'
 jobs:
   test:
+    name: Run test with maven
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
