@@ -7,7 +7,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import pl.Dayfit.Florae.DTOs.FloraeUserRequestDTO;
+import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
+import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
 
@@ -24,6 +25,7 @@ import java.util.Base64;
  *  <li> Registering a new user with validation to ensure a unique email and username.</li>
  *  <li> Validating user credentials during login.</li>
  *  <li> Generating JWT tokens for authenticated users.</li>
+ *  <li> Generating new refresh tokens for authenticated users.</li>
  * </ul>
 
  * <p>Dependencies:</p>
@@ -44,35 +46,71 @@ public class FloraeUserService {
     private final JWTService jwtService;
     private final SecureRandom secureRandom;
 
-    public void registerUser(FloraeUserRequestDTO floraeUserRequestDTO) throws DuplicateKeyException
+    public static final int ACCESS_TOKEN_EXPIRATION_TIME = 30;
+    public static final int REFRESH_TOKEN_EXPIRATION_TIME = 14;
+
+    public void registerUser(FloraeUserRegisterDTO floraeUserRegisterDTO) throws DuplicateKeyException
     {
-        if (floraeUserRepository.existsByEmailOrUsername(floraeUserRequestDTO.getEmail(), floraeUserRequestDTO.getUsername()))
+        if (floraeUserRepository.existsByEmailOrUsername(floraeUserRegisterDTO.getEmail(), floraeUserRegisterDTO.getUsername()))
         {
             throw new DuplicateKeyException("Username already exists or email already exists. Please try again with different username or email.");
         }
 
         FloraeUser floraeUser = new FloraeUser();
-        floraeUser.setUsername(floraeUserRequestDTO.getUsername());
-        floraeUser.setEmail(floraeUserRequestDTO.getEmail());
+        floraeUser.setUsername(floraeUserRegisterDTO.getUsername().toLowerCase());
+        floraeUser.setEmail(floraeUserRegisterDTO.getEmail().toLowerCase());
         floraeUser.setSalt(generateSalt());
-        floraeUser.setPassword(bCryptPasswordEncoder.encode(floraeUserRequestDTO.getPassword() + floraeUser.getSalt()));
+        floraeUser.setPassword(bCryptPasswordEncoder.encode(floraeUserRegisterDTO.getPassword() + floraeUser.getSalt()));
         floraeUser.setRoles("USER");
 
         floraeUserRepository.save(floraeUser);
     }
 
-    public boolean isValid(FloraeUserRequestDTO floraeUserRequestDTO) {
-        FloraeUser floraeUser = floraeUserRepository.findByUsername(floraeUserRequestDTO.getUsername());
+    public boolean isValid(FloraeUserLoginDTO floraeUserLoginDTO) {
 
-        try {
-            return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserRequestDTO.getUsername(), floraeUserRequestDTO.getPassword() + floraeUser.getSalt())).isAuthenticated();
-        } catch (AuthenticationException e) {
-            return false;
+        if(floraeUserLoginDTO.getEmail() != null) {
+            String email = floraeUserLoginDTO.getEmail().toLowerCase();
+            FloraeUser floraeUser = floraeUserRepository.findByEmail(email);
+
+            try {
+                return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserLoginDTO.getUsername(), floraeUserLoginDTO.getPassword() + floraeUser.getSalt())).isAuthenticated();
+            } catch (AuthenticationException e) {
+                return false;
+            }
         }
+
+        if (floraeUserLoginDTO.getUsername() != null) {
+            String username = floraeUserLoginDTO.getUsername().toLowerCase();
+            FloraeUser floraeUser = floraeUserRepository.findByUsername(username);
+
+            try {
+                return authManager.authenticate(new UsernamePasswordAuthenticationToken(username, floraeUserLoginDTO.getPassword() + floraeUser.getSalt())).isAuthenticated();
+            } catch (AuthenticationException e) {
+                return false;
+            }
+        }
+
+        return false;
     }
 
-    public String getToken(String username) {
-        return jwtService.generateToken(username);
+    public String getAccessToken(String username) {
+        return jwtService.generateAccessToken(username, ACCESS_TOKEN_EXPIRATION_TIME);
+    }
+
+    public String getAccessTokenFromRefreshToken(String refreshToken)
+    {
+        String username = jwtService.extractUsername(refreshToken);
+
+        if (jwtService.validateRefreshToken(refreshToken)){
+            return getAccessToken(username);
+        }
+
+        return null;
+    }
+
+    public String getRefreshToken(String username)
+    {
+        return jwtService.generateRefreshToken(username, REFRESH_TOKEN_EXPIRATION_TIME);
     }
 
     private String generateSalt()

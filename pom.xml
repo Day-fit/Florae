@@ -108,7 +108,7 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<scope>runtime</scope>
+			<scope>test</scope> <!-- h2 database is used only for testing -->
 		</dependency>
 	</dependencies>
 

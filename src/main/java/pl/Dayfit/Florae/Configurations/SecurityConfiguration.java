@@ -48,6 +48,7 @@ import java.security.SecureRandom;
  *  <li> AuthenticationProvider: Configures authentication via a DAO provider using
  *   the UserDetailsService and password encoder.</li>
  *  <li> AuthenticationManager: Manages authentication through the configuration defined in Spring Security.</li>
+ *  <li> SecureRandom: Generates cryptographically secure pseudo-random values suitable for security-sensitive operations (e.g., tokens, keys)</li>
  * </ul>
  */
 @Configuration
@@ -64,7 +65,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> {
                     request.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll(); //To allow the async servlet to work properly
-                    request.requestMatchers("/register", "/login").permitAll();
+                    request.requestMatchers("/auth/register", "/auth/login", "/auth/refresh").permitAll();
                     request.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
