@@ -46,8 +46,8 @@ public class FloraeUserService {
     private final JWTService jwtService;
     private final SecureRandom secureRandom;
 
-    public final int ACCESS_TOKEN_EXPIRATION_TIME = 30;
-    public final int REFRESH_TOKEN_EXPIRATION_TIME = 14;
+    public static final int ACCESS_TOKEN_EXPIRATION_TIME = 30;
+    public static final int REFRESH_TOKEN_EXPIRATION_TIME = 14;
 
     public void registerUser(FloraeUserRegisterDTO floraeUserRegisterDTO) throws DuplicateKeyException
     {

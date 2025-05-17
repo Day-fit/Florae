@@ -174,6 +174,6 @@ public class JWTService {
             return false;
         }
 
-        return isTokenNotExpired(refreshToken);
+        return isTokenNotExpired(refreshToken) && !token.getIsRevoked();
     }
 }
