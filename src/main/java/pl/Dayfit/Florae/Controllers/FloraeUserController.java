@@ -78,9 +78,8 @@ public class FloraeUserController {
         Map<String, String> response = new HashMap<>();
 
         if (!floraeUserService.isValid(floraeUserLoginDTO)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid username or password"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response.put("error", "Invalid username or password"));
         }
-
 
         if (floraeUserLoginDTO.getGenerateRefreshToken()) {
             response.put("refreshToken", floraeUserService.getRefreshToken(floraeUserLoginDTO.getUsername()));
