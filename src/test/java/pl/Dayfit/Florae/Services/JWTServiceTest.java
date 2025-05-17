@@ -15,11 +15,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class JWTServiceTest {
 
     private JWTService jwtService;
-    private final String validBase64Secret = "R6c5DHhqgLHzaeePvpMVxG8NlayobaFrZXc03LSwXAw=";
+    private final String validBase64Secret = "R6c5DHhqgLHzaeePvpMVxG8NlayobaFrZXc03LSwXAw="; //Test usage only
 
     @BeforeEach
     void setUp() throws Exception {
-        jwtService = new JWTService();
+        jwtService = new JWTService(null, null);
         Field secretKeyField = JWTService.class.getDeclaredField("secretKey");
         secretKeyField.setAccessible(true);
         secretKeyField.set(jwtService, validBase64Secret);
@@ -28,25 +28,25 @@ class JWTServiceTest {
     @Test
     void shouldGenerateValidTokenAndExtractUsername() {
         String username = "user1";
-        String token = jwtService.generateToken(username);
+        String token = jwtService.generateAccessToken(username, 10);
         assertNotNull(token);
         String extractedUsername = jwtService.extractUsername(token);
         assertEquals(username, extractedUsername);
-        assertTrue(jwtService.validateToken(token, username));
+        assertTrue(jwtService.validateAccessToken(token, username));
     }
 
     @Test
     void shouldReturnFalseForTokenWithMismatchedUsername() {
         String username = "user1";
-        String token = jwtService.generateToken(username);
-        assertFalse(jwtService.validateToken(token, "differentUser"));
+        String token = jwtService.generateAccessToken(username, 10);
+        assertFalse(jwtService.validateAccessToken(token, "differentUser"));
     }
 
     @Test
     void shouldReturnNullOnExtractUsernameForInvalidToken() {
         String invalidToken = "invalid.token.value";
         assertNull(jwtService.extractUsername(invalidToken));
-        assertFalse(jwtService.validateToken(invalidToken, "user1"));
+        assertFalse(jwtService.validateAccessToken(invalidToken, "user1"));
     }
 
     @Test
@@ -60,6 +60,6 @@ class JWTServiceTest {
                 .signWith(key)
                 .compact();
         assertNull(jwtService.extractUsername(expiredToken));
-        assertFalse(jwtService.validateToken(expiredToken, username));
+        assertFalse(jwtService.validateAccessToken(expiredToken, username));
     }
 }

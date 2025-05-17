@@ -9,9 +9,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import pl.Dayfit.Florae.DTOs.FloraeUserRequestDTO;
+import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
+import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Services.FloraeUserService;
 
@@ -35,24 +37,33 @@ class FloraeUserControllerTest {
     private FloraeUserController userController;
 
     @BeforeEach
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
     }
 
-    private FloraeUserRequestDTO buildDto(String u, String e, String p) {
-        FloraeUserRequestDTO dto = new FloraeUserRequestDTO();
+    private FloraeUserRegisterDTO buildRegisterDto(String u, String e, String p) {
+        FloraeUserRegisterDTO dto = new FloraeUserRegisterDTO();
         dto.setUsername(u);
         dto.setEmail(e);
         dto.setPassword(p);
         return dto;
     }
 
+    private FloraeUserLoginDTO buildLoginDto(String u, String p)
+    {
+        FloraeUserLoginDTO dto = new FloraeUserLoginDTO();
+        dto.setUsername(u);
+        dto.setPassword(p);
+        return dto;
+    }
+
     @Test
     void registerUser_validData_returnsOk() throws Exception {
-        FloraeUserRequestDTO dto = buildDto("user1", "a@b.com", "pass123");
+        FloraeUserRegisterDTO dto = buildRegisterDto("user1", "a@b.com", "pass123");
         doNothing().when(userService).registerUser(any());
 
-        mockMvc.perform(post("/register")
+        mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
@@ -64,11 +75,11 @@ class FloraeUserControllerTest {
 
     @Test
     void registerUser_duplicateKey_returnsConflict() throws Exception {
-        FloraeUserRequestDTO dto = buildDto("user1", "a@b.com", "pass123");
+        FloraeUserRegisterDTO dto = buildRegisterDto("user1", "a@b.com", "pass123");
         doThrow(new DuplicateKeyException("OK"))
                 .when(userService).registerUser(any());
 
-        mockMvc.perform(post("/register")
+        mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isConflict())
@@ -79,14 +90,14 @@ class FloraeUserControllerTest {
 
     @Test
     void registerUser_invalidUsername_returnsBadRequest() throws Exception {
-        FloraeUserRequestDTO dto1 = buildDto(null, "a@b.com", "pass");
-        FloraeUserRequestDTO dto2 = buildDto("   ", "a@b.com", "pass");
-        FloraeUserRequestDTO dto3 = buildDto("bad name!", "a@b.com", "pass");
+        FloraeUserRegisterDTO dto1 = buildRegisterDto(null, "a@b.com", "pass");
+        FloraeUserRegisterDTO dto2 = buildRegisterDto("   ", "a@b.com", "pass");
+        FloraeUserRegisterDTO dto3 = buildRegisterDto("bad name!", "a@b.com", "pass");
         String tooLong = "a".repeat(FloraeUser.MAX_USERNAME_LENGTH + 1);
-        FloraeUserRequestDTO dto4 = buildDto(tooLong, "a@b.com", "pass");
+        FloraeUserRegisterDTO dto4 = buildRegisterDto(tooLong, "a@b.com", "pass");
 
-        for (FloraeUserRequestDTO dto : new FloraeUserRequestDTO[]{dto1, dto2, dto3, dto4}) {
-            mockMvc.perform(post("/register")
+        for (FloraeUserRegisterDTO dto : new FloraeUserRegisterDTO[]{dto1, dto2, dto3, dto4}) {
+            mockMvc.perform(post("/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(mapper.writeValueAsString(dto)))
                     .andExpect(status().isBadRequest())
@@ -97,14 +108,14 @@ class FloraeUserControllerTest {
 
     @Test
     void registerUser_invalidEmail_returnsBadRequest() throws Exception {
-        FloraeUserRequestDTO dto1 = buildDto("user", null, "pass");
-        FloraeUserRequestDTO dto2 = buildDto("user", "   ", "pass");
-        FloraeUserRequestDTO dto3 = buildDto("user", "no-at-char", "pass");
+        FloraeUserRegisterDTO dto1 = buildRegisterDto("user", null, "pass");
+        FloraeUserRegisterDTO dto2 = buildRegisterDto("user", "   ", "pass");
+        FloraeUserRegisterDTO dto3 = buildRegisterDto("user", "no-at-char", "pass");
         String tooLongEmail = "a".repeat(FloraeUser.MAX_EMAIL_LENGTH + 1) + "@x.com";
-        FloraeUserRequestDTO dto4 = buildDto("user", tooLongEmail, "pass");
+        FloraeUserRegisterDTO dto4 = buildRegisterDto("user", tooLongEmail, "pass");
 
-        for (FloraeUserRequestDTO dto : new FloraeUserRequestDTO[]{dto1, dto2, dto3, dto4}) {
-            mockMvc.perform(post("/register")
+        for (FloraeUserRegisterDTO dto : new FloraeUserRegisterDTO[]{dto1, dto2, dto3, dto4}) {
+            mockMvc.perform(post("/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(mapper.writeValueAsString(dto)))
                     .andExpect(status().isBadRequest())
@@ -115,16 +126,16 @@ class FloraeUserControllerTest {
 
     @Test
     void registerUser_invalidPassword_returnsBadRequest() throws Exception {
-        FloraeUserRequestDTO dto1 = buildDto("user", "a@b.com", null);
-        FloraeUserRequestDTO dto2 = buildDto("user", "a@b.com", "   ");
+        FloraeUserRegisterDTO dto1 = buildRegisterDto("user", "a@b.com", null);
+        FloraeUserRegisterDTO dto2 = buildRegisterDto("user", "ab@b.com", "   ");
         StringBuilder sb = new StringBuilder();
         while (sb.toString().getBytes(StandardCharsets.UTF_8).length <= FloraeUser.MAX_PASSWORD_LENGTH) {
             sb.append("p");
         }
-        FloraeUserRequestDTO dto3 = buildDto("user", "a@b.com", sb.toString());
+        FloraeUserRegisterDTO dto3 = buildRegisterDto("user", "abc@b.com", sb.toString());
 
-        for (FloraeUserRequestDTO dto : new FloraeUserRequestDTO[]{dto1, dto2, dto3}) {
-            mockMvc.perform(post("/register")
+        for (FloraeUserRegisterDTO dto : new FloraeUserRegisterDTO[]{dto1, dto2, dto3}) {
+            mockMvc.perform(post("/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(mapper.writeValueAsString(dto)))
                     .andExpect(status().isBadRequest())
@@ -135,10 +146,10 @@ class FloraeUserControllerTest {
 
     @Test
     void loginUser_invalidCredentials_returnsUnauthorized() throws Exception {
-        FloraeUserRequestDTO dto = buildDto("user", "a@b.com", "pass");
+        FloraeUserLoginDTO dto = buildLoginDto("user", "pass");
         when(userService.isValid(dto)).thenReturn(false);
 
-        mockMvc.perform(post("/login")
+        mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isUnauthorized())
@@ -146,22 +157,22 @@ class FloraeUserControllerTest {
                         .value("Invalid username or password"));
 
         verify(userService).isValid(dto);
-        verify(userService, never()).getToken(any());
+        verify(userService, never()).getAccessToken(any());
     }
 
     @Test
     void loginUser_validCredentials_returnsToken() throws Exception {
-        FloraeUserRequestDTO dto = buildDto("user", "a@b.com", "pass");
+        FloraeUserLoginDTO dto = buildLoginDto("user1", "pass1");
         when(userService.isValid(dto)).thenReturn(true);
-        when(userService.getToken("user")).thenReturn("JWT-TOKEN");
+        when(userService.getAccessToken("user1")).thenReturn("JWT-TOKEN");
 
-        mockMvc.perform(post("/login")
+        mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("JWT-TOKEN"));
+                .andExpect(jsonPath("$.accessToken").value("JWT-TOKEN"));
 
         verify(userService).isValid(dto);
-        verify(userService).getToken("user");
+        verify(userService).getAccessToken("user1");
     }
 }

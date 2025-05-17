@@ -7,11 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import pl.Dayfit.Florae.DTOs.FloraeUserRequestDTO;
+import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
+import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Services.FloraeUserService;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -20,8 +22,9 @@ import java.util.Map;
  * Provides endpoints for user registration and authentication.
 
  * Endpoints:
- * - /register: Registers a new user with provided details.
- * - /login: Authenticates a user and provides a JSON Web Token (JWT) upon successful login.
+ * - /auth/register: Registers a new user with provided details.
+ * - /auth/login: Authenticates a user and provides a JSON Web Token (JWT) upon successful login.
+ * - /auth/refresh: Refreshes an existing JWT token using a refresh token.
 
  * Dependencies:
  * - {@code FloraeUserService}: Service layer responsible for handling user operations such as registration,
@@ -42,26 +45,26 @@ public class FloraeUserController {
     private static final String USERNAME_REGEX = "[a-zA-Z0-9_]+";
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
 
-    @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> registerUser(@RequestBody FloraeUserRequestDTO floraeUserRequestDTO)
+    @PostMapping("/auth/register")
+    public ResponseEntity<Map<String, String>> registerUser(@RequestBody FloraeUserRegisterDTO floraeUserRegisterDTO)
     {
-        if (floraeUserRequestDTO.getUsername() == null ||floraeUserRequestDTO.getUsername().isBlank() || !floraeUserRequestDTO.getUsername().matches(USERNAME_REGEX) || floraeUserRequestDTO.getUsername().length() > FloraeUser.MAX_USERNAME_LENGTH)
+        if (floraeUserRegisterDTO.getUsername() == null || floraeUserRegisterDTO.getUsername().isBlank() || !floraeUserRegisterDTO.getUsername().matches(USERNAME_REGEX) || floraeUserRegisterDTO.getUsername().length() > FloraeUser.MAX_USERNAME_LENGTH)
         {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Username is not valid"));
         }
 
-        if (floraeUserRequestDTO.getEmail() == null || floraeUserRequestDTO.getEmail().isBlank() || !floraeUserRequestDTO.getEmail().matches(EMAIL_REGEX) || floraeUserRequestDTO.getEmail().length() > FloraeUser.MAX_EMAIL_LENGTH)
+        if (floraeUserRegisterDTO.getEmail() == null || floraeUserRegisterDTO.getEmail().isBlank() || !floraeUserRegisterDTO.getEmail().matches(EMAIL_REGEX) || floraeUserRegisterDTO.getEmail().length() > FloraeUser.MAX_EMAIL_LENGTH)
         {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Email is not valid"));
         }
 
-        if (floraeUserRequestDTO.getPassword() == null || floraeUserRequestDTO.getPassword().isBlank() || floraeUserRequestDTO.getPassword().getBytes(StandardCharsets.UTF_8).length > FloraeUser.MAX_PASSWORD_LENGTH)
+        if (floraeUserRegisterDTO.getPassword() == null || floraeUserRegisterDTO.getPassword().isBlank() || floraeUserRegisterDTO.getPassword().getBytes(StandardCharsets.UTF_8).length > FloraeUser.MAX_PASSWORD_LENGTH)
         {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Password is not valid"));
         }
 
         try {
-            floraeUserService.registerUser(floraeUserRequestDTO);
+            floraeUserService.registerUser(floraeUserRegisterDTO);
         } catch(DuplicateKeyException exception) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", exception.getMessage()));
         }
@@ -69,14 +72,38 @@ public class FloraeUserController {
         return ResponseEntity.ok(Map.of("message", "User registered successfully. Please check your email for verification."));
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody FloraeUserRequestDTO floraeUserRequestDTO)
+    @PostMapping("/auth/login")
+    public ResponseEntity<?> loginUser(@RequestBody FloraeUserLoginDTO floraeUserLoginDTO)
     {
-        if (!floraeUserService.isValid(floraeUserRequestDTO)) {
+        Map<String, String> response = new HashMap<>();
+
+        if (!floraeUserService.isValid(floraeUserLoginDTO)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid username or password"));
         }
 
-        String token = floraeUserService.getToken(floraeUserRequestDTO.getUsername());
-        return ResponseEntity.ok(Map.of("token", token));
+
+        if (floraeUserLoginDTO.getGenerateRefreshToken()) {
+            response.put("refreshToken", floraeUserService.getRefreshToken(floraeUserLoginDTO.getUsername()));
+        }
+
+        response.put("accessToken", floraeUserService.getAccessToken(floraeUserLoginDTO.getUsername()));
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/auth/refresh")
+    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> refreshToken)
+    {
+        if (refreshToken == null || refreshToken.get("refreshToken") == null || refreshToken.get("refreshToken").isBlank())
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Refresh token is empty or invalid"));
+        }
+
+        String accessToken = floraeUserService.getAccessTokenFromRefreshToken(refreshToken.get("refreshToken"));
+
+        if (accessToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid refresh token"));
+        }
+
+        return ResponseEntity.ok(Map.of("accessToken", accessToken));
     }
 }

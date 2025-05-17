@@ -19,5 +19,6 @@ import pl.Dayfit.Florae.Entities.FloraeUser;
 @Repository
 public interface FloraeUserRepository extends JpaRepository<FloraeUser, Integer> {
     FloraeUser findByUsername(String username);
+    FloraeUser findByEmail(String email);
     boolean existsByEmailOrUsername(String email, String username);
 }
