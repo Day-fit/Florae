@@ -73,7 +73,8 @@ public class FloraeUserService {
             FloraeUser floraeUser = floraeUserRepository.findByEmail(email);
 
             try {
-                return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserLoginDTO.getUsername(), floraeUserLoginDTO.getPassword() + floraeUser.getSalt())).isAuthenticated();
+                String salt = floraeUser.getSalt() == null ? "" : floraeUser.getSalt();
+                return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserLoginDTO.getUsername(), floraeUserLoginDTO.getPassword() + salt)).isAuthenticated();
             } catch (AuthenticationException e) {
                 return false;
             }
@@ -84,7 +85,8 @@ public class FloraeUserService {
             FloraeUser floraeUser = floraeUserRepository.findByUsername(username);
 
             try {
-                return authManager.authenticate(new UsernamePasswordAuthenticationToken(username, floraeUserLoginDTO.getPassword() + floraeUser.getSalt())).isAuthenticated();
+                String salt = floraeUser.getSalt() == null ? "" : floraeUser.getSalt();
+                return authManager.authenticate(new UsernamePasswordAuthenticationToken(username, floraeUserLoginDTO.getPassword() + salt)).isAuthenticated();
             } catch (AuthenticationException e) {
                 return false;
             }
