@@ -1,0 +1,230 @@
+body
+{
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #333;
+    background-color: #f0f0f0;
+}
+
+h1.landing-text
+{
+    color: green;
+    margin-top: 0;
+    font-size: 4em;
+    text-align: center;
+}
+
+p
+{
+    color: grey;
+    font-size: 1.5em;
+    text-align: center;
+}
+
+#landing-container
+{
+    background-color: rgb(245, 245, 245);
+    padding: 2em 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Form styling */
+#form-container {
+    max-width: 600px;
+    margin: 2em auto;
+    padding: 1em;
+}
+
+.form-group {
+    margin-bottom: 1.5em;
+}
+
+.input-icon-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: white;
+}
+
+.input-icon {
+    padding: 0.5em;
+    background-color: #f0f0f0;
+    border-right: 1px solid #ccc;
+}
+
+#form-container input {
+    flex: 1;
+    padding: 0.8em;
+    border: none;
+    outline: none;
+    font-size: 1em;
+}
+
+#form-container label {
+    display: block;
+    margin-bottom: 0.5em;
+    font-weight: bold;
+    color: #555;
+}
+
+.submit-button {
+    background-color: green;
+    color: white;
+    border: none;
+    padding: 1em;
+    font-size: 1em;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 1em;
+    transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+    background-color: darkgreen;
+}
+
+/* Sensor Cards */
+#sensor-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5em;
+    padding: 1.5em;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.sensor-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    padding: 1.5em;
+    display: flex;
+    align-items: center;
+    transition: transform 0.3s;
+}
+
+.sensor-card:hover {
+    transform: translateY(-5px);
+}
+
+.sensor-icon, .plant-icon {
+    font-size: 2.5em;
+    margin-right: 1em;
+}
+
+.sensor-info h3 {
+    margin: 0 0 0.5em 0;
+    color: #444;
+}
+
+.sensor-value {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: green;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 1em;
+    background-color: #f0f0f0;
+    margin-top: 2em;
+    border-top: 1px solid #ddd;
+}
+
+footer p {
+    font-size: 0.9em;
+    margin: 0;
+}
+
+/* Navigation */
+
+.top-container
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 4em;
+    padding: 0 1.5em;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.burger {
+    font-size: 1.8em;
+    cursor: pointer;
+    color: green;
+    transition: transform 0.3s;
+}
+
+.burger:hover {
+    transform: scale(1.1);
+}
+
+#burger-menu
+{
+    display: none;
+    align-items: center;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: 0;
+    background-color: white;
+    height: 100vh;
+    width: 250px;
+    padding-top: 4em;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    z-index: 99;
+}
+
+#burger-menu.active
+{
+    display: flex;
+}
+
+#burger-menu a
+{
+    text-decoration: none;
+    color: #333;
+    font-size: 1.2em;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    width: 100%;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+#burger-menu a:hover {
+    background-color: #f0f0f0;
+    color: green;
+}
+
+a
+{
+    text-decoration: none;
+    color: black;
+    font-size: 1.5em;
+}
+
+#plant-card{
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    transition: transform 0.3s;
+}
+
+#plant-container{
+    padding: 1.5em;
+}
