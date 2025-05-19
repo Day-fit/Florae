@@ -30,10 +30,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Node.js env
         uses: actions/setup-node@v3.9.1
+      - name: Install node dependencies
+        run: npm install
       - name: Build vite application
         run: |
           cd florae-frontend
-          npm install vite
           npx vite build
       - name: Setup Pages
         uses: actions/configure-pages@v5
