@@ -1,5 +1,6 @@
 {
   "name": "florae-frontend",
+  "homepage": "https://day-fit.github.io/Florae"
   "private": true,
   "version": "0.0.0",
   "type": "module",
