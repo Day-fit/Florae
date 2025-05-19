@@ -28,12 +28,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Node.js env
+        uses: actions/setup-node@v3.9.1
+      - name: Build vite application
+        run: |
+          npm install vite
+          cd florae-frontend
+          npx vite build
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
-          source: ./
+          source: ./florae-frontend/dist
           destination: ./_site
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
