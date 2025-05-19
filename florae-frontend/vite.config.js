@@ -7,13 +7,6 @@ export default defineConfig({
 
   build: {
     outDir: "dist",
-
-    rollupOptions: {
-      input: {
-        input: "./index.html",
-        main: "src/main.jsx",
-      },
-    }
   },
 
   plugins: [
