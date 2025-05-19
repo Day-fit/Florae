@@ -33,7 +33,9 @@ jobs:
         with:
           node-version: '22.x'
       - name: Install node dependencies
-        run: npm install
+        run: |
+           cd florae-frontend
+           npm install
       - name: Build vite application
         run: |
           cd florae-frontend
