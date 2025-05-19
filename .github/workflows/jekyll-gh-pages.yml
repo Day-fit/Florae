@@ -32,8 +32,8 @@ jobs:
         uses: actions/setup-node@v3.9.1
       - name: Build vite application
         run: |
-          npm install vite
           cd florae-frontend
+          npm install vite
           npx vite build
       - name: Setup Pages
         uses: actions/configure-pages@v5
