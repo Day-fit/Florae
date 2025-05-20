@@ -12,10 +12,6 @@ import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
 
-import java.security.SecureRandom;
-import java.util.Base64;
-
-
 /**
  * Service class responsible for user-related operations in the Florae system.
  * Handles user registration, authentication, and token generation.
@@ -44,7 +40,6 @@ public class FloraeUserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authManager;
     private final JWTService jwtService;
-    private final SecureRandom secureRandom;
 
     public static final int ACCESS_TOKEN_EXPIRATION_TIME = 30;
     public static final int REFRESH_TOKEN_EXPIRATION_TIME = 14;
@@ -59,8 +54,7 @@ public class FloraeUserService {
         FloraeUser floraeUser = new FloraeUser();
         floraeUser.setUsername(floraeUserRegisterDTO.getUsername().toLowerCase());
         floraeUser.setEmail(floraeUserRegisterDTO.getEmail().toLowerCase());
-        floraeUser.setSalt(generateSalt());
-        floraeUser.setPassword(bCryptPasswordEncoder.encode(floraeUserRegisterDTO.getPassword() + floraeUser.getSalt()));
+        floraeUser.setPassword(bCryptPasswordEncoder.encode(floraeUserRegisterDTO.getPassword()));
         floraeUser.setRoles("USER");
 
         floraeUserRepository.save(floraeUser);
@@ -69,12 +63,8 @@ public class FloraeUserService {
     public boolean isValid(FloraeUserLoginDTO floraeUserLoginDTO) {
 
         if(floraeUserLoginDTO.getEmail() != null) {
-            String email = floraeUserLoginDTO.getEmail().toLowerCase();
-            FloraeUser floraeUser = floraeUserRepository.findByEmail(email);
-
             try {
-                String salt = floraeUser.getSalt() == null ? "" : floraeUser.getSalt();
-                return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserLoginDTO.getUsername(), floraeUserLoginDTO.getPassword() + salt)).isAuthenticated();
+                return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserLoginDTO.getUsername(), floraeUserLoginDTO.getPassword())).isAuthenticated();
             } catch (AuthenticationException e) {
                 return false;
             }
@@ -82,11 +72,10 @@ public class FloraeUserService {
 
         if (floraeUserLoginDTO.getUsername() != null) {
             String username = floraeUserLoginDTO.getUsername().toLowerCase();
-            FloraeUser floraeUser = floraeUserRepository.findByUsername(username);
+            floraeUserRepository.findByUsername(username);
 
             try {
-                String salt = floraeUser.getSalt() == null ? "" : floraeUser.getSalt();
-                return authManager.authenticate(new UsernamePasswordAuthenticationToken(username, floraeUserLoginDTO.getPassword() + salt)).isAuthenticated();
+                return authManager.authenticate(new UsernamePasswordAuthenticationToken(username, floraeUserLoginDTO.getPassword())).isAuthenticated();
             } catch (AuthenticationException e) {
                 return false;
             }
@@ -113,13 +102,5 @@ public class FloraeUserService {
     public String getRefreshToken(String username)
     {
         return jwtService.generateRefreshToken(username, REFRESH_TOKEN_EXPIRATION_TIME);
-    }
-
-    private String generateSalt()
-    {
-        byte[] salt = new byte[44];
-        secureRandom.nextBytes(salt);
-
-        return Base64.getEncoder().encodeToString(salt);
     }
 }
