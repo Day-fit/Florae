@@ -33,7 +33,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Esp {
+public class FloraLink {
     @Id
     @GeneratedValue
     private Integer id;

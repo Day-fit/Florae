@@ -67,4 +67,10 @@ public class JWTFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request)
+    {
+        return request.getHeader("X-Api-Key") != null && request.getRequestURI().contains("/api/v1/floralink");
+    }
 }

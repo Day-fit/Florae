@@ -122,10 +122,11 @@ public class PlantsService {
 
         PlantRequirements plantRequirements = plant.getRequirements();
         PlantResponseDTO mappedElement = new PlantResponseDTO();
+        mappedElement.setId(plant.getId());
         mappedElement.setOwner(plant.getLinkedUser().getUsername());
         mappedElement.setSpeciesName(plant.getSpeciesName());
         mappedElement.setPrimaryPhoto(plant.getPrimaryPhoto());
-        mappedElement.setLinkedEsp(plant.getLinkedEsp());
+        mappedElement.setLinkedFloraLink(plant.getLinkedFloraLink());
         mappedElement.setRequirements(
                 new PlantRequirementsDTO(
                         null,

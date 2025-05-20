@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import pl.Dayfit.Florae.Filters.ApiKeyFilter;
 import pl.Dayfit.Florae.Filters.JWTFilter;
 
 import java.security.SecureRandom;
@@ -57,6 +58,7 @@ import java.security.SecureRandom;
 public class SecurityConfiguration {
     private final UserDetailsService userDetailsService;
     private final JWTFilter jwtFilter;
+    private final ApiKeyFilter apiKeyFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception
@@ -65,11 +67,12 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> {
                     request.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll(); //To allow the async servlet to work properly
-                    request.requestMatchers("/auth/register", "/auth/login", "/auth/refresh").permitAll();
+                    request.requestMatchers("/auth/register", "/auth/login", "/auth/refresh", "/api/v1/check-key").permitAll();
                     request.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(apiKeyFilter, JWTFilter.class)
                 .build();
     }
 

@@ -32,7 +32,7 @@ public class Plant {
     private String pid;
 
     @OneToOne
-    private Esp linkedEsp;
+    private FloraLink linkedFloraLink;
 
     @ManyToOne
     @JoinColumn(nullable = false)
