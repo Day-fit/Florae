@@ -17,7 +17,6 @@ import lombok.Setter;
  *     <li>{@code username}: The username chosen by the user, unique and required, with a maximum length of 64 characters</li>
  *     <li>{@code email}: The email address of the user, unique and required, with a maximum length of 254 characters</li>
  *     <li>{@code password}: The hashed password of the user, required, with a maximum length of 70 characters</li>
- *     <li>{@code salt}: The salt used to hash the password, required, with a maximum length of 60 characters</li>
  *     <li>{@code roles}: The roles assigned to the user for authorization purposes, with a default value of 'USER'</li>
  * </ul>
  *
@@ -26,7 +25,6 @@ import lombok.Setter;
  *     <li>{@code MAX_USERNAME_LENGTH}: Defines the maximum allowed length for the username</li>
  *     <li>{@code MAX_PASSWORD_LENGTH}: Defines the maximum allowed length for the password</li>
  *     <li>{@code MAX_EMAIL_LENGTH}: Defines the maximum allowed length for the email address</li>
- *     <li>{@code MAX_SALT_LENGTH}: Defines the maximum allowed length for the salt</li>
  * </ul>
  *
  * <p>Annotations:
@@ -44,7 +42,6 @@ import lombok.Setter;
 public class FloraeUser {
     public static final int MAX_USERNAME_LENGTH = 64;
     public static final int MAX_PASSWORD_LENGTH = 128;
-    public static final int MAX_SALT_LENGTH = 60;
     public static final int MAX_EMAIL_LENGTH = 254;
 
     @Id
@@ -59,9 +56,6 @@ public class FloraeUser {
 
     @Column(nullable = false, length = MAX_PASSWORD_LENGTH)
     private String password;
-
-    @Column(nullable = false, length = MAX_SALT_LENGTH)
-    private String salt;
 
     @Column(nullable = false)
     private String roles = "USER";
