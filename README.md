@@ -15,9 +15,8 @@ Florae is an application that makes plant cultivation incredibly easy! With Flor
 - Identification of deficiencies in cultivation conditions.
 
 ## Websites
-- API at https://florae.dayfit.pl
-- Frontend will be introduced later
-
+- [API](https://florae.dayfit.pl)
+- [Frontend](https://day-fit.github.io/Florae)
 ## Project Structure
 
 This repository contains the application's source code, allowing you to host it yourself. It includes:
