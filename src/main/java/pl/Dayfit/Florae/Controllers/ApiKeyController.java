@@ -1,6 +1,7 @@
 package pl.Dayfit.Florae.Controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -14,13 +15,14 @@ import java.util.Map;
 public class ApiKeyController {
     private final ApiKeyService apiKeyService;
 
+    @CachePut(value = "api-keys", key = "#userPrincipal.username")
     @PostMapping("/api/v1/generate-key")
     public ResponseEntity<Map<String, String>> generateApiKey(@AuthenticationPrincipal UserPrincipal userPrincipal)
     {
         return ResponseEntity.ok(Map.of("apiKey", apiKeyService.generateApiKey(userPrincipal.getUsername())));
     }
 
-    @DeleteMapping("/api/v1/delete-key")
+    @DeleteMapping("/api/v1/revoke-key")
     public ResponseEntity<Map<String, String>> deleteApiKey(@RequestParam String apiKey, @AuthenticationPrincipal UserPrincipal userPrincipal)
     {
         if (!apiKeyService.isValidApiKey(apiKey) && !apiKeyService.isOwner(apiKey, userPrincipal.getUsername()))

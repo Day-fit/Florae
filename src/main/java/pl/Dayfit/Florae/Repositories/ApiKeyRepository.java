@@ -10,11 +10,11 @@ import java.util.List;
 
 @Repository
 public interface ApiKeyRepository extends JpaRepository<ApiKey, Integer> {
-    ApiKey getApiKeysByValue(String value);
+    ApiKey findAllByKeyValue(String keyValue);
 
     @Query("SELECT a FROM ApiKey a" +
             " WHERE a.createdDate <= :date" +
             " AND a.isRevoked = FALSE" +
-            " AND a.linkedFloraLink = NULL")
+            " AND a.linkedFloraLink IS NULL")
     List<ApiKey> findUnusedApiKeysBeforeDate(Instant date);
 }

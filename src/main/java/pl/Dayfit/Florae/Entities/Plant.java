@@ -31,10 +31,10 @@ public class Plant {
     @Column(nullable = false, length = 50)
     private String pid;
 
-    @OneToOne
+    @OneToOne(/*mappedBy = "FloraLink", cascade = CascadeType.DETACH*/)
     private FloraLink linkedFloraLink;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false)
     private FloraeUser linkedUser;
 

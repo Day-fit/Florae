@@ -24,7 +24,7 @@ public class MaintenanceService {
         expiredApiKeys.forEach(apiKey -> {
             apiKey.setIsRevoked(true);
             apiKeyRepository.save(apiKey);
-            log.info("API Key {} has been revoked due to inactivity.", apiKey.getValue());
+            log.info("API Key {} has been revoked due to inactivity.", apiKey.getKeyValue());
         });
     }
 }

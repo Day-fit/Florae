@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -23,7 +24,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
     @SuppressWarnings("NullableProblems")
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String apiKey = request.getHeader(API_KEY_HEADER);
+        String apiKey = request.getHeader(API_KEY_HEADER).trim();
 
         if (!apiKeyService.isValidApiKey(apiKey))
         {
@@ -34,12 +35,12 @@ public class ApiKeyFilter extends OncePerRequestFilter {
             return;
         }
 
-        SecurityContextHolder.getContext().setAuthentication(new ApiKeyAuthenticationToken(apiKey));
+        SecurityContextHolder.getContext().setAuthentication(new ApiKeyAuthenticationToken(apiKeyService.getApiKey(apiKey)));
         filterChain.doFilter(request, response);
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request)
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request)
     {
         return request.getHeader(API_KEY_HEADER) == null || !request.getRequestURI().contains("/api/v1/floralink");
     }

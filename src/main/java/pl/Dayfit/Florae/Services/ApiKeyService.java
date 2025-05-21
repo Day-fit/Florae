@@ -6,6 +6,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Repositories.ApiKeyRepository;
+import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
 
 import java.util.UUID;
 
@@ -15,14 +16,16 @@ import java.util.UUID;
 @EnableAsync
 public class ApiKeyService {
     private final ApiKeyRepository apiKeyRepository;
+    private final FloraeUserRepository floraeUserRepository;
+    private final ApiKeyCacheService cacheService;
 
     public String generateApiKey(String username)
     {
         String generatedUUID = UUID.randomUUID().toString();
 
         ApiKey apiKey = new ApiKey();
-        apiKey.setValue(generatedUUID);
-        apiKey.setCreatedBy(username);
+        apiKey.setKeyValue(generatedUUID);
+        apiKey.setFloraeUser(floraeUserRepository.findByUsername(username));
         apiKeyRepository.save(apiKey);
 
         return generatedUUID;
@@ -30,8 +33,17 @@ public class ApiKeyService {
 
     private String getOwner(String apiKeyValue)
     {
-        ApiKey apiKey = apiKeyRepository.getApiKeysByValue(apiKeyValue);
-        return apiKey.getCreatedBy();
+        ApiKey apiKey = getApiKey(apiKeyValue);
+        return apiKey.getLinkedFloraLink().getOwner().getUsername();
+    }
+
+    public void revokeApiKey(String apiKeyValue) {
+        cacheService.revokeApiKey(apiKeyValue);
+    }
+
+    public ApiKey getApiKey(String apiKeyValue)
+    {
+        return cacheService.getApiKey(apiKeyValue);
     }
 
     public boolean isOwner(String apiKeyValue, String username)
@@ -41,13 +53,7 @@ public class ApiKeyService {
 
     public boolean isValidApiKey(String apiKeyValue)
     {
-        ApiKey apiKey = apiKeyRepository.getApiKeysByValue(apiKeyValue);
+        ApiKey apiKey = getApiKey(apiKeyValue);
         return apiKey != null && !apiKey.getIsRevoked();
-    }
-
-    public void revokeApiKey(String apiKeyValue) {
-        ApiKey apiKey = apiKeyRepository.getApiKeysByValue(apiKeyValue);
-        apiKey.setIsRevoked(true);
-        apiKeyRepository.save(apiKey);
     }
 }

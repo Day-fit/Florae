@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -51,7 +52,7 @@ public class JWTFilter extends OncePerRequestFilter {
         String username = null;
 
         if(authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
+            token = authHeader.substring(7).trim();
             username = jwtService.extractUsername(token);
         }
 
@@ -62,6 +63,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                return;
             }
         }
 
@@ -69,7 +71,7 @@ public class JWTFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request)
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request)
     {
         return request.getHeader("X-Api-Key") != null && request.getRequestURI().contains("/api/v1/floralink");
     }

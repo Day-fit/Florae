@@ -12,6 +12,7 @@ services:
       - 'PLANT_BOOK_API=${PLANT_BOOK_API}'
       - 'PLANT_NET_API=${PLANT_NET_API}'
       - 'JWT_SECRET_KEY=${JWT_SECRET_KEY}'
+      - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
     profiles:
       - prod
 
@@ -56,10 +57,26 @@ services:
   postgres-dev:
     image: 'postgres:15-alpine3.20'
     ports:
-      - '5432:5432'
+      - '127.0.0.1:5432:5432'
     environment:
       - 'POSTGRES_DB=florae'
       - 'POSTGRES_PASSWORD=secret'
       - 'POSTGRES_USER=user'
+    profiles:
+      - dev
+
+  redis:
+    image: 'bitnami/redis:8.0.1'
+    environment:
+      - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
+    profiles:
+      - prod
+
+  redis-dev:
+    image: 'bitnami/redis:8.0.1'
+    ports:
+      - '127.0.0.1:6379:6379'
+    environment:
+      - 'REDIS_PASSWORD=secret'
     profiles:
       - dev

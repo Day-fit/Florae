@@ -1,26 +1,39 @@
 package pl.Dayfit.Florae.Controllers;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationToken;
+import pl.Dayfit.Florae.DTOs.FloraLinkReportDTO;
+import pl.Dayfit.Florae.Entities.FloraeUser;
+import pl.Dayfit.Florae.Services.FloraLinkService;
 
 @RestController
 @RequiredArgsConstructor
 public class FloraLinkController {
-    @PostMapping("/api/v1/esp/upload-data")
-    public ResponseEntity<?> uploadData(@RequestBody String apiKeyValue)
+    private final FloraLinkService floraLinkService;
+
+    @PostMapping("/api/v1/floralink/upload-data")
+    public ResponseEntity<?> uploadData(@RequestBody @Valid FloraLinkReportDTO uploadedData)
     {
-        //To be implemented in the future.
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("This endpoint is not implemented yet.");
+        floraLinkService.handleReportUpload(uploadedData);
+        return ResponseEntity.ok("Data uploaded successfully.");
     }
 
-    @PostMapping("/api/v1/esp/get-data")
-    public ResponseEntity<?> getData(@RequestBody String apiKeyValue)
+    @PostMapping("/api/v1/floralink/get-all-data")
+    public ResponseEntity<?> getAllData(@AuthenticationPrincipal ApiKeyAuthenticationToken apiKeyAuthenticationToken)
     {
-        //To be implemented in the future.
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("This endpoint is not implemented yet.");
+        Object principal = apiKeyAuthenticationToken.getPrincipal();
+
+        if (!(principal instanceof FloraeUser))
+        {
+            return ResponseEntity.status(401).body("Unauthorized access");
+        }
+
+        return ResponseEntity.ok(floraLinkService.getAllData(((FloraeUser) principal).getUsername()));
     }
 }

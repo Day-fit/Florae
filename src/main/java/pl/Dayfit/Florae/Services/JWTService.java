@@ -9,9 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import pl.Dayfit.Florae.Entities.RefreshToken;
-import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
-import pl.Dayfit.Florae.Repositories.RefreshTokenRepository;
+import pl.Dayfit.Florae.Entities.BlacklistJwtToken;
+import pl.Dayfit.Florae.Repositories.BlacklistJwtTokenRepository;
 
 import javax.crypto.SecretKey;
 import java.util.Base64;
@@ -37,8 +36,7 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 public class JWTService {
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final FloraeUserRepository floraeUserRepository;
+    private final BlacklistJwtTokenRepository blackListTokenRepository;
 
     @Value("${jwt.secret}")
     private String secretKey;
@@ -73,7 +71,7 @@ public class JWTService {
     {
         Date expirationDate = new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * duration);
 
-        String refreshTokenHash = Jwts.builder()
+        return Jwts.builder()
                 .claims()
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
@@ -81,22 +79,20 @@ public class JWTService {
                 .and()
                 .signWith(getSecretKey())
                 .compact();
-
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setToken(refreshTokenHash);
-        refreshToken.setUser(floraeUserRepository.findByUsername(username));
-        refreshToken.setExpiryDate(expirationDate);
-        refreshToken.setIsRevoked(false);
-
-        refreshTokenRepository.save(refreshToken);
-
-        return refreshTokenHash;
     }
 
     private SecretKey getSecretKey()
     {
         byte[] keyBytes = Base64.getDecoder().decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public void revokeToken(String token)
+    {
+        BlacklistJwtToken blackListJwtToken = new BlacklistJwtToken();
+        blackListJwtToken.setToken(token);
+        blackListJwtToken.setExpiryDate(extractExpiration(token));
+        blackListTokenRepository.save(blackListJwtToken);
     }
 
     public String extractUsername(String token) {
@@ -147,7 +143,7 @@ public class JWTService {
      * @param token The JWT access token to be validated.
      * @param username The username associated with the token.
      *
-     * @return {@code true} if the token is valid and not expired, {@code false} otherwise.
+     * @return {@code true} if the token is valid and not expired or blacklisted, {@code false} otherwise.
      */
     public boolean validateAccessToken(String token, String username) {
         String extractUsername = extractUsername(token);
@@ -156,7 +152,7 @@ public class JWTService {
             return false;
         }
 
-        return extractUsername.equals(username) && isTokenNotExpired(token);
+        return extractUsername.equals(username) && isTokenNotExpired(token) && !blackListTokenRepository.existsByToken(token);
     }
 
     /**
@@ -164,16 +160,9 @@ public class JWTService {
      *
      * @param refreshToken The JWT refresh token to be validated.
      *
-     * @return {@code true} if the token is valid and not expired, {@code false} otherwise.
+     * @return {@code true} if the token is valid and not expired or blacklisted, {@code false} otherwise.
      */
     public boolean validateRefreshToken(String refreshToken) {
-        RefreshToken token = refreshTokenRepository.findByToken(refreshToken);
-
-        if (token == null)
-        {
-            return false;
-        }
-
-        return isTokenNotExpired(refreshToken) && !token.getIsRevoked();
+        return isTokenNotExpired(refreshToken) && !blackListTokenRepository.existsByToken(refreshToken);
     }
 }
