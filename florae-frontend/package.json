@@ -8,12 +8,14 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "prettier --write \"src/Components/**/*.{js,jsx}\" src/App.jsx src/main.jsx"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-icons": "^5.5.0",
     "tailwindcss": "^4.1.7"
   },
   "devDependencies": {
@@ -25,6 +27,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "prettier": "^3.5.3",
     "vite": "^6.3.5"
   }
 }
