@@ -29,8 +29,7 @@ public class FloraLinkService {
                     data.getMinValueTimestamp(),
                     data.getMaxValue(),
                     data.getMaxValueTimestamp(),
-                    data.getAverageValue(),
-                    data.getAverageValueTimestamp()
+                    data.getAverageValue()
             );
 
             sensorReadings.getSensorDataList().add(sensorData);

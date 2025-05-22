@@ -18,7 +18,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class ApiKeyFilter extends OncePerRequestFilter {
     private final ApiKeyService apiKeyService;
-    private final String API_KEY_HEADER = "X-Api-Key";
+    private final String API_KEY_HEADER = "X-API-KEY";
 
     @Override
     @SuppressWarnings("NullableProblems")

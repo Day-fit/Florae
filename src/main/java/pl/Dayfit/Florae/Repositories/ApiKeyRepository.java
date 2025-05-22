@@ -1,6 +1,7 @@
 package pl.Dayfit.Florae.Repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import pl.Dayfit.Florae.Entities.ApiKey;
@@ -17,4 +18,8 @@ public interface ApiKeyRepository extends JpaRepository<ApiKey, Integer> {
             " AND a.isRevoked = FALSE" +
             " AND a.linkedFloraLink IS NULL")
     List<ApiKey> findUnusedApiKeysBeforeDate(Instant date);
+
+    @Modifying
+    @Query("DELETE FROM ApiKey a WHERE a.isRevoked = TRUE")
+    int deleteRevokedApiKeys();
 }

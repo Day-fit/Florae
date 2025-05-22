@@ -4,27 +4,35 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import pl.Dayfit.Florae.Entities.ApiKey;
+import org.springframework.transaction.annotation.Transactional;
 import pl.Dayfit.Florae.Repositories.ApiKeyRepository;
+import pl.Dayfit.Florae.Repositories.BlacklistJwtTokenRepository;
 
-import java.time.Instant;
-import java.util.List;
+import java.util.Date;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MaintenanceService {
     private final ApiKeyRepository apiKeyRepository;
-    public final static int API_KEY_EXPIRATION_TIME = 1000 * 60 * 5;
+    private final BlacklistJwtTokenRepository blacklistJwtTokenRepository;
+    public static final int MAINTENANCE_PERIOD = 1000 * 60 * 60;
 
-    @Scheduled(fixedDelay = API_KEY_EXPIRATION_TIME)
-    public void expireApiKeys()
+    @Transactional
+    @Scheduled(fixedRate = MAINTENANCE_PERIOD)
+    public void removeRevokedApiKeys()
     {
-        List<ApiKey> expiredApiKeys = apiKeyRepository.findUnusedApiKeysBeforeDate(Instant.now());
-        expiredApiKeys.forEach(apiKey -> {
-            apiKey.setIsRevoked(true);
-            apiKeyRepository.save(apiKey);
-            log.info("API Key {} has been revoked due to inactivity.", apiKey.getKeyValue());
-        });
+        log.info("Removing revoked API keys...");
+        int deletedCount = apiKeyRepository.deleteRevokedApiKeys();
+        log.info("Removed {} revoked API keys", deletedCount);
+    }
+
+    @Transactional
+    @Scheduled(fixedRate = MAINTENANCE_PERIOD)
+    public void removeExpiredTokens()
+    {
+        log.info("Removing expired JWT tokens...");
+        int deletedCount = blacklistJwtTokenRepository.deleteAllExpiredTokens(new Date());
+        log.info("Removed {} expired blacklisted JWT tokens", deletedCount);
     }
 }

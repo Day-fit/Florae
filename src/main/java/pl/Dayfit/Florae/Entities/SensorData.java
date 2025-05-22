@@ -31,5 +31,4 @@ public class SensorData {
     private Instant maxValueTimestamp;
 
     private Double averageValue;
-    private Instant averageValueTimestamp;
 }

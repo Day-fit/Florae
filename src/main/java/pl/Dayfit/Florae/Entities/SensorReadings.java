@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -18,5 +19,5 @@ public class SensorReadings {
     private FloraLink floraLink;
 
     @OneToMany(mappedBy = "sensorReadings", cascade = CascadeType.ALL)
-    private List<SensorData> sensorDataList;
+    private List<SensorData> sensorDataList = new ArrayList<>();
 }

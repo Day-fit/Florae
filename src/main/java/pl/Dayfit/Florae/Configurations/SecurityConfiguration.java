@@ -2,6 +2,7 @@ package pl.Dayfit.Florae.Configurations;
 
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,6 +21,8 @@ import pl.Dayfit.Florae.Filters.ApiKeyFilter;
 import pl.Dayfit.Florae.Filters.JWTFilter;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Security configuration class for customizing application security settings.
@@ -56,6 +59,9 @@ import java.security.SecureRandom;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
+    @Value("${security.public-paths}")
+    private final List<String> PUBLIC_PATHS = new ArrayList<>();
+
     private final UserDetailsService userDetailsService;
     private final JWTFilter jwtFilter;
     private final ApiKeyFilter apiKeyFilter;
@@ -67,7 +73,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> {
                     request.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll(); //To allow the async servlet to work properly
-                    request.requestMatchers("/auth/register", "/auth/login", "/auth/refresh", "/api/v1/check-key").permitAll();
+                    request.requestMatchers(PUBLIC_PATHS.toArray(new String[0])).permitAll();
                     request.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

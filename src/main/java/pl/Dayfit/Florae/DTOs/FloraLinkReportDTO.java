@@ -10,5 +10,5 @@ import java.util.List;
 public class FloraLinkReportDTO {
     @Valid
     @Size(min = 1)
-    private List<@Valid SensorDataDTO> SensorDataList;
+    private List<@Valid SensorDataDTO> sensorDataList;
 }

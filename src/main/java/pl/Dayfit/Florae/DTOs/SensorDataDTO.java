@@ -18,5 +18,4 @@ public class SensorDataDTO {
     private @NonNull Instant maxValueTimestamp;
 
     private @NonNull Double averageValue;
-    private @NonNull Instant averageValueTimestamp;
 }
