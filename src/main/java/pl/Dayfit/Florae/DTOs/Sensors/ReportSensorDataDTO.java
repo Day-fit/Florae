@@ -1,4 +1,4 @@
-package pl.Dayfit.Florae.DTOs;
+package pl.Dayfit.Florae.DTOs.Sensors;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -8,7 +8,7 @@ import java.time.Instant;
 
 @Getter
 @Setter
-public class SensorDataDTO {
+public class ReportSensorDataDTO {
     private @NonNull String type;
 
     private @NonNull Double minValue;

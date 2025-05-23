@@ -7,18 +7,27 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationCandidate;
+import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationToken;
+import pl.Dayfit.Florae.Auth.FloraeAuthenticationEntryPoint;
+import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Filters.ApiKeyFilter;
 import pl.Dayfit.Florae.Filters.JWTFilter;
+import pl.Dayfit.Florae.Services.ApiKeyService;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -62,12 +71,12 @@ public class SecurityConfiguration {
     @Value("${security.public-paths}")
     private final List<String> PUBLIC_PATHS = new ArrayList<>();
 
+    private final ApiKeyService apiKeyService;
     private final UserDetailsService userDetailsService;
     private final JWTFilter jwtFilter;
-    private final ApiKeyFilter apiKeyFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authManager) throws Exception
     {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -76,10 +85,31 @@ public class SecurityConfiguration {
                     request.requestMatchers(PUBLIC_PATHS.toArray(new String[0])).permitAll();
                     request.anyRequest().authenticated();
                 })
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(apiKeyFilter, JWTFilter.class)
+                .addFilterBefore(apiKeyFilter(authManager), JWTFilter.class)
                 .build();
+    }
+
+    @Bean
+    public ApiKeyFilter apiKeyFilter(AuthenticationManager authenticationManager)
+    {
+        return new ApiKeyFilter(apiKeyService, authenticationManager);
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class)
+                .authenticationProvider(apiKeyAuthenticationProvider(apiKeyService))
+                .authenticationProvider(daoAuthenticationProvider())
+                .build();
+    }
+
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint()
+    {
+        return new FloraeAuthenticationEntryPoint();
     }
 
     @Bean
@@ -89,7 +119,36 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider()
+    AuthenticationProvider apiKeyAuthenticationProvider(ApiKeyService apiKeyService)
+    {
+        return new AuthenticationProvider() {
+            @Override
+            public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+                if (!(authentication instanceof ApiKeyAuthenticationCandidate))
+                {
+                    return null;
+                }
+
+                String apiKeyValue = ((ApiKey) authentication.getCredentials()).getKeyValue();
+
+                if (!apiKeyService.isValidApiKey(apiKeyValue))
+                {
+                    throw new BadCredentialsException("Invalid API key.");
+                }
+
+                ApiKey apiKey = apiKeyService.getApiKey(apiKeyValue);
+                return new ApiKeyAuthenticationToken(apiKey);
+            }
+
+            @Override
+            public boolean supports(Class<?> authentication) {
+                return ApiKeyAuthenticationCandidate.class.isAssignableFrom(authentication);
+            }
+        };
+    }
+
+    @Bean
+    public AuthenticationProvider daoAuthenticationProvider()
     {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(bCryptPasswordEncoder());
@@ -101,10 +160,5 @@ public class SecurityConfiguration {
     public SecureRandom secureRandom()
     {
         return new SecureRandom();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
     }
 }

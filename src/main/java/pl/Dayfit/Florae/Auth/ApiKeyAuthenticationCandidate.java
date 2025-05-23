@@ -1,19 +1,16 @@
 package pl.Dayfit.Florae.Auth;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import pl.Dayfit.Florae.Entities.ApiKey;
 
-import java.util.Collections;
-
-public class ApiKeyAuthenticationToken extends AbstractAuthenticationToken {
+public class ApiKeyAuthenticationCandidate extends AbstractAuthenticationToken {
     private final ApiKey apiKey;
 
-    public ApiKeyAuthenticationToken(ApiKey apiKey) {
-        super(Collections.singleton(new SimpleGrantedAuthority("FLORA_LINK")));
+    public ApiKeyAuthenticationCandidate(ApiKey apiKey)
+    {
+        super(null);
         this.apiKey = apiKey;
-
-        setAuthenticated(true);
+        setAuthenticated(false);
     }
 
     @Override

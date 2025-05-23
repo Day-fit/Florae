@@ -1,4 +1,4 @@
-package pl.Dayfit.Florae.Entities.FloraLink;
+package pl.Dayfit.Florae.Entities.Sensors;
 
 import org.springframework.data.redis.core.RedisHash;
 

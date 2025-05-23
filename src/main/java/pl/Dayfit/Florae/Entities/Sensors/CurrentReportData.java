@@ -1,4 +1,4 @@
-package pl.Dayfit.Florae.Entities.FloraLink;
+package pl.Dayfit.Florae.Entities.Sensors;
 
 import org.springframework.data.redis.core.RedisHash;
 
@@ -7,15 +7,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.List;
 
-@RedisHash("current_data")
+@RedisHash(value = "current_data", timeToLive = 3600)
 @Getter
 @Setter
 @AllArgsConstructor
-public class CurrentData {
+public class CurrentReportData {
     @Id
     private String id;
-    private List<CurrentSensorData> currentSensorDataList = new ArrayList<>();
+    private List<CurrentSensorData> currentSensorDataList;
 }

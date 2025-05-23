@@ -6,7 +6,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import pl.Dayfit.Florae.Services.JWTService;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 /**
@@ -46,7 +49,7 @@ public class JWTFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     @Value("${security.public-paths}")
-    private final List<String> PUBLIC_PATHS;
+    private List<String> PUBLIC_PATHS;
 
     @Override
     @SuppressWarnings("NullableProblems")
@@ -57,31 +60,20 @@ public class JWTFilter extends OncePerRequestFilter {
         String username;
 
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\": \"Invalid or missing JWT\"}");
-            response.getWriter().flush();
-            return;
+            throw new BadCredentialsException("Invalid JWT (missing Bearer prefix) or missing Authorization header. Please provide a valid JWT in the Authorization header.");
         }
 
         token = authHeader.substring(7).trim();
         username = jwtService.extractUsername(token);
 
         if (username == null || SecurityContextHolder.getContext().getAuthentication() != null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\": \"Invalid JWT (missing username or already authenticated user)\"}");
-            response.getWriter().flush();
-            return;
+            throw new BadRequestException("Invalid JWT (missing username or already authenticated). Please provide a valid JWT in the Authorization header.");
         }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
         if (!jwtService.validateAccessToken(token, username)){
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\": \"Invalid JWT (failed validation)\"}");
-            response.getWriter().flush();
+            throw new AccessDeniedException("Invalid JWT (expired or invalid signature). Please provide a valid JWT in the Authorization header.");
         }
 
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -94,6 +86,6 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request)
     {
-        return (request.getHeader("X-Api-Key") != null && request.getRequestURI().contains("/api/v1/floralink")) || PUBLIC_PATHS.stream().anyMatch(request.getRequestURI()::equalsIgnoreCase);
+        return (request.getHeader("X-API-KEY") != null && request.getRequestURI().contains("/api/v1/floralink")) || PUBLIC_PATHS.stream().anyMatch(request.getRequestURI()::equalsIgnoreCase);
     }
 }
