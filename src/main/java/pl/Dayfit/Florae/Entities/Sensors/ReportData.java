@@ -1,4 +1,6 @@
-package pl.Dayfit.Florae.Entities;
+package pl.Dayfit.Florae.Entities.Sensors;
+
+import pl.Dayfit.Florae.Entities.FloraLink;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -10,7 +12,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class SensorReadings {
+public class ReportData {
     @Id
     @GeneratedValue
     private Integer id;
@@ -19,5 +21,5 @@ public class SensorReadings {
     private FloraLink floraLink;
 
     @OneToMany(mappedBy = "sensorReadings", cascade = CascadeType.ALL)
-    private List<SensorData> sensorDataList = new ArrayList<>();
+    private List<ReportSensorData> sensorDataList = new ArrayList<>();
 }

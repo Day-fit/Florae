@@ -2,11 +2,12 @@ package pl.Dayfit.Florae.Services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
+import pl.Dayfit.Florae.Repositories.JPA.BlacklistJwtTokenRepository;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pl.Dayfit.Florae.Repositories.ApiKeyRepository;
-import pl.Dayfit.Florae.Repositories.BlacklistJwtTokenRepository;
 
 import java.util.Date;
 

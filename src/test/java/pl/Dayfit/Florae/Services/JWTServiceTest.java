@@ -2,9 +2,10 @@ package pl.Dayfit.Florae.Services;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import pl.Dayfit.Florae.Repositories.JPA.BlacklistJwtTokenRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.Dayfit.Florae.Repositories.BlacklistJwtTokenRepository;
 
 import javax.crypto.SecretKey;
 import java.lang.reflect.Field;

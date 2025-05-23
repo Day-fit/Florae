@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import pl.Dayfit.Florae.Entities.ApiKey;
-import pl.Dayfit.Florae.Repositories.ApiKeyRepository;
-import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
+import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
+import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
 
 import java.time.Instant;
 import java.util.UUID;

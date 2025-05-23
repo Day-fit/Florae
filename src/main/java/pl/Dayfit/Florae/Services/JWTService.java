@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import pl.Dayfit.Florae.Entities.BlacklistJwtToken;
-import pl.Dayfit.Florae.Repositories.BlacklistJwtTokenRepository;
+import pl.Dayfit.Florae.Repositories.JPA.BlacklistJwtTokenRepository;
 
 import javax.crypto.SecretKey;
 import java.util.Base64;

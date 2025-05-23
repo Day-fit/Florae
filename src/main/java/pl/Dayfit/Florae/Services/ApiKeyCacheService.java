@@ -5,7 +5,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import pl.Dayfit.Florae.Entities.ApiKey;
-import pl.Dayfit.Florae.Repositories.ApiKeyRepository;
+import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
 
 @Service
 @RequiredArgsConstructor

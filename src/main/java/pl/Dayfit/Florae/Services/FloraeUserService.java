@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
 import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
-import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
+import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
 
 import java.security.SecureRandom;
 import java.util.Base64;

@@ -45,5 +45,5 @@ public class FloraLink {
     private String macAddress;
 
     @OneToOne(/*mappedBy = "flora_link_id", cascade = CascadeType.ALL*/)
-    private SensorReadings sensorReadings;
+    private ReportData sensorReadings;
 }

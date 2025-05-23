@@ -2,6 +2,9 @@ package pl.Dayfit.Florae.Controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,11 +20,11 @@ import pl.Dayfit.Florae.Services.FloraLinkService;
 public class FloraLinkController {
     private final FloraLinkService floraLinkService;
 
-    @PostMapping("/api/v1/floralink/upload-data")
-    public ResponseEntity<?> uploadData(@RequestBody @Valid FloraLinkReportDTO uploadedData)
+    @PostMapping("/api/v1/floralink/upload-report")
+    public ResponseEntity<?> uploadReport(@RequestBody @Valid FloraLinkReportDTO uploadedData)
     {
         floraLinkService.handleReportUpload(uploadedData);
-        return ResponseEntity.ok("Data uploaded successfully.");
+        return ResponseEntity.ok(Map.of("Data uploaded successfully.", "q"));
     }
 
     @PostMapping("/api/v1/floralink/get-all-data")
@@ -35,5 +38,12 @@ public class FloraLinkController {
         }
 
         return ResponseEntity.ok(floraLinkService.getAllData(((FloraeUser) principal).getUsername()));
+    }
+
+    @PostMapping("/api/v1/floralink/upload-current-data")
+    public ResponseEntity<?> uploadCurrentData()
+    {
+        
+        return null;
     }
 }

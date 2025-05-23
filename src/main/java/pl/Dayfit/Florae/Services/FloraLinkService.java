@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.Dayfit.Florae.DTOs.FloraLinkReportDTO;
 import pl.Dayfit.Florae.DTOs.SensorDataDTO;
-import pl.Dayfit.Florae.Entities.SensorData;
-import pl.Dayfit.Florae.Entities.SensorReadings;
-import pl.Dayfit.Florae.Repositories.SensorReadingsRepository;
+import pl.Dayfit.Florae.Entities.Sensors.ReportSensorData;
+import pl.Dayfit.Florae.Entities.Sensors.ReportData;
+import pl.Dayfit.Florae.Repositories.JPA.SensorReadingsRepository;
 
 import java.util.List;
 
@@ -17,11 +17,11 @@ public class FloraLinkService {
 
     public void handleReportUpload(FloraLinkReportDTO uploadedData)
     {
-        SensorReadings sensorReadings = new SensorReadings();
+        ReportData sensorReadings = new ReportData();
 
         for (SensorDataDTO data : uploadedData.getSensorDataList())
         {
-            SensorData sensorData = new SensorData(
+            ReportSensorData sensorData = new ReportSensorData(
                     null,
                     sensorReadings,
                     data.getType(),
@@ -38,7 +38,7 @@ public class FloraLinkService {
         sensorReadingsRepository.save(sensorReadings);
     }
 
-    public List<SensorReadings> getAllData(String username) {
+    public List<ReportData> getAllData(String username) {
         return sensorReadingsRepository.findAllSensorReadingsByOwnerUsername(username);
     }
 }
