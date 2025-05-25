@@ -1,4 +1,4 @@
-package pl.Dayfit.Florae.Services;
+package pl.Dayfit.Florae.Services.Auth.JWT;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
@@ -45,6 +45,7 @@ public class FloraeUserService {
     private final AuthenticationManager authManager;
     private final JWTService jwtService;
     private final SecureRandom secureRandom;
+    private final FloraeUserCacheService cacheService;
 
     public static final int ACCESS_TOKEN_EXPIRATION_TIME = 30;
     public static final int REFRESH_TOKEN_EXPIRATION_TIME = 14;
@@ -70,7 +71,7 @@ public class FloraeUserService {
 
         if(floraeUserLoginDTO.getEmail() != null) {
             String email = floraeUserLoginDTO.getEmail().toLowerCase();
-            FloraeUser floraeUser = floraeUserRepository.findByEmail(email);
+            FloraeUser floraeUser = cacheService.getFloraeUserByEmail(email);
 
             try {
                 String salt = floraeUser.getSalt() == null ? "" : floraeUser.getSalt();
@@ -82,7 +83,7 @@ public class FloraeUserService {
 
         if (floraeUserLoginDTO.getUsername() != null) {
             String username = floraeUserLoginDTO.getUsername().toLowerCase();
-            FloraeUser floraeUser = floraeUserRepository.findByUsername(username);
+            FloraeUser floraeUser = cacheService.getFloraeUser(username);
 
             try {
                 String salt = floraeUser.getSalt() == null ? "" : floraeUser.getSalt();

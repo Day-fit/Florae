@@ -1,4 +1,4 @@
-package pl.Dayfit.Florae.Services;
+package pl.Dayfit.Florae.Services.Auth.JWT;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

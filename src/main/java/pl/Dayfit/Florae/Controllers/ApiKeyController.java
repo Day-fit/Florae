@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
-import pl.Dayfit.Florae.Services.ApiKeyService;
+import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
 
 import java.util.Map;
 
@@ -35,7 +35,6 @@ public class ApiKeyController {
         return ResponseEntity.ok(Map.of("message", "API key revoked successfully"));
     }
 
-    //TODO: add too many requests error to avoid brute force attacks
     @GetMapping("/api/v1/check-key")
     public ResponseEntity<Map<String, Object>> checkApiKey(@RequestParam String apiKey)
     {

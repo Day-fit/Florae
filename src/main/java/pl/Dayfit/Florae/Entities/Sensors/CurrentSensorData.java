@@ -1,5 +1,6 @@
 package pl.Dayfit.Florae.Entities.Sensors;
 
+import jakarta.persistence.GeneratedValue;
 import org.springframework.data.redis.core.RedisHash;
 
 import jakarta.persistence.Id;
@@ -13,7 +14,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CurrentSensorData {
     @Id
-    String id;
-    String type;
-    String value;
+    @GeneratedValue
+    private String id;
+    private String type;
+    private Double value;
 }

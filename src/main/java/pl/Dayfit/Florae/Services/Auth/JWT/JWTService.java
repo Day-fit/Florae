@@ -1,4 +1,4 @@
-package pl.Dayfit.Florae.Services;
+package pl.Dayfit.Florae.Services.Auth.JWT;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

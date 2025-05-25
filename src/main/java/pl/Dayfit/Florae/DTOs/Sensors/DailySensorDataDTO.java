@@ -8,7 +8,7 @@ import java.time.Instant;
 
 @Getter
 @Setter
-public class ReportSensorDataDTO {
+public class DailySensorDataDTO {
     private @NonNull String type;
 
     private @NonNull Double minValue;

@@ -3,7 +3,7 @@ package pl.Dayfit.Florae.Entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import pl.Dayfit.Florae.Entities.Sensors.ReportData;
+import pl.Dayfit.Florae.Entities.Sensors.DailyReportData;
 
 /**
  * Represents an ESP device entity in the system.
@@ -42,9 +42,6 @@ public class FloraLink {
     @ManyToOne(cascade = CascadeType.ALL)
     private FloraeUser owner;
 
-    @Column(nullable = false, length = 17) //MAC address is always length of 17 ex. XX:XX:XX:XX:XX:XX
-    private String macAddress;
-
     @OneToOne(mappedBy = "", cascade = CascadeType.ALL)
-    private ReportData reportData;
+    private DailyReportData dailyReportData;
 }

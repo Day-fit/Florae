@@ -6,6 +6,7 @@ import pl.Dayfit.Florae.Repositories.JPA.BlacklistJwtTokenRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import pl.Dayfit.Florae.Services.Auth.JWT.JWTService;
 
 import javax.crypto.SecretKey;
 import java.lang.reflect.Field;

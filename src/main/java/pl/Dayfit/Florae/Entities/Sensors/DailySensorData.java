@@ -1,7 +1,5 @@
 package pl.Dayfit.Florae.Entities.Sensors;
 
-import pl.Dayfit.Florae.Entities.FloraLink;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,13 +13,13 @@ import java.time.Instant;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReportSensorData {
+public class DailySensorData {
     @Id
     @GeneratedValue
     private Integer id;
 
     @ManyToOne
-    private ReportData sensorReadings;
+    private DailyReportData sensorReadings;
 
     @Column(nullable = false)
     private String type;

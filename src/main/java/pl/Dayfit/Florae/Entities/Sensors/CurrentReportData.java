@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.redis.core.index.Indexed;
 
 import java.util.List;
 
@@ -16,5 +17,11 @@ import java.util.List;
 public class CurrentReportData {
     @Id
     private String id;
+
+    @Indexed
+    private String floraLinkId;
+
+    @Indexed
+    private String ownerUsername;
     private List<CurrentSensorData> currentSensorDataList;
 }

@@ -68,7 +68,7 @@ public class PlantRequirementsService {
     private final HttpHeaders headers = new HttpHeaders();
 
     @PostConstruct
-    private void innit()
+    private void init()
     {
         headers.add("Authorization", "Token " + PLANT_BOOK_API);
     }

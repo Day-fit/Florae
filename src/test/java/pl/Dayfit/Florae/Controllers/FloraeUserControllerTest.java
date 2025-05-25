@@ -15,7 +15,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
 import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
-import pl.Dayfit.Florae.Services.FloraeUserService;
+import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserService;
 
 import java.nio.charset.StandardCharsets;
 

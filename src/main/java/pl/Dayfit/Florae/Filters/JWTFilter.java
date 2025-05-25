@@ -13,10 +13,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import pl.Dayfit.Florae.Services.JWTService;
+import pl.Dayfit.Florae.Services.Auth.JWT.JWTService;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -70,7 +71,14 @@ public class JWTFilter extends OncePerRequestFilter {
             throw new BadRequestException("Invalid JWT (missing username or already authenticated). Please provide a valid JWT in the Authorization header.");
         }
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        UserDetails userDetails;
+
+        try{
+            userDetails = userDetailsService.loadUserByUsername(username);
+        } catch (UsernameNotFoundException ex) {
+            logger.error("User not found with username: " + username);
+            throw new AccessDeniedException("User not found with username: " + username);
+        }
 
         if (!jwtService.validateAccessToken(token, username)){
             throw new AccessDeniedException("Invalid JWT (expired or invalid signature). Please provide a valid JWT in the Authorization header.");
@@ -86,6 +94,6 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request)
     {
-        return (request.getHeader("X-API-KEY") != null && request.getRequestURI().contains("/api/v1/floralink")) || PUBLIC_PATHS.stream().anyMatch(request.getRequestURI()::equalsIgnoreCase);
+        return (request.getHeader("X-API-KEY") != null && (request.getRequestURI().contains("/api/v1/floralink/upload") || request.getRequestURI().contains("/api/v1/floralink/connect-api"))) || PUBLIC_PATHS.stream().anyMatch(request.getRequestURI()::equalsIgnoreCase);
     }
 }

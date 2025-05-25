@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
 import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
-import pl.Dayfit.Florae.Services.FloraeUserService;
-import pl.Dayfit.Florae.Services.JWTService;
+import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserService;
+import pl.Dayfit.Florae.Services.Auth.JWT.JWTService;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;

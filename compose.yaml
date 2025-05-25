@@ -68,12 +68,16 @@ services:
   redis:
     image: 'bitnami/redis:8.0.1'
     environment:
+      - 'REDIS_USERNAME=${REDIS_USERNAME}'
       - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
+      - 'REDIS_ACLFILE=/opt/bitnami/redis/conf/users.acl'
+    volumes:
+      - './redis/users.acl:/opt/bitnami/redis/conf/users.acl:ro'
     profiles:
       - prod
 
   redis-dev:
-    image: 'bitnami/redis:8.0.1'
+    image: 'redis:8.0.1-bookworm'
     ports:
       - '127.0.0.1:6379:6379'
     environment:

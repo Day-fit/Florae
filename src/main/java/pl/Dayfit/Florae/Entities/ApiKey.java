@@ -32,4 +32,7 @@ public class ApiKey {
 
     @OneToOne
     private FloraLink linkedFloraLink;
+
+    @ManyToOne
+    private FloraeUser linkedUser;
 }

@@ -11,7 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationCandidate;
-import pl.Dayfit.Florae.Services.ApiKeyService;
+import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
 
 import java.io.IOException;
 
@@ -36,6 +36,14 @@ public class ApiKeyFilter extends OncePerRequestFilter {
             return;
         }
 
+        if(!apiKeyService.isLinked(apiKey) && !request.getRequestURI().contains("/api/v1/floralink/connect-api"))
+        {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"API key needs to be linked to a FloraLink before it can be used\"}");
+            return;
+        }
+
         Authentication authResult = authenticationManager.authenticate(new ApiKeyAuthenticationCandidate(apiKeyService.getApiKey(apiKey)));
         SecurityContextHolder.getContext().setAuthentication(authResult);
         filterChain.doFilter(request, response);
@@ -44,6 +52,6 @@ public class ApiKeyFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request)
     {
-        return request.getHeader(API_KEY_HEADER) == null || !request.getRequestURI().contains("/api/v1/floralink");
+        return request.getHeader(API_KEY_HEADER) == null || (!request.getRequestURI().contains("/api/v1/floralink/upload") && !request.getRequestURI().contains("/api/v1/floralink/connect-api"));
     }
 }

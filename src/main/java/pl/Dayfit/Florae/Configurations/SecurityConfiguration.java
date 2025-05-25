@@ -27,7 +27,7 @@ import pl.Dayfit.Florae.Auth.FloraeAuthenticationEntryPoint;
 import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Filters.ApiKeyFilter;
 import pl.Dayfit.Florae.Filters.JWTFilter;
-import pl.Dayfit.Florae.Services.ApiKeyService;
+import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
