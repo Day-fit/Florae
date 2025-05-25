@@ -75,12 +75,12 @@ export default function AuthOverlay({ register, onClose }) {
     // 3. Submit form using axios
     try {
       const response = await axios.post(
-          "https://florae.dayfit.pl",
-          {
-            email: formData.email,
-            login: formData.login,
-            password: formData.password,
-          }
+        "https://florae.dayfit.pl",
+        {
+          email: formData.email,
+          login: formData.login,
+          password: formData.password,
+        }
       );
       console.log("Submission successful:", response.data);
       logIn(formData);
@@ -128,6 +128,7 @@ export default function AuthOverlay({ register, onClose }) {
                     key={field.name}
                     label={field.label}
                     type={field.type}
+                    errorMsg={errors[field.name] || ''}
                     value={formData[field.name] || ''}
                     onChange={e => handleFormInput(e, field.name)}
                     className={`${baseInputClass} ${errors[field.name] ? errorClass : noErrorClass}`}
@@ -151,6 +152,7 @@ export default function AuthOverlay({ register, onClose }) {
                     key={field.name}
                     label={field.label}
                     type={field.type}
+                    errorMsg={errors[field.name] || ''}
                     value={formData[field.name] || ''}
                     onChange={(e) => handleFormInput(e, field.name)}
                     className={`${baseInputClass} ${errors[field.name] ? errorClass : noErrorClass}`}
