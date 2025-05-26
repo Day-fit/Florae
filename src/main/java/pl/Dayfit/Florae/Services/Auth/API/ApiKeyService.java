@@ -18,6 +18,24 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Service class responsible for managing API key functionality.
+ * Provides operations for generating, revoking, validating, and
+ * associating API keys with users and related resources.
+ * <p>
+ * Annotations:
+ * - {@code @Service}: Marks this class as a Spring Service component.
+ * - {@code @RequiredArgsConstructor}: Generates a constructor for all final fields.
+ * - {@code @EnableAsync}: Enables asynchronous method execution.
+ * - {@code @Slf4j}: Provides logging capability using SLF4J.
+ * <p>
+ * Key Responsibilities:
+ * 1. Generate and persist API keys for specific users.
+ * 2. Validate the ownership and validity of an API key.
+ * 3. Revoke API keys when necessary to ensure security.
+ * 4. Manage associations between API keys and related resources.
+ * 5. Leverage caching mechanisms to improve performance.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor

@@ -42,6 +42,6 @@ public class FloraLink {
     @ManyToOne(cascade = CascadeType.ALL)
     private FloraeUser owner;
 
-    @OneToOne(mappedBy = "", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "floraLink", cascade = CascadeType.ALL)
     private DailyReportData dailyReportData;
 }

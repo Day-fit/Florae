@@ -30,18 +30,34 @@ import java.util.List;
  * It extracts the Authorization header, validates the provided JWT, and sets the user
  * authentication context if the token is valid. This enables stateless authentication for the
  * application by leveraging JWTs.
- * Dependencies:
- * - {@link JWTService}: Provides methods to extract and validate the JWT.
- * - {@link UserDetailsService}: Loads user-specific data for authentication.
- * Key Functionality:
- * - Extracts the JWT from the "Authorization" header of incoming HTTP requests.
- * - Validates the JWT using the {@code JWTService}.
- * - If valid, retrieves user details via {@code UserDetailsService} and sets up authentication
- *   in the {@link SecurityContextHolder}.
- * - Passes the request and response objects to the next filter in the chain if validation succeeds.
- * Annotations:
- * - {@code @Component}: Marks this class as a Spring-managed component.
- * - {@code @RequiredArgsConstructor}: Generates constructor for injecting final fields.
+ *
+ * <p>Dependencies:</p>
+ * <ul>
+ *   <li>{@link JWTService}: Provides methods to extract and validate the JWT.</li>
+ *   <li>{@link UserDetailsService}: Loads user-specific data for authentication.</li>
+ * </ul>
+ *
+ * <p>Key Functionality:</p>
+ * <ul>
+ *   <li>Extracts the JWT from the "Authorization" header of incoming HTTP requests.</li>
+ *   <li>Validates the JWT using the {@code JWTService}.</li>
+ *   <li>If valid, retrieves user details via {@code UserDetailsService} and sets up authentication
+ *       in the {@link SecurityContextHolder}.</li>
+ *   <li>Passes the request and response objects to the next filter in the chain if validation succeeds.</li>
+ *   <li>Skips filtering for requests where authentication is already present or for specific request paths.</li>
+ * </ul>
+ *
+ * <p>Annotations:</p>
+ * <ul>
+ *   <li>{@code @Component}: Marks this class as a Spring-managed component.</li>
+ *   <li>{@code @RequiredArgsConstructor}: Generates constructor for injecting final fields.</li>
+ * </ul>
+ *
+ * <p>Integration:</p>
+ * <ul>
+ *   <li>Works in conjunction with {@link ApiKeyFilter} in the security filter chain.</li>
+ *   <li>Part of the stateless authentication mechanism using Spring Security.</li>
+ * </ul>
  */
 @Component
 @RequiredArgsConstructor

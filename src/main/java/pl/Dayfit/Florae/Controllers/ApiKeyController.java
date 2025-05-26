@@ -10,6 +10,17 @@ import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
 
 import java.util.Map;
 
+
+
+/**
+ * Controller class for managing API Key-related operations. This class provides endpoints
+ * to generate, revoke, and validate API keys associated with a user.
+ * <p>
+ * Endpoints:
+ * - Generate a new API Key
+ * - Revoke an existing API Key
+ * - Check the validity of an API Key
+ */
 @RestController
 @RequiredArgsConstructor
 public class ApiKeyController {

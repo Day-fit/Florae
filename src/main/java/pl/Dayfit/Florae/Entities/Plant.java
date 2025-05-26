@@ -31,7 +31,7 @@ public class Plant {
     @Column(nullable = false, length = 50)
     private String pid;
 
-    @OneToOne(/*mappedBy = "FloraLink", cascade = CascadeType.DETACH*/)
+    @OneToOne(cascade = CascadeType.DETACH)
     private FloraLink linkedFloraLink;
 
     @ManyToOne(cascade = CascadeType.ALL)

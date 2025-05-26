@@ -20,6 +20,10 @@ import pl.Dayfit.Florae.DTOs.Sensors.DailySensorDataDTO;
 import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
 import pl.Dayfit.Florae.Services.FloraLinkService;
 
+/**
+ * Controller for handling requests related to the FloraLink API, including operations for
+ * connecting APIs, uploading sensor data, and retrieving sensor data reports.
+ */
 @RestController
 @RequiredArgsConstructor
 public class FloraLinkController {

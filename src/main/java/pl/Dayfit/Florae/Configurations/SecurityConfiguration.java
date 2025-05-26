@@ -43,8 +43,10 @@ import java.util.List;
  *  <li> Defines the SecurityFilterChain to configure security policies including CSRF,
  *   authorization rules, and session management.</li>
  *  <li> Integrates a custom JWT filter to validate tokens and ensure stateless security.</li>
- *  <li> Configures authentication mechanisms including password encoding
- *   and data sourcing from UserDetailsService to manage user-specific data.</li>
+ *  <li> Integrates an API Key filter for authenticating API calls with API keys.</li>
+ *  <li> Configures multiple authentication mechanisms including JWT, API Key, and standard username/password.</li>
+ *  <li> Configures authentication providers for both API Keys and user credentials.</li>
+ *  <li> Manages user-specific data sourcing from UserDetailsService and secure password encoding.</li>
  * </ul>
  * <p>Annotations:</p>
  * <ul>
@@ -56,11 +58,14 @@ import java.util.List;
  * <ul>
  *  <li> SecurityFilterChain: Configures HTTP security, including authentication rules,
  *   permitted endpoints, session policy, and adding custom filters.</li>
+ *  <li> ApiKeyFilter: Filter that authenticates requests containing an API key header.</li>
+ *  <li> AuthenticationManager: Manages authentication through multiple providers configured in Spring Security.</li>
+ *  <li> AuthenticationEntryPoint: Custom entry point for handling authentication failures.</li>
  *  <li> BCryptPasswordEncoder: A password encoder that uses the BCrypt hashing algorithm
  *   for secure password storage.</li>
- *  <li> AuthenticationProvider: Configures authentication via a DAO provider using
+ *  <li> ApiKeyAuthenticationProvider: Provider that validates and authenticates API key credentials.</li>
+ *  <li> DaoAuthenticationProvider: Configures authentication via a DAO provider using
  *   the UserDetailsService and password encoder.</li>
- *  <li> AuthenticationManager: Manages authentication through the configuration defined in Spring Security.</li>
  *  <li> SecureRandom: Generates cryptographically secure pseudo-random values suitable for security-sensitive operations (e.g., tokens, keys)</li>
  * </ul>
  */

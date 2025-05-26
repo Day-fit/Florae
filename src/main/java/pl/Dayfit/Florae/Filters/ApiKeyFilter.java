@@ -15,6 +15,37 @@ import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
 
 import java.io.IOException;
 
+/**
+ * ApiKeyFilter is a custom implementation of {@link OncePerRequestFilter} that performs
+ * API key-based authentication and authorization for incoming requests.
+ * <p>
+ * This filter inspects requests for a valid API key in the HTTP header "X-API-KEY".
+ * It validates the API key using the provided {@link ApiKeyService} and manages
+ * authentication within the application's security context.
+ * <p>
+ * Responsibilities:
+ * - Extract the API key from the "X-API-KEY" header of the incoming request.
+ * - Validate the provided API key through {@link ApiKeyService#isValidApiKey(String)}.
+ * - Ensure the API key is linked (if required) through {@link ApiKeyService#isLinked(String)}.
+ * - Authenticate valid API keys via the {@link AuthenticationManager}.
+ * - Set the authenticated user into the {@link SecurityContextHolder}.
+ * <p>
+ * Behavior:
+ * - For invalid API keys, responses are returned with HTTP status 401 (Unauthorized)
+ *   along with a JSON error message.
+ * - Requests without the "X-API-KEY" header, or that do not match certain URI conditions,
+ *   are skipped through the {@link ApiKeyFilter#shouldNotFilter(HttpServletRequest)} method.
+ * <p>
+ * Methods:
+ * - {@link ApiKeyFilter#doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain)}:
+ *   Processes the filter logic, including API key validation and authentication.
+ * - {@link ApiKeyFilter#shouldNotFilter(HttpServletRequest)}:
+ *   Determines whether the filter should be bypassed for specific requests.
+ * <p>
+ * Dependencies:
+ * - This filter depends on {@link ApiKeyService} for API key validation and metadata access.
+ * - It uses {@link AuthenticationManager} to perform authentication of API keys.
+ */
 @RequiredArgsConstructor
 public class ApiKeyFilter extends OncePerRequestFilter {
     private final ApiKeyService apiKeyService;

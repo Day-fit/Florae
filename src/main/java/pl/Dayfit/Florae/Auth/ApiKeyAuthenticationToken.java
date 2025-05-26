@@ -6,6 +6,18 @@ import pl.Dayfit.Florae.Entities.ApiKey;
 
 import java.util.Collections;
 
+/**
+ * Represents an authentication token for API key-based authentication.
+ * This class extends {@link AbstractAuthenticationToken} and encapsulates
+ * authentication details related to an API key.
+ * <p>
+ * Responsibilities:
+ * - Holds the authenticated {@link ApiKey}.
+ * - Provides access to the credentials (API key) and the principal (user associated with the API key).
+ * <p>
+ * The class is used in the authentication process to indicate successful
+ * authentication based on the provided API key.
+ */
 public class ApiKeyAuthenticationToken extends AbstractAuthenticationToken {
     private final ApiKey apiKey;
 

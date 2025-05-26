@@ -20,6 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Service class responsible for handling operations related to FloraLink data,
+ * including current sensor data and daily sensor data. This class performs data
+ * processing, transformation, and persistence tasks for uploaded data and retrieval
+ * of reports.
+ */
 @Service
 @RequiredArgsConstructor
 public class FloraLinkService {

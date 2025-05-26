@@ -10,6 +10,19 @@ import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
 
 import java.time.Instant;
 
+/**
+ * Service class responsible for managing and caching API keys in the application.
+ * It integrates with a database repository and a Redis cache to facilitate
+ * retrieval, revocation, and cleanup operations for API keys.
+ * <p>
+ * Dependencies:
+ * - ApiKeyRepository: Provides access to the database for CRUD operations on API key entities.
+ * - RedisTemplate: Used for interacting with the Redis key-value store to manage cached API key data.
+ * <p>
+ * Annotations:
+ * - {@code @Service}: Marks this class as a Spring service component.
+ * - {@code @RequiredArgsConstructor}: Generates a constructor for required dependencies.
+ */
 @Service
 @RequiredArgsConstructor
 public class ApiKeyCacheService {

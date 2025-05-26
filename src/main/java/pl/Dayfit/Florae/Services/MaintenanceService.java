@@ -11,6 +11,30 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
+/**
+ * Service responsible for periodic maintenance operations, focusing on
+ * removing unused or invalid data from the database.
+ * <p>
+ * This service leverages Spring's {@code @Scheduled} functionality to
+ * execute maintenance tasks at a fixed interval defined by the constant
+ * {@code MAINTENANCE_PERIOD}.
+ * <p>
+ * Tasks performed:
+ * - Removal of revoked API keys from the system to free up resources and
+ *   maintain data integrity.
+ * - Deletion of expired blacklisted JSON Web Tokens (JWTs) to ensure
+ *   outdated tokens are no longer tracked.
+ * <p>
+ * Annotations:
+ * - {@code @Service}: Marks this class as a Spring-managed service component.
+ * - {@code @RequiredArgsConstructor}: Automatically generates a constructor
+ *   for injecting required dependencies.
+ * - {@code @Scheduled}: Indicates periodic execution of methods based on fixed
+ *   timing configurations.
+ * - {@code @Transactional}: Ensures the execution of database operations within
+ *   a transactional context.
+ * - {@code @Slf4j}: Provides the class with logging capabilities.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
