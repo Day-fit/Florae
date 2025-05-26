@@ -114,7 +114,8 @@ void loop()
 
 void saveData(String key, String value)
 {
-    JsonDocument json;
+    const size_t capacity = 512; // Adjust based on expected JSON size
+    DynamicJsonDocument json(capacity);
 
     File file = LittleFS.open("/config.json", "r");
     if (file) {
