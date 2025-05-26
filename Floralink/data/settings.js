@@ -27,6 +27,24 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-async function checkApiKey() {
-    
+async function checkApiKey(apiKey) {
+    try {
+        const response = await fetch('/validate-api-key', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ apiKey }),
+        });
+        if (response.ok) {
+            const result = await response.json();
+            return result.isValid; // Assuming the server returns { isValid: true/false }
+        } else {
+            console.error('Failed to validate API key:', response.statusText);
+            return false;
+        }
+    } catch (err) {
+        console.error('Error validating API key:', err);
+        return false;
+    }
 }
