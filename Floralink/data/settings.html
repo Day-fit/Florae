@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="style.css">
+    <title>FloraLink Settings</title>
+</head>
+<body>
+    <nav class="top-bar">
+        <div class="top-container">            
+            <div class="florae-logo"></div>
+            <div class="burger" onclick="document.getElementById('burger-menu').classList.toggle('active');">&#9776;</div>
+        </div>
+    </nav>
+
+    <nav id="burger-menu">
+        <a href="index.html">Home Page</a>
+        <a href="settings.html">Settings</a>
+    </nav>    <div id="landing-container">
+        <h1 class="landing-text">Settings</h1>
+        <p>Configure your FloraLink device</p>
+    </div>
+
+    <div id="form-container">
+        <form id="settings-form">
+            <div class="form-group">
+                <label for="targetSsid">Your WiFi name</label>
+                <div class="input-icon-wrapper">
+                    <span class="input-icon">📶</span>
+                    <input id="targetSsid" name="targetSsid" placeholder="Type Your wifi name..." required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="targetPassword">Your WiFi password</label>
+                <div class="input-icon-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input id="targetPassword" name="targetPassword" placeholder="Type Your wifi password..." type="password" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="floraeAccessKey">Your Florae Access key</label>
+                <div class="input-icon-wrapper">
+                    <span class="input-icon">🔑</span>
+                    <input id="floraeAccessKey" name="floraeAccessKey" type="password" placeholder="Paste Your florae access key..." required>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-button">Save Configuration</button>
+        </form>
+    </div>
+
+    <footer>
+        <p>FloraLink © 2025</p>
+    </footer>
+</body>
+</html>

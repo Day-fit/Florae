@@ -27,8 +27,8 @@ import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.DTOs.PlantFetchDTO;
 import pl.Dayfit.Florae.Entities.PlantRequirements;
-import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
-import pl.Dayfit.Florae.Repositories.PlantRepository;
+import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
+import pl.Dayfit.Florae.Repositories.JPA.PlantRepository;
 import pl.Dayfit.Florae.Utils.ImageOptimizer;
 
 
@@ -122,10 +122,11 @@ public class PlantsService {
 
         PlantRequirements plantRequirements = plant.getRequirements();
         PlantResponseDTO mappedElement = new PlantResponseDTO();
+        mappedElement.setId(plant.getId());
         mappedElement.setOwner(plant.getLinkedUser().getUsername());
         mappedElement.setSpeciesName(plant.getSpeciesName());
         mappedElement.setPrimaryPhoto(plant.getPrimaryPhoto());
-        mappedElement.setLinkedEsp(plant.getLinkedEsp());
+        mappedElement.setLinkedFloraLink(plant.getLinkedFloraLink());
         mappedElement.setRequirements(
                 new PlantRequirementsDTO(
                         null,

@@ -70,7 +70,7 @@ class PlantsController {
     }
 
     @GetMapping("/api/v1/plants")
-    public ResponseEntity<?> getPlantsByUsername(@AuthenticationPrincipal UserPrincipal userPrincipal)
+    public ResponseEntity<?> getOwnedPlants(@AuthenticationPrincipal UserPrincipal userPrincipal)
     {
         String username = userPrincipal.getUsername();
 

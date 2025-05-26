@@ -1,4 +1,4 @@
-package pl.Dayfit.Florae.Services;
+package pl.Dayfit.Florae.Services.Auth.JWT;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
 import pl.Dayfit.Florae.Entities.FloraeUser;
-import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
+import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
 
 /**
  * Service implementation of {@code UserDetailsService} for Spring Security.
