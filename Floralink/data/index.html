@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link rel="stylesheet" href="style.css">
     <title>FloraLink Configuration</title>
 </head>
@@ -15,54 +14,57 @@
 
     <nav class="top-bar">
         <div class="top-container">
-            <img src="" alt="Florae Logo"> 
+            <div class="florae-logo"></div>
             <div class="burger" onclick="document.getElementById('burger-menu').classList.toggle('active');">&#9776;</div>
         </div>
-    </nav>    <div id="landing-container">
+    </nav>
+
+    <div id="landing-container">
         <h1 class="landing-text">FloraLink</h1>
         <p>Care less, grow more</p>
     </div>
 
-    <div id="plant-container">
-        <div id="plant-card">
-            <div class="plant-icon">🌿</div>
-            <div class="plant-info">
-                <h2>Plant Name</h2>
-                <p class="plant-description">Description of the plant goes here.</p>
+    <div id="main-container">
+        <div id="main-card">
+            <div id="plant-container">
+                <div id="plant-card">
+                    <div class="plant-icon">🌿</div>
+                    <div class="plant-info">
+                        <h2>Plant Name</h2>
+                        <p class="plant-description">Description of the plant goes here.</p>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <div id="sensor-container">
-        <div class="sensor-card">
-            <div class="sensor-icon">🌡️</div>
-            <div class="sensor-info">
-                <h3>Temperature</h3>
-                <p class="sensor-value">N/A</p>
-            </div>
-        </div>
-        
-        <div class="sensor-card">
-            <div class="sensor-icon">💧</div>
-            <div class="sensor-info">
-                <h3>Humidity</h3>
-                <p class="sensor-value">N/A</p>
-            </div>
-        </div>
-        
-        <div class="sensor-card">
-            <div class="sensor-icon">🌱</div>
-            <div class="sensor-info">
-                <h3>Soil Humidity</h3>
-                <p class="sensor-value">N/A</p>
-            </div>
-        </div>
-        
-        <div class="sensor-card">
-            <div class="sensor-icon">☀️</div>
-            <div class="sensor-info">
-                <h3>Light Level</h3>
-                <p class="sensor-value">N/A</p>
+            <div id="sensor-container">
+                <div class="sensor-card">
+                    <div class="sensor-icon">🌡️</div>
+                    <div class="sensor-info">
+                        <h3>Temperature</h3>
+                        <p class="sensor-value">N/A</p>
+                    </div>
+                </div>
+                <div class="sensor-card">
+                    <div class="sensor-icon">💧</div>
+                    <div class="sensor-info">
+                        <h3>Humidity</h3>
+                        <p class="sensor-value">N/A</p>
+                    </div>
+                </div>
+                <div class="sensor-card">
+                    <div class="sensor-icon">🌱</div>
+                    <div class="sensor-info">
+                        <h3>Soil Humidity</h3>
+                        <p class="sensor-value">N/A</p>
+                    </div>
+                </div>
+                <div class="sensor-card">
+                    <div class="sensor-icon">☀️</div>
+                    <div class="sensor-info">
+                        <h3>Light Level</h3>
+                        <p class="sensor-value">N/A</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

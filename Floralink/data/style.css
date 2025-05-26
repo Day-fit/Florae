@@ -228,3 +228,22 @@ a
 #plant-container{
     padding: 1.5em;
 }
+
+.florae-logo
+{
+    background-image: url("./florae_logo_full.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 60px;
+    width: 160px;
+    display: block;
+}
+
+@media (max-width: 600px) {
+    .florae-logo {
+        background-image: url("./florae_logo.png");
+        width: 100px;
+        height: 40px;
+    }
+}
