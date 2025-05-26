@@ -1,5 +1,6 @@
 import Header from './Components/header.jsx';
 import { UserContext } from './store/user-context.jsx';
+import MainSection from './Components/main-section.jsx';
 import { useState } from 'react';
 
 function App() {
@@ -22,7 +23,8 @@ function App() {
   }
   return (
     <UserContext value={contextValue}>
-      <Header handleLogIn={handleLogIn} />
+      <Header />
+      <MainSection />
     </UserContext>
   );
 }

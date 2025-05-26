@@ -31,6 +31,12 @@ import { useState, use } from 'react';
  * - [ ] Optional: Add remember-me and forgot-password functionality
  */
 
+
+//change it manualy for tests only
+const SERWER_URL = "https://florae.dayfit.pl";
+const LOCAL_URL = "http://localhost:8080"
+
+
 export default function AuthOverlay({ register, onClose }) {
   const { logIn } = use(UserContext);
 
@@ -44,6 +50,8 @@ export default function AuthOverlay({ register, onClose }) {
     login: '',
     password: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   const errorClass = 'border-red-500 bg-red-50 text-red-700 placeholder-red-400 focus:border-red-600';
   const noErrorClass = "bg-white border-stone-200 text-stone-700 placeholder-stone-400 focus:border-green-600"
@@ -63,6 +71,8 @@ export default function AuthOverlay({ register, onClose }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (isSubmitting) return; // Prevent double submit
+
     // 1. Validate form and update errors state
     const validationErrors = await validateForm(formData, register ? 'register' : 'login');
     setErrors(validationErrors);
@@ -71,11 +81,11 @@ export default function AuthOverlay({ register, onClose }) {
     // (validationErrors is object of error messages; if any value is non-empty, it's invalid)
     const hasErrors = Object.values(validationErrors).some((v) => v);
     if (hasErrors) return;
-
+    setIsSubmitting(true);
     // 3. Submit form using axios
     try {
       const response = await axios.post(
-        "https://florae.dayfit.pl",
+        `${LOCAL_URL}/auth/register`,
         {
           email: formData.email,
           login: formData.login,
@@ -86,6 +96,7 @@ export default function AuthOverlay({ register, onClose }) {
       logIn(formData);
       onClose();
       setFormData({email: '', login: '', password: ''})
+      setIsSubmitting(false);
     } catch (err) {
       // Show a generic error or display err.response?.data?.message if your backend returns nice errors
       setErrors((prev) => ({
@@ -93,6 +104,7 @@ export default function AuthOverlay({ register, onClose }) {
         form: "Something went wrong. Please try again.",
       }));
       console.error("Submission error:", err);
+      setIsSubmitting(false);
     }
   }
 
@@ -103,75 +115,79 @@ export default function AuthOverlay({ register, onClose }) {
     }))
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-      {/* Video background */}
-      <video
-        src={rainyNature}
-        className="absolute inset-0 w-full h-full object-cover z-0"
-        autoPlay
-        loop
-        muted
-        playsInline
-        aria-hidden
-      />
-      <div className="absolute inset-0 bg-black/50" />
-      <AnimatedModal>
-      <div className="z-10 bg-white/90 rounded-xl p-10 max-w-lg w-full flex flex-col items-center shadow-lg mx-2">
-        <h2 className="mb-6 text-2xl font-bold text-green-700">
-          {register === 'register' ? 'Sign up' : 'Sign in'}
-        </h2>
-        {register ? (
-          <form onSubmit={handleSubmit}>
-            {registerFields.map((field) => (
-                <Input
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+        {/* Video background */}
+        <video
+          src={rainyNature}
+          className="absolute inset-0 w-full h-full object-cover z-0"
+          autoPlay
+          loop
+          muted
+          playsInline
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-black/50" />
+        <AnimatedModal>
+          <div className="z-10 bg-white/90 rounded-xl p-10 max-w-lg w-full flex flex-col items-center shadow-lg mx-2">
+            <h2 className="mb-6 text-2xl font-bold text-green-700">
+              {register ? 'Sign up' : 'Sign in'}
+            </h2>
+            {register ? (
+              <form onSubmit={handleSubmit}>
+                {registerFields.map((field) => (
+                  <Input
                     key={field.name}
                     label={field.label}
                     type={field.type}
-                    errorMsg={errors[field.name] || ''}
-                    value={formData[field.name] || ''}
-                    onChange={e => handleFormInput(e, field.name)}
-                    className={`${baseInputClass} ${errors[field.name] ? errorClass : noErrorClass}`}
-                />
-            ))}
-            <div className="flex flex-row justify-between mt-4 w-full">
-              <div className="flex justify-start">
-                <Button
-                  buttonText="Login"
-                  type="submit"
-                  className="max-w-lg text-white bg-green-700 text-center rounded-lg pt-2 pb-2 px-20"
-                />
-              </div>
-              <div className="flex justify-end">{closeButton}</div>
-            </div>
-          </form>
-        ) : (
-          <form onSubmit={handleSubmit}>
-            {loginFields.map((field) => (
-                <Input
-                    key={field.name}
-                    label={field.label}
-                    type={field.type}
+                    placeholder={field.label}
                     errorMsg={errors[field.name] || ''}
                     value={formData[field.name] || ''}
                     onChange={(e) => handleFormInput(e, field.name)}
                     className={`${baseInputClass} ${errors[field.name] ? errorClass : noErrorClass}`}
-                />
-            ))}
-            <div className="flex flex-row justify-between mt-4 w-full">
-              <div className="flex justify-start">
-                <Button
-                  buttonText="Login"
-                  type="submit"
-                  className="max-w-lg text-white bg-green-700 text-center rounded-lg pt-2 pb-2 px-20"
-                />
-              </div>
-              <div className="flex justify-end">{closeButton}</div>
-            </div>
-          </form>
-        )}
+                    autoComplete={field.name === 'login' ? "username" : field.name === "password" ? "new-password" : "email"}
+                  />
+                ))}
+                <div className="flex flex-row justify-between mt-4 w-full">
+                  <div className="flex justify-start">
+                    <Button
+                      buttonText="Login"
+                      type="submit"
+                      className="max-w-lg text-white bg-green-700 text-center rounded-lg pt-2 pb-2 px-20"
+                    />
+                  </div>
+                  <div className="flex justify-end">{closeButton}</div>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleSubmit}>
+                {loginFields.map((field) => (
+                  <Input
+                    key={field.name}
+                    label={field.label}
+                    type={field.type}
+                    placeholder={field.label}
+                    errorMsg={errors[field.name] || ''}
+                    value={formData[field.name] || ''}
+                    onChange={(e) => handleFormInput(e, field.name)}
+                    className={`${baseInputClass} ${errors[field.name] ? errorClass : noErrorClass}`}
+                    autoComplete={field.name === 'login' ? "username" : field.name === "password" ? "current-password" : "email"}
+                  />
+                ))}
+                <div className="flex flex-row justify-between mt-4 w-full">
+                  <div className="flex justify-start">
+                    <Button
+                      buttonText="Login"
+                      type="submit"
+                      className="max-w-lg text-white bg-green-700 text-center rounded-lg pt-2 pb-2 px-20"
+                    />
+                  </div>
+                  <div className="flex justify-end">{closeButton}</div>
+                </div>
+              </form>
+            )}
+          </div>
+        </AnimatedModal>
       </div>
-      </AnimatedModal>
-    </div>
-  );
+    );
 }
