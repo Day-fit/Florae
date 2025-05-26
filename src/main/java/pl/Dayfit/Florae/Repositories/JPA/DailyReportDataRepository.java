@@ -11,4 +11,5 @@ public interface DailyReportDataRepository extends JpaRepository<DailyReportData
             "FROM DailyReportData s " +
             "WHERE s.floraeUser.username = :username")
     List<DailyReportData> findAllSensorReadingsByOwnerUsername(String username);
+    DailyReportData findByFloraLink_Id(Integer floraLinkId);
 }

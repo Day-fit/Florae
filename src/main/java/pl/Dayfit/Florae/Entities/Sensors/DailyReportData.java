@@ -24,6 +24,6 @@ public class DailyReportData {
     @ManyToOne
     private FloraeUser floraeUser;
 
-    @OneToMany(mappedBy = "sensorReadings", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "sensorReadings", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DailySensorData> sensorDataList = new ArrayList<>();
 }

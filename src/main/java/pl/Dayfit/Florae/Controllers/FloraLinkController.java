@@ -48,7 +48,7 @@ public class FloraLinkController {
     @GetMapping("/api/v1/floralink/get-all-daily-data")
     public ResponseEntity<?> getAllData(@AuthenticationPrincipal UserPrincipal userPrincipal)
     {
-        return ResponseEntity.ok(floraLinkService.getAllDayReportData((userPrincipal).getUsername()));
+        return ResponseEntity.ok(floraLinkService.getDailyDataReport((userPrincipal).getUsername()));
     }
 
     @PostMapping("/api/v1/floralink/upload-current-data")
@@ -61,6 +61,6 @@ public class FloraLinkController {
     @GetMapping("/api/v1/floralink/get-all-current-data")
     public ResponseEntity<?> getAllCurrentData(@AuthenticationPrincipal UserPrincipal userPrincipal)
     {
-        return ResponseEntity.ok(floraLinkService.getAllCurrentData((userPrincipal).getUsername()));
+        return ResponseEntity.ok(floraLinkService.getCurrentDataReport((userPrincipal).getUsername()));
     }
 }

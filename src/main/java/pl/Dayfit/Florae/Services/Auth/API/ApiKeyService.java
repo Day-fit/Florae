@@ -11,7 +11,7 @@ import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
 import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
-import pl.Dayfit.Florae.Services.FloraLinkService;
+import pl.Dayfit.Florae.Services.FloraLinkCacheService;
 
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -27,8 +27,8 @@ public class ApiKeyService {
     private final FloraeUserRepository floraeUserRepository;
     private final ApiKeyCacheService cacheService;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private final FloraLinkService floraLinkService;
     private final FloraeUserCacheService floraeUserCacheService;
+    private final FloraLinkCacheService floraLinkCacheService;
 
     public String generateApiKey(String username) {
         String generatedUUID = UUID.randomUUID().toString();
@@ -80,7 +80,7 @@ public class ApiKeyService {
         floraLink.setName("FloraLink");
         floraLink.setOwner(floraeUser);
 
-        apiKey.setLinkedFloraLink(floraLinkService.registerFloraLink(floraLink));
+        apiKey.setLinkedFloraLink(floraLinkCacheService.saveFloraLink(floraLink));
 
         apiKeyRepository.save(apiKey);
     }
