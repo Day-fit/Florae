@@ -1,26 +1,32 @@
-import Header from "./Components/header.jsx";
-import MainSection from "./Components/main-section.jsx";
-import Footer from "./Components/footer.jsx";
-import { useState } from 'react'
+import Header from './Components/header.jsx';
+import { UserContext } from './store/user-context.jsx';
+import MainSection from './Components/main-section.jsx';
+import { useState } from 'react';
 
 function App() {
   const [user, setUser] = useState({
     isLogged: false,
-    userData: []
+    userData: {},
   });
   // const [viewMode, setViewMode] = useState("home");
 
-  function handleLogIn() {
-    setUser(prev => ({
-      ...prev,
-      isLogged: !prev.isLogged
+  const contextValue = {
+    isLogged: user.isLogged,
+    userData: user.userData,
+    logIn: handleLogIn,
+  };
+  function handleLogIn(userData) {
+    setUser((prev) => ({
+      userData: userData,
+      isLogged: !prev.isLogged,
     }));
   }
-  return(
-    <>
-    <Header user={user} handleLogIn={handleLogIn}/>
-    </>
+  return (
+    <UserContext value={contextValue}>
+      <Header />
+      <MainSection />
+    </UserContext>
   );
 }
 
-export default App
+export default App;

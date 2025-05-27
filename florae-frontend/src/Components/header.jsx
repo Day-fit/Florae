@@ -1,6 +1,13 @@
+import { useState, use } from 'react';
 import Button from './button.jsx';
+import AuthModal from './auth-modal.jsx';
+import UserMenu from './user-menu.jsx';
+import { UserContext } from '../store/user-context.jsx';
+import PortalComponent from './portal-component.jsx';
+import { navButtons } from '../util/data.js';
 import { GiHamburgerMenu } from 'react-icons/gi';
 import temp from '../assets/temp.png';
+
 /**
  * Header Component
  *
@@ -29,46 +36,61 @@ import temp from '../assets/temp.png';
  *  - Ensure responsive and keyboard-friendly navigation.
  */
 
-export default function Header({ user, handleLogIn }) {
+export default function Header() {
+  const { isLogged } = use(UserContext);
+
+  const [modal, setModal] = useState(null);
+
+  function handleAuth(action) {
+    setModal(action);
+  }
+  function handleCloseAuth() {
+    setModal(null);
+  }
+
   return (
     <header className="flex flex-row border-b-stone-200 border-b-2 font-bold">
       <div className="flex flex-row items-center w-full ml-5 ">
         {/* Left: Logo/brand image */}
         <img src={temp} alt="" className="mt-5 mb-5 h-10 w-10" />
       </div>
-      <div className="flex flex-row items-center justify-center w-full">
+      <div className="flex flex-row items-center justify-center w-full gap-6">
         {/* Center: Main navigation/actions */}
-        <Button
-          buttonText="Home"
-          className="mt-5 mb-5  text-green-700 hover:text-green-900 active:text-green-900 rounded transition-colors duration-150"
-        />
-        <Button
-          buttonText="Plants"
-          className="mt-5 mb-5 ml-5 mr-5 text-green-700 hover:text-green-900 active:text-green-900 rounded transition-colors duration-150"
-        />
-        <Button
-          buttonText="Devices"
-          className="mt-5 mb-5 text-green-700 hover:text-green-900 active:text-green-900 rounded transition-colors duration-150"
-        />
+        {navButtons.map(({ name, buttonText }) => (
+          <Button
+            key={name}
+            buttonText={buttonText}
+            className="mt-5 mb-5  text-green-700 hover:text-green-900 active:text-green-900 rounded transition-colors duration-150"
+          />
+        ))}
       </div>
       <div className="flex flex-row items-center w-full justify-end mr-5">
         {/* Right: Utility/profile buttons */}
-        {user.isLogged ? (
+        {isLogged ? (
           <Button icon={<GiHamburgerMenu className="w-6 h-6 mt-5 mb-5" />} />
         ) : (
           <>
             <Button
               buttonText="Sign in"
               className="mt-5 mb-5 rounded-full bg-gray-200 text-green-700 pl-4 pr-4 pb-2 pt-2"
-              handleLogIn={handleLogIn}
+              onClick={() => handleAuth('login')}
             />
             <Button
-              buttonText="Register"
+              buttonText="Sign up"
               className="ml-5 mt-5 mb-5 rounded-full bg-green-700 text-white pl-4 pr-4 pb-2 pt-2"
-              handleLogIn={handleLogIn}
+              onClick={() => handleAuth('register')}
             />
           </>
-          //i need to add something
+        )}
+        {modal && !isLogged && (
+          <PortalComponent element="#auth-modal">
+            <AuthModal register={modal === 'register'} onClose={handleCloseAuth} />
+          </PortalComponent>
+        )}
+        {modal && isLogged && (
+          <PortalComponent element="#auth-modal">
+            <UserMenu />
+          </PortalComponent>
         )}
       </div>
     </header>
@@ -77,7 +99,7 @@ export default function Header({ user, handleLogIn }) {
 
 /*
 Next Steps / ToDos:
-- Implement responsive header with hamburger menu for mobile.
+- Implement responsive header with hamburger 'menu' for mobile.
 - Add a logo or relevant image to the left section.
 - Integrate login/register forms as modals (potentially with React portals).
 - Decide between useState (local) or useContext (global) for authentication state management, adapting as app grows.
