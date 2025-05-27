@@ -32,8 +32,8 @@ import { useState, use } from 'react';
  */
 
 
-//change it manualy for tests only
-const SERWER_URL = "https://florae.dayfit.pl";
+//change it manually for tests only
+const SERVER_URL = "https://florae.dayfit.pl";
 const LOCAL_URL = "http://localhost:8080"
 
 
@@ -85,7 +85,7 @@ export default function AuthOverlay({ register, onClose }) {
     // 3. Submit form using axios
     try {
       const response = await axios.post(
-        `${LOCAL_URL}/auth/register`,
+        `${SERVER_URL}/auth/register`,
         {
           email: formData.email,
           login: formData.login,
