@@ -34,7 +34,7 @@ import { useState, use } from 'react';
 
 //change it manually for tests only
 const SERVER_URL = "https://florae.dayfit.pl";
-const LOCAL_URL = "http://localhost:8080"
+const LOCAL_URL = "http://localhost:8080";
 
 
 export default function AuthOverlay({ register, onClose }) {
