@@ -139,7 +139,8 @@ public class FloraeUserController {
         String refreshToken = Arrays.stream(cookies)
                 .filter(cookie -> cookie.getName().equals("refreshToken"))
                 .map(Cookie::getValue)
-                .collect(Collectors.joining());
+                .findFirst()
+                .orElse("");
 
         if (refreshToken.isBlank())
         {
