@@ -108,7 +108,7 @@ export default function AuthModal({ register, onClose }) {
         }
       );
       console.log(response)
-      logIn(formData);
+      logIn(formData); //later I need to change it because I can't store password in state
       setFormData({email: '', username: '', password: ''})
       setIsSubmitting(false);
       onClose();
@@ -139,19 +139,19 @@ export default function AuthModal({ register, onClose }) {
       console.log('Submitting form: ', formData);
       const response = await axios.post(
         `${API_URL}/auth/register`,
-
+        {
           username: formData.username,
           email: formData.email,
           password: formData.password,
         },
         {
           headers: {
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+          },
         }
       );
       console.log(response)
-      logIn(formData);
+      logIn(formData); //later I need to change it because I can't store password in state
       setFormData({email: '', username: '', password: ''})
       setIsSubmitting(false);
       onClose();
