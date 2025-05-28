@@ -3,8 +3,11 @@ package pl.Dayfit.Florae.Configurations;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -21,6 +24,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationCandidate;
 import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationToken;
 import pl.Dayfit.Florae.Auth.FloraeAuthenticationEntryPoint;
@@ -95,6 +99,17 @@ public class SecurityConfiguration {
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(apiKeyFilter(authManager), JWTFilter.class)
                 .build();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name="florae.forwarded-headers.enabled", havingValue = "true")
+    public FilterRegistrationBean<ForwardedHeaderFilter> forwardedHeaderFilter()
+    {
+        FilterRegistrationBean<ForwardedHeaderFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+        filterRegistrationBean.setFilter(new ForwardedHeaderFilter());
+        filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+
+        return filterRegistrationBean;
     }
 
     @Bean

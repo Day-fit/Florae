@@ -143,7 +143,7 @@ public class JWTService {
      * @param token The JWT access token to be validated.
      * @param username The username associated with the token.
      *
-     * @return {@code true} if the token is valid and not expired or blacklisted, {@code false} otherwise.
+     * @return {@code true} if the token is valid, owner is correct and not expired or blacklisted, {@code false} otherwise.
      */
     public boolean validateAccessToken(String token, String username) {
         String extractUsername = extractUsername(token);
