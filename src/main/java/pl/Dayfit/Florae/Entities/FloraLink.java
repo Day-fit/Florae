@@ -1,11 +1,9 @@
 package pl.Dayfit.Florae.Entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import pl.Dayfit.Florae.Entities.Sensors.DailyReportData;
 
 /**
  * Represents an ESP device entity in the system.
@@ -33,7 +31,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Esp {
+public class FloraLink {
     @Id
     @GeneratedValue
     private Integer id;
@@ -41,6 +39,9 @@ public class Esp {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, length = 17) //MAC address is always length of 17 ex. XX:XX:XX:XX:XX:XX
-    private String macAddress;
+    @ManyToOne(cascade = CascadeType.ALL)
+    private FloraeUser owner;
+
+    @OneToOne(mappedBy = "floraLink", cascade = CascadeType.ALL)
+    private DailyReportData dailyReportData;
 }

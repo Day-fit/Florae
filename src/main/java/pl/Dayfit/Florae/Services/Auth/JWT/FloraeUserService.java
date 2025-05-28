@@ -1,4 +1,4 @@
-package pl.Dayfit.Florae.Services;
+package pl.Dayfit.Florae.Services.Auth.JWT;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
 import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
-import pl.Dayfit.Florae.Repositories.FloraeUserRepository;
+import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
 
 /**
  * Service class responsible for user-related operations in the Florae system.
@@ -40,6 +40,7 @@ public class FloraeUserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authManager;
     private final JWTService jwtService;
+    private final FloraeUserCacheService cacheService;
 
     public static final int ACCESS_TOKEN_EXPIRATION_TIME = 30;
     public static final int REFRESH_TOKEN_EXPIRATION_TIME = 14;
@@ -63,6 +64,8 @@ public class FloraeUserService {
     public boolean isValid(FloraeUserLoginDTO floraeUserLoginDTO) {
 
         if(floraeUserLoginDTO.getEmail() != null) {
+            String email = floraeUserLoginDTO.getEmail().toLowerCase();
+
             try {
                 return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserLoginDTO.getUsername(), floraeUserLoginDTO.getPassword())).isAuthenticated();
             } catch (AuthenticationException e) {
@@ -72,7 +75,6 @@ public class FloraeUserService {
 
         if (floraeUserLoginDTO.getUsername() != null) {
             String username = floraeUserLoginDTO.getUsername().toLowerCase();
-            floraeUserRepository.findByUsername(username);
 
             try {
                 return authManager.authenticate(new UsernamePasswordAuthenticationToken(username, floraeUserLoginDTO.getPassword())).isAuthenticated();

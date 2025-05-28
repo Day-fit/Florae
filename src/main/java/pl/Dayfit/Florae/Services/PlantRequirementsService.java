@@ -12,7 +12,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import pl.Dayfit.Florae.DTOs.PlantRequirementsDTO;
 import pl.Dayfit.Florae.Entities.PlantRequirements;
-import pl.Dayfit.Florae.Repositories.PlantRequirementsRepository;
+import pl.Dayfit.Florae.Repositories.JPA.PlantRequirementsRepository;
 
 import java.util.NoSuchElementException;
 
@@ -68,7 +68,7 @@ public class PlantRequirementsService {
     private final HttpHeaders headers = new HttpHeaders();
 
     @PostConstruct
-    private void innit()
+    private void init()
     {
         headers.add("Authorization", "Token " + PLANT_BOOK_API);
     }

@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
 import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
-import pl.Dayfit.Florae.Services.FloraeUserService;
+import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserService;
+import pl.Dayfit.Florae.Services.Auth.JWT.JWTService;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -25,10 +26,12 @@ import java.util.Map;
  * - /auth/register: Registers a new user with provided details.
  * - /auth/login: Authenticates a user and provides a JSON Web Token (JWT) upon successful login.
  * - /auth/refresh: Refreshes an existing JWT token using a refresh token.
+ * - /auth/logout: Handles revoking JWT refresh token
 
  * Dependencies:
  * - {@code FloraeUserService}: Service layer responsible for handling user operations such as registration,
  *   validation, and token generation.
+ * - {@code JWTService}: Service layer responsible for validation, revoking tokens.
 
  * Validations:
  * - Ensures that the username, email, and password provided during registration meet the specified format
@@ -41,6 +44,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FloraeUserController {
     private final FloraeUserService floraeUserService;
+    private final JWTService jwtService;
 
     private static final String USERNAME_REGEX = "[a-zA-Z0-9_]+";
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
@@ -105,5 +109,21 @@ public class FloraeUserController {
         }
 
         return ResponseEntity.ok(Map.of("accessToken", accessToken));
+    }
+
+    @PostMapping("/auth/logout")
+    public ResponseEntity<?> logoutUser(@RequestBody String refreshToken)
+    {
+        if (refreshToken == null || refreshToken.isBlank())
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Refresh token is empty or invalid"));
+        }
+
+        if (!jwtService.validateRefreshToken(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid refresh token"));
+        }
+
+        jwtService.revokeToken(refreshToken);
+        return ResponseEntity.ok(Map.of("message", "Logout successful"));
     }
 }

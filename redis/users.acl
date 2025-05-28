@@ -1,0 +1,2 @@
+user default off
+user ${REDIS_USERNAME} on >${REDIS_PASSWORD} allcommands allkey

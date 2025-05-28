@@ -1,5 +1,6 @@
 package pl.Dayfit.Florae.Configurations;
 
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -19,7 +20,7 @@ public class MvcConfiguration implements WebMvcConfigurer {
     private String ALLOWED_ORIGINS_PATTERNS;
 
     @Override
-    public void addCorsMappings(CorsRegistry registry)
+    public void addCorsMappings(@NonNull CorsRegistry registry)
     {
         String[] origins = ALLOWED_ORIGINS_PATTERNS.split(",");
 

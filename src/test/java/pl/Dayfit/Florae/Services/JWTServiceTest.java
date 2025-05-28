@@ -2,8 +2,11 @@ package pl.Dayfit.Florae.Services;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import pl.Dayfit.Florae.Repositories.JPA.BlacklistJwtTokenRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import pl.Dayfit.Florae.Services.Auth.JWT.JWTService;
 
 import javax.crypto.SecretKey;
 import java.lang.reflect.Field;
@@ -11,6 +14,7 @@ import java.util.Base64;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 class JWTServiceTest {
 
@@ -19,7 +23,8 @@ class JWTServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        jwtService = new JWTService(null, null);
+        BlacklistJwtTokenRepository mockRepository = mock(BlacklistJwtTokenRepository.class);
+        jwtService = new JWTService(mockRepository);
         Field secretKeyField = JWTService.class.getDeclaredField("secretKey");
         secretKeyField.setAccessible(true);
         secretKeyField.set(jwtService, validBase64Secret);

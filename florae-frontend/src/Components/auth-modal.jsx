@@ -45,6 +45,7 @@ import { useState, use } from 'react';
  */
 
 
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function AuthModal({ register, onClose }) {
@@ -138,7 +139,7 @@ export default function AuthModal({ register, onClose }) {
       console.log('Submitting form: ', formData);
       const response = await axios.post(
         `${API_URL}/auth/register`,
-        {
+
           username: formData.username,
           email: formData.email,
           password: formData.password,
