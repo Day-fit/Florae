@@ -1,12 +1,20 @@
 package pl.Dayfit.Florae.Controllers;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import pl.Dayfit.Florae.Auth.UserPrincipal;
 import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
 import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
@@ -14,7 +22,6 @@ import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserService;
 import pl.Dayfit.Florae.Services.Auth.JWT.JWTService;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -40,14 +47,27 @@ import java.util.Map;
  * Error Handling:
  * - Returns appropriate HTTP status codes and error messages for validation failures and duplicate entries.
  */
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class FloraeUserController {
     private final FloraeUserService floraeUserService;
     private final JWTService jwtService;
 
+    @Value("${florae.secured-cookies.enabled:false}")
+    private boolean useSecuredCookies;
+
     private static final String USERNAME_REGEX = "[a-zA-Z0-9_]+";
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+
+    @PostConstruct
+    private void init()
+    {
+        if (!useSecuredCookies)
+        {
+            log.warn("Running without secured cookies, should be used ONLY in dev environment");
+        }
+    }
 
     @PostMapping("/auth/register")
     public ResponseEntity<Map<String, String>> registerUser(@RequestBody FloraeUserRegisterDTO floraeUserRegisterDTO)
@@ -77,53 +97,126 @@ public class FloraeUserController {
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<?> loginUser(@RequestBody FloraeUserLoginDTO floraeUserLoginDTO)
+    public ResponseEntity<?> loginUser(@RequestBody FloraeUserLoginDTO floraeUserLoginDTO, HttpServletResponse response)
     {
-        Map<String, String> response = new HashMap<>();
-
-        if (!floraeUserService.isValid(floraeUserLoginDTO)) {
-            response.put("error", "Invalid username or password");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-        }
-
         if (floraeUserLoginDTO.getGenerateRefreshToken()) {
-            response.put("refreshToken", floraeUserService.getRefreshToken(floraeUserLoginDTO.getUsername()));
+            Cookie refreshTokenCookie = new Cookie("refreshToken", floraeUserService.getRefreshToken(floraeUserLoginDTO.getUsername()));
+            refreshTokenCookie.setPath("/");
+            refreshTokenCookie.setMaxAge(60 * 60 * 24 * FloraeUserService.REFRESH_TOKEN_EXPIRATION_TIME);
+            refreshTokenCookie.setHttpOnly(true);
+            refreshTokenCookie.setSecure(useSecuredCookies);
+
+            response.addCookie(refreshTokenCookie);
         }
 
-        response.put("accessToken", floraeUserService.getAccessToken(floraeUserLoginDTO.getUsername()));
-        return ResponseEntity.ok(response);
+        Cookie accessTokenCookie = new Cookie("accessToken", floraeUserService.generateAccessToken(floraeUserLoginDTO.getUsername()));
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(60 * FloraeUserService.ACCESS_TOKEN_EXPIRATION_TIME);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setSecure(useSecuredCookies);
+
+        response.addCookie(accessTokenCookie);
+
+        return ResponseEntity.ok(Map.of("message", "User logged in successfully"));
     }
 
     @PostMapping("/auth/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> refreshToken)
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response)
     {
-        if (refreshToken == null || refreshToken.get("refreshToken") == null || refreshToken.get("refreshToken").isBlank())
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "No cookies found"));
+        }
+
+        String refreshToken = null;
+
+        for (Cookie cookie : cookies)
         {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Refresh token is empty or invalid"));
+            if (cookie.getName().equals("refreshToken"))
+            {
+                refreshToken = cookie.getValue();
+            }
         }
 
-        String accessToken = floraeUserService.getAccessTokenFromRefreshToken(refreshToken.get("refreshToken"));
-
-        if (accessToken == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid refresh token"));
+        if (refreshToken == null)
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Refresh token not found"));
         }
 
-        return ResponseEntity.ok(Map.of("accessToken", accessToken));
+        String newAccessToken = floraeUserService.refreshAccessToken(refreshToken);
+
+        Cookie accessTokenCookie = new Cookie("accessToken", newAccessToken);
+        accessTokenCookie.setSecure(useSecuredCookies);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(60 * FloraeUserService.ACCESS_TOKEN_EXPIRATION_TIME);
+
+        response.addCookie(accessTokenCookie);
+
+        return ResponseEntity.ok(Map.of("message","Access token refreshed successfully"));
     }
 
     @PostMapping("/auth/logout")
-    public ResponseEntity<?> logoutUser(@RequestBody String refreshToken)
+    public ResponseEntity<?> logoutUser(@AuthenticationPrincipal UserPrincipal user, HttpServletRequest request, HttpServletResponse response)
     {
-        if (refreshToken == null || refreshToken.isBlank())
+        Cookie[] cookies = request.getCookies();
+        Cookie accessTokenCookie = null;
+        Cookie refreshTokenCookie = null;
+
+        if (cookies == null)
         {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Refresh token is empty or invalid"));
+            return ResponseEntity.ok(Map.of("message", "Already logged out"));
         }
 
-        if (!jwtService.validateRefreshToken(refreshToken)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid refresh token"));
+
+
+        for (Cookie cookie : cookies)
+        {
+            if (accessTokenCookie != null && refreshTokenCookie != null)
+            {
+                break;
+            }
+
+            if (cookie.getName().equals("accessToken"))
+            {
+                accessTokenCookie = cookie;
+                continue;
+            }
+
+            if (cookie.getName().equals("refreshToken"))
+            {
+                refreshTokenCookie = cookie;
+            }
         }
 
-        jwtService.revokeToken(refreshToken);
+        String accessToken = accessTokenCookie != null ? accessTokenCookie.getValue() : null;
+        String refreshToken = refreshTokenCookie != null ? refreshTokenCookie.getValue() : null;
+
+        if (refreshToken != null && !refreshToken.isBlank() && jwtService.validateRefreshToken(refreshToken)) {
+            Cookie deletedRefreshTokenCookie = new Cookie("refreshToken", null);
+            deletedRefreshTokenCookie.setPath("/");
+            deletedRefreshTokenCookie.setMaxAge(0);
+            deletedRefreshTokenCookie.setHttpOnly(true);
+            deletedRefreshTokenCookie.setSecure(useSecuredCookies);
+
+            response.addCookie(deletedRefreshTokenCookie);
+
+            jwtService.revokeToken(refreshToken);
+        }
+
+        if (accessToken != null && !accessToken.isBlank() && jwtService.validateAccessToken(accessToken, user.getUsername())) {
+            Cookie deletedAccessToken = new Cookie("accessToken", null);
+            deletedAccessToken.setPath("/");
+            deletedAccessToken.setMaxAge(0);
+            deletedAccessToken.setHttpOnly(true);
+            deletedAccessToken.setSecure(useSecuredCookies);
+
+            response.addCookie(deletedAccessToken);
+
+            jwtService.revokeToken(accessToken);
+        }
+
         return ResponseEntity.ok(Map.of("message", "Logout successful"));
     }
 }

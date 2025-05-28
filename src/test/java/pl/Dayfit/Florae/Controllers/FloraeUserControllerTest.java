@@ -157,14 +157,14 @@ class FloraeUserControllerTest {
                         .value("Invalid username or password"));
 
         verify(userService).isValid(dto);
-        verify(userService, never()).getAccessToken(any());
+        verify(userService, never()).generateAccessToken(any());
     }
 
     @Test
     void loginUser_validCredentials_returnsToken() throws Exception {
         FloraeUserLoginDTO dto = buildLoginDto("user1", "pass1");
         when(userService.isValid(dto)).thenReturn(true);
-        when(userService.getAccessToken("user1")).thenReturn("JWT-TOKEN");
+        when(userService.generateAccessToken("user1")).thenReturn("JWT-TOKEN");
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -173,6 +173,6 @@ class FloraeUserControllerTest {
                 .andExpect(jsonPath("$.accessToken").value("JWT-TOKEN"));
 
         verify(userService).isValid(dto);
-        verify(userService).getAccessToken("user1");
+        verify(userService).generateAccessToken("user1");
     }
 }

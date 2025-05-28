@@ -2,6 +2,7 @@ package pl.Dayfit.Florae.Filters;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
@@ -21,6 +22,7 @@ import pl.Dayfit.Florae.Services.Auth.JWT.JWTService;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -71,6 +73,13 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     @SuppressWarnings("NullableProblems")
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        if (hasValidAccessTokenCookie(request))
+        {
+            handleCookieAccess(request);
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
 
         String token;
@@ -107,9 +116,45 @@ public class JWTFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    private boolean hasValidAccessTokenCookie(HttpServletRequest request)
+    {
+        Cookie[] cookies = request.getCookies();
+        String accessToken;
+        Cookie accessTokenCookie = Arrays.stream(cookies).filter(cookie -> cookie.getName().equals("accessToken")).findFirst().orElse(null);
+
+        if(accessTokenCookie == null)
+        {
+            return false;
+        }
+
+        accessToken = accessTokenCookie.getValue();
+        return jwtService.validateAccessToken(accessToken, jwtService.extractUsername(accessToken));
+    }
+
+    private void handleCookieAccess(HttpServletRequest request)
+    {
+        Cookie[] cookies = request.getCookies();
+        String accessToken = Arrays.stream(cookies)
+                        .filter(cookie -> cookie.getName().equals("accessToken"))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("Cookie not found in request")) //Should never happen
+                        .getValue();
+
+        String username = jwtService.extractUsername(accessToken);
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+    }
+
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request)
     {
-        return (request.getHeader("X-API-KEY") != null && (request.getRequestURI().contains("/api/v1/floralink/upload") || request.getRequestURI().contains("/api/v1/floralink/connect-api"))) || PUBLIC_PATHS.stream().anyMatch(request.getRequestURI()::equalsIgnoreCase);
+        boolean validApiKey = request.getHeader("X-API-KEY") != null && (request.getRequestURI().contains("/api/v1/floralink/upload") || request.getRequestURI().contains("/api/v1/floralink/connect-api"));
+        boolean publicPath = PUBLIC_PATHS.stream().anyMatch(path -> path.equalsIgnoreCase(request.getRequestURI()));
+
+        return validApiKey || publicPath;
     }
 }

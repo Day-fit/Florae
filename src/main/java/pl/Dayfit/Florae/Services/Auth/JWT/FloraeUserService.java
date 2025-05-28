@@ -40,10 +40,9 @@ public class FloraeUserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authManager;
     private final JWTService jwtService;
-    private final FloraeUserCacheService cacheService;
 
-    public static final int ACCESS_TOKEN_EXPIRATION_TIME = 30;
-    public static final int REFRESH_TOKEN_EXPIRATION_TIME = 14;
+    public static final int ACCESS_TOKEN_EXPIRATION_TIME = 30; //In minutes
+    public static final int REFRESH_TOKEN_EXPIRATION_TIME = 14; //In days
 
     public void registerUser(FloraeUserRegisterDTO floraeUserRegisterDTO) throws DuplicateKeyException
     {
@@ -64,20 +63,16 @@ public class FloraeUserService {
     public boolean isValid(FloraeUserLoginDTO floraeUserLoginDTO) {
 
         if(floraeUserLoginDTO.getEmail() != null) {
-            String email = floraeUserLoginDTO.getEmail().toLowerCase();
-
             try {
-                return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserLoginDTO.getUsername(), floraeUserLoginDTO.getPassword())).isAuthenticated();
+                return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserLoginDTO.getEmail().toLowerCase(), floraeUserLoginDTO.getPassword())).isAuthenticated();
             } catch (AuthenticationException e) {
                 return false;
             }
         }
 
         if (floraeUserLoginDTO.getUsername() != null) {
-            String username = floraeUserLoginDTO.getUsername().toLowerCase();
-
             try {
-                return authManager.authenticate(new UsernamePasswordAuthenticationToken(username, floraeUserLoginDTO.getPassword())).isAuthenticated();
+                return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserLoginDTO.getUsername().toLowerCase(), floraeUserLoginDTO.getPassword())).isAuthenticated();
             } catch (AuthenticationException e) {
                 return false;
             }
@@ -86,16 +81,16 @@ public class FloraeUserService {
         return false;
     }
 
-    public String getAccessToken(String username) {
+    public String generateAccessToken(String username) {
         return jwtService.generateAccessToken(username, ACCESS_TOKEN_EXPIRATION_TIME);
     }
 
-    public String getAccessTokenFromRefreshToken(String refreshToken)
+    public String refreshAccessToken(String refreshToken)
     {
         String username = jwtService.extractUsername(refreshToken);
 
         if (jwtService.validateRefreshToken(refreshToken)){
-            return getAccessToken(username);
+            return generateAccessToken(username);
         }
 
         return null;
