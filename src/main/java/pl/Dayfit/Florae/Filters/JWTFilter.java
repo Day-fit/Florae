@@ -119,6 +119,9 @@ public class JWTFilter extends OncePerRequestFilter {
     private boolean hasValidAccessTokenCookie(HttpServletRequest request)
     {
         Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return false;
+        }
         String accessToken;
         Cookie accessTokenCookie = Arrays.stream(cookies).filter(cookie -> cookie.getName().equals("accessToken")).findFirst().orElse(null);
 
