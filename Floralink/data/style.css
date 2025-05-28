@@ -247,3 +247,25 @@ a
         height: 40px;
     }
 }
+
+#checkresult {
+    margin: 1em 0;
+    padding: 0.8em 1em;
+    border-radius: 4px;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-align: center;
+    display: none; /* domyślnie ukryty, pokaż przez JS */
+}
+#checkresult.failed {
+    display: block;
+    background-color: #ffeaea;
+    color: #d32f2f;
+    border: 1px solid #d32f2f;
+}
+#checkresult.passed {
+    display: block;
+    background-color: #eaffea;
+    color: #388e3c;
+    border: 1px solid #388e3c;
+}

@@ -15,6 +15,8 @@
         </div>
     </nav>
 
+    
+
     <nav id="burger-menu">
         <a href="index.html">Home Page</a>
         <a href="settings.html">Settings</a>
@@ -48,6 +50,12 @@
                     <input id="floraeAccessKey" name="floraeAccessKey" type="password" placeholder="Paste Your florae access key..." required>
                 </div>
             </div>
+
+            <div id="checkresult" class="failed" style="display: none;">&#10006; Invalid key</div>
+            <!--
+                Jeśli chcesz pokazać sukces:
+                <div id="checkresult" class="passed">&#10004; Valid key</div>
+            -->
 
             <button type="submit" class="submit-button">Save Configuration</button>
         </form>
