@@ -5,7 +5,7 @@ export const registerFields = [
     type: 'text',
   },
   {
-    name: 'login',
+    name: 'username',
     label: 'Username',
     type: 'text',
   },
@@ -18,8 +18,8 @@ export const registerFields = [
 
 export const loginFields = [
   {
-    name: 'email',
-    label: 'Email/Login',
+    name: 'username',
+    label: 'Email/Username',
     type: 'text',
   },
   {
@@ -41,5 +41,18 @@ export const navButtons= [
   {
     name: 'devices',
     buttonText: 'Devices',
-  }
-  ];
+  },
+];
+
+export const userMenuButtons = [
+  {
+    name: 'settings',
+    buttonsText: 'Settings',
+    icon: true,
+  },
+  {
+    name: 'logout',
+    buttonsText: 'Log out',
+    icon: false,
+  },
+];

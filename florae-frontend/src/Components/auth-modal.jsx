@@ -1,8 +1,26 @@
+/**
+ * AuthModal
+ * Handles user registration and login forms.
+ *
+ * Considers splitting:
+ *  - API request logic -> `util/auth-service.js`
+ *  - Input change helpers -> `util/form-helpers.js`
+ *  - Form field configs -> `util/data.js`
+ *
+ * This improves:
+ *  - Readability: UI logic isn't mixed with API/functionality code
+ *  - Maintainability: Helpers/services can be unit tested
+ *  - Reusability: Helpers/services can be used in other auth flows
+ */
+
+
+
 import Input from './input.jsx';
 import Button from './button.jsx';
 import { UserContext } from '../store/user-context.jsx';
 import AnimatedModal from "./animated-modal.jsx";
 import validateForm from '../util/form-validiation.js';
+import { isEmail } from '../util/form-validiation.js';
 import { registerFields, loginFields } from "../util/data.js";
 import rainyNature from '../assets/rainyNature.mp4';
 import axios from "axios";
@@ -11,11 +29,6 @@ import { useState, use } from 'react';
  * =====================================
  *        TODOs FOR AUTH COMPONENTS
  * =====================================
- * - [ ] Add input validation for all forms:
- *       • Password strength (min length, etc.)
- *       • Matching passwords on registration
- *       • Display helpful error messages
- *
  * - [ ] On submit, send request to backend API:
  *       • Use fetch/axios to POST login or registration data
  *       • Show loading and handle errors (user exists, bad password, etc.)
@@ -32,26 +45,28 @@ import { useState, use } from 'react';
  */
 
 
-//change it manually for tests only
-const SERVER_URL = "https://florae.dayfit.pl";
-const LOCAL_URL = "http://localhost:8080";
 
+const API_URL = import.meta.env.VITE_API_URL;
 
-export default function AuthOverlay({ register, onClose }) {
+export default function AuthModal({ register, onClose }) {
   const { logIn } = use(UserContext);
 
   const [errors, setErrors] = useState({
     email: '',
-    login: '',
+    username: '',
     password: '',
+    form: '',
   });
   const [formData, setFormData] = useState({
     email: '',
-    login: '',
+    username: '',
     password: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const userProp = formData.username
+    ? { username: formData.username }
+    : { email: formData.email };
 
   const errorClass = 'border-red-500 bg-red-50 text-red-700 placeholder-red-400 focus:border-red-600';
   const noErrorClass = "bg-white border-stone-200 text-stone-700 placeholder-stone-400 focus:border-green-600"
@@ -66,58 +81,117 @@ export default function AuthOverlay({ register, onClose }) {
     />
   );
 
-
-  //I need to fix this function later when Dayfit tells me every detail about CORS errors that occurs rn
-
-  async function handleSubmit(e) {
+  async function handleSignIn(e){
     e.preventDefault();
-    if (isSubmitting) return; // Prevent double submit
+    console.log("is submitting:"+ isSubmitting);
 
-    // 1. Validate form and update errors state
-    const validationErrors = await validateForm(formData, register ? 'register' : 'login');
+    if (isSubmitting) return;
+
+    const validationErrors = await validateForm(formData, 'signIn');
     setErrors(validationErrors);
-
-    // 2. If any errors, don't submit
-    // (validationErrors is object of error messages; if any value is non-empty, it's invalid)
     const hasErrors = Object.values(validationErrors).some((v) => v);
     if (hasErrors) return;
     setIsSubmitting(true);
-    // 3. Submit form using axios
-    try {
+
+    try{
       const response = await axios.post(
-        `${SERVER_URL}/auth/register`,
+        `${API_URL}/auth/login`,
         {
-          email: formData.email,
-          login: formData.login,
+          ...userProp,
           password: formData.password,
+          generateRefreshToken: true
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
         }
       );
-      console.log("Submission successful:", response.data);
+      console.log(response)
       logIn(formData);
-      onClose();
-      setFormData({email: '', login: '', password: ''})
+      setFormData({email: '', username: '', password: ''})
       setIsSubmitting(false);
+      onClose();
     } catch (err) {
-      // Show a generic error or display err.response?.data?.message if your backend returns nice errors
       setErrors((prev) => ({
         ...prev,
-        form: "Something went wrong. Please try again.",
+        email: "Wrong email or username",
+        username: "Wrong email or username",
+        form: "Wrong email or username",
       }));
       console.error("Submission error:", err);
       setIsSubmitting(false);
     }
   }
 
-  function handleFormInput(e, name){
+  async function handleRegister(e) {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    const validationErrors = await validateForm(formData, 'register');
+    setErrors(validationErrors);
+
+    const hasErrors = Object.values(validationErrors).some((v) => v);
+    if (hasErrors) return;
+    setIsSubmitting(true);
+
+    try {
+      console.log('Submitting form: ', formData);
+      const response = await axios.post(
+        `${API_URL}/auth/register`,
+
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      console.log(response)
+      logIn(formData);
+      setFormData({email: '', username: '', password: ''})
+      setIsSubmitting(false);
+      onClose();
+    } catch (err) {
+      setErrors((prev) => ({
+        ...prev,
+        email: "Wrong email or username",
+        username: "Wrong email or username",
+        form: "Wrong email or username",
+      }));
+      console.error("Submission error:", err);
+      setIsSubmitting(false);
+    }
+  }
+
+  function handleFormInput(e, name, isLogging){
+    if(isLogging){
+      const isLoginEmail = isEmail(name);
+      if(!isLoginEmail){
+        setFormData((prev) => ({
+          ...prev,
+          [name]: e.target.value,
+        }))
+      }
+      else{
+        setFormData((prev) => ({
+          ...prev,
+          email: e.target.value,
+        }))
+      }
+    } else{
     setFormData((prev) => ({
       ...prev,
       [name]: e.target.value,
     }))
+    }
   }
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-        {/* Video background */}
         <video
           src={rainyNature}
           className="absolute inset-0 w-full h-full object-cover z-0"
@@ -134,7 +208,7 @@ export default function AuthOverlay({ register, onClose }) {
               {register ? 'Sign up' : 'Sign in'}
             </h2>
             {register ? (
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleRegister}>
                 {registerFields.map((field) => (
                   <Input
                     key={field.name}
@@ -143,11 +217,18 @@ export default function AuthOverlay({ register, onClose }) {
                     placeholder={field.label}
                     errorMsg={errors[field.name] || ''}
                     value={formData[field.name] || ''}
-                    onChange={(e) => handleFormInput(e, field.name)}
+                    onChange={(e) => handleFormInput(e, field.name, false)}
                     className={`${baseInputClass} ${errors[field.name] ? errorClass : noErrorClass}`}
-                    autoComplete={field.name === 'login' ? "username" : field.name === "password" ? "new-password" : "email"}
+                    autoComplete={field.name === 'username' ? "username" : field.name === "password" ? "new-password" : "email"}
                   />
                 ))}
+                <div className="w-full flex flex-col items-center mb-4 mt-4">
+                  {errors.form && (
+                    <p className="text-red-600 text-lg font-bold text-center">
+                      {errors.form}
+                    </p>
+                  )}
+                </div>
                 <div className="flex flex-row justify-between mt-4 w-full">
                   <div className="flex justify-start">
                     <Button
@@ -160,7 +241,7 @@ export default function AuthOverlay({ register, onClose }) {
                 </div>
               </form>
             ) : (
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSignIn}>
                 {loginFields.map((field) => (
                   <Input
                     key={field.name}
@@ -169,15 +250,22 @@ export default function AuthOverlay({ register, onClose }) {
                     placeholder={field.label}
                     errorMsg={errors[field.name] || ''}
                     value={formData[field.name] || ''}
-                    onChange={(e) => handleFormInput(e, field.name)}
+                    onChange={(e) => handleFormInput(e, field.name, true)}
                     className={`${baseInputClass} ${errors[field.name] ? errorClass : noErrorClass}`}
-                    autoComplete={field.name === 'login' ? "username" : field.name === "password" ? "current-password" : "email"}
+                    autoComplete={field.name === 'username' ? "username" : field.name === "password" ? "current-password" : "email"}
                   />
                 ))}
+                <div className="w-full flex flex-col items-center mb-4 mt-4">
+                  {errors.form && (
+                    <p className="text-red-600 text-lg font-bold text-center">
+                      {errors.form}
+                    </p>
+                  )}
+                </div>
                 <div className="flex flex-row justify-between mt-4 w-full">
                   <div className="flex justify-start">
                     <Button
-                      buttonText="Login"
+                      buttonText="Sign in"
                       type="submit"
                       className="max-w-lg text-white bg-green-700 text-center rounded-lg pt-2 pb-2 px-20"
                     />

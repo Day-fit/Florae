@@ -7,16 +7,44 @@ import zxcvbn from 'zxcvbn';
  * @param {string} [mode='login'] - The validation mode, defaults to 'login'.
  * @returns {Promise<Object>} - Resolves to an object with errors (empty if valid).
  */
-export default async function validateForm(values, mode = 'login') {
+
+/**
+ * Auth (Sign-In) Schema - Yup validation
+ *
+ * Validates that EITHER 'email' OR 'username' is required and valid.
+ * - Email: Valid email format, but not single-letter TLDs or nested single-letter TLDs.
+ * - Username: 3-20 letters, numbers, or underscores.
+ *
+ * Each field is mutually optional, but at least one of them must be filled.
+ * Password is always required.
+ *
+ * Usage:
+ *   import { authSchema } from '../util/form-validation';
+ *   authSchema.validate(formData);
+ */
+
+export function isEmail(value) {
+  // Basic RFC5322 email regex (customize as needed)
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+export default async function validateForm(values, mode = 'signIn') {
   let schema;
 
   if (mode === 'register') {
     schema = Yup.object().shape({
       email: Yup.string()
-        .test('email', 'Enter a valid email', (value) => !!value &&
-            (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)))
+        .test(
+          'email',
+          'Enter a valid email',
+          (value) =>
+            !!value &&
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) &&
+            !/\.[a-zA-Z]{1}\.[a-zA-Z]+$/.test(value) &&
+            !/\.[a-zA-Z]{1}$/.test(value)
+        )
         .required('Email or login is required'),
-      login: Yup.string()
+      username: Yup.string()
         .matches(/^[a-zA-Z0-9_]{3,20}$/, 'Username must be 3-20 characters, letters, numbers, or _')
         .required('Username is required'),
       password: Yup.string()
@@ -29,7 +57,7 @@ export default async function validateForm(values, mode = 'login') {
           if (!value) return false;
           return zxcvbn(value).score >= 3;
         })
-        .required('Password is required')
+        .required('Password is required'),
     });
   } else {
     // login: allow email or username in one field
@@ -38,12 +66,40 @@ export default async function validateForm(values, mode = 'login') {
         .test(
           'email-or-username',
           'Enter a valid email or username',
-          (value) =>
-            !!value &&
-            (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || // email pattern
-              /^[a-zA-Z0-9_]{3,20}$/.test(value)) // username pattern
-        )
-        .required('Email or login is required'),
+          function (value) {
+            const { username } = this.parent;
+            if (!value && !username) {
+              // Both empty: fail
+              return false;
+            }
+            if (value) {
+              // Validate email only if provided
+              return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) &&
+                !/\.[a-zA-Z]{1}\.[a-zA-Z]+$/.test(value) &&
+                !/\.[a-zA-Z]{1}$/.test(value);
+            }
+            // Not required if username filled
+            return true;
+          }
+        ),
+      username: Yup.string()
+        .test(
+          'email-or-username',
+          'Enter a valid email or username',
+          function (value) {
+            const { email } = this.parent;
+            if (!value && !email) {
+              // Both empty: fail
+              return false;
+            }
+            if (value) {
+              // Validate username only if provided
+              return /^[a-zA-Z0-9_]{3,20}$/.test(value);
+            }
+            // Not required if email filled
+            return true;
+          }
+        ),
       password: Yup.string()
         .required('Password is required')
     });

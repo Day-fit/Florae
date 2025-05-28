@@ -44,8 +44,12 @@ export default function Header() {
   function handleAuth(action) {
     setModal(action);
   }
-  function handleCloseAuth() {
+  function handleClose() {
     setModal(null);
+  }
+
+  function handleUserMenu(){
+    setModal(true);
   }
 
   return (
@@ -67,7 +71,7 @@ export default function Header() {
       <div className="flex flex-row items-center w-full justify-end mr-5">
         {/* Right: Utility/profile buttons */}
         {isLogged ? (
-          <Button icon={<GiHamburgerMenu className="w-6 h-6 mt-5 mb-5" />} />
+          <Button icon={<GiHamburgerMenu className="w-6 h-6 mt-5 mb-5" onClick={handleUserMenu} />} />
         ) : (
           <>
             <Button
@@ -84,12 +88,12 @@ export default function Header() {
         )}
         {modal && !isLogged && (
           <PortalComponent element="#auth-modal">
-            <AuthModal register={modal === 'register'} onClose={handleCloseAuth} />
+            <AuthModal register={modal === 'register'} onClose={handleClose} />
           </PortalComponent>
         )}
         {modal && isLogged && (
           <PortalComponent element="#auth-modal">
-            <UserMenu />
+            <UserMenu onClose={handleClose} />
           </PortalComponent>
         )}
       </div>
