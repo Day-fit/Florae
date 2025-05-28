@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -28,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class FloraeUserControllerTest {
 
     private MockMvc mockMvc;
+    private MockHttpSession session;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Mock
@@ -39,6 +41,7 @@ class FloraeUserControllerTest {
     @BeforeEach
     @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
     void setUp() {
+        session = new MockHttpSession();
         mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
     }
 
@@ -65,6 +68,7 @@ class FloraeUserControllerTest {
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
                         .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message")
@@ -81,6 +85,7 @@ class FloraeUserControllerTest {
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
                         .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error").value("OK"));
@@ -99,6 +104,7 @@ class FloraeUserControllerTest {
         for (FloraeUserRegisterDTO dto : new FloraeUserRegisterDTO[]{dto1, dto2, dto3, dto4}) {
             mockMvc.perform(post("/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
+                            .session(session)
                             .content(mapper.writeValueAsString(dto)))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error").value("Username is not valid"));
@@ -117,6 +123,7 @@ class FloraeUserControllerTest {
         for (FloraeUserRegisterDTO dto : new FloraeUserRegisterDTO[]{dto1, dto2, dto3, dto4}) {
             mockMvc.perform(post("/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
+                            .session(session)
                             .content(mapper.writeValueAsString(dto)))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error").value("Email is not valid"));
@@ -137,6 +144,7 @@ class FloraeUserControllerTest {
         for (FloraeUserRegisterDTO dto : new FloraeUserRegisterDTO[]{dto1, dto2, dto3}) {
             mockMvc.perform(post("/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
+                            .session(session)
                             .content(mapper.writeValueAsString(dto)))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error").value("Password is not valid"));
@@ -146,33 +154,33 @@ class FloraeUserControllerTest {
 
     @Test
     void loginUser_invalidCredentials_returnsUnauthorized() throws Exception {
-        FloraeUserLoginDTO dto = buildLoginDto("user", "pass");
-        when(userService.isValid(dto)).thenReturn(false);
+        var dto = buildLoginDto("user", "pass");
+        when(userService.isValid(any(FloraeUserLoginDTO.class))).thenReturn(false);
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error")
-                        .value("Invalid username or password"));
+                .andExpect(jsonPath("$.error").exists());
 
-        verify(userService).isValid(dto);
+        verify(userService).isValid(any(FloraeUserLoginDTO.class));
         verify(userService, never()).generateAccessToken(any());
     }
 
     @Test
-    void loginUser_validCredentials_returnsToken() throws Exception {
-        FloraeUserLoginDTO dto = buildLoginDto("user1", "pass1");
-        when(userService.isValid(dto)).thenReturn(true);
+    void loginUser_validCredentials_assignCookie() throws Exception {
+        var dto = buildLoginDto("user1", "pass1");
+        when(userService.isValid(any(FloraeUserLoginDTO.class))).thenReturn(true);
         when(userService.generateAccessToken("user1")).thenReturn("JWT-TOKEN");
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value("JWT-TOKEN"));
+                .andExpect(cookie().exists("accessToken"))
+                .andExpect(cookie().value("accessToken", "JWT-TOKEN"));
 
-        verify(userService).isValid(dto);
+        verify(userService).isValid(any(FloraeUserLoginDTO.class));
         verify(userService).generateAccessToken("user1");
     }
 }

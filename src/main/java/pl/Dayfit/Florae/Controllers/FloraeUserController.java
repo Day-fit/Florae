@@ -22,7 +22,9 @@ import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserService;
 import pl.Dayfit.Florae.Services.Auth.JWT.JWTService;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
@@ -99,6 +101,11 @@ public class FloraeUserController {
     @PostMapping("/auth/login")
     public ResponseEntity<?> loginUser(@RequestBody FloraeUserLoginDTO floraeUserLoginDTO, HttpServletResponse response)
     {
+        if (!floraeUserService.isValid(floraeUserLoginDTO))
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials"));
+        }
+
         if (floraeUserLoginDTO.getGenerateRefreshToken()) {
             Cookie refreshTokenCookie = new Cookie("refreshToken", floraeUserService.getRefreshToken(floraeUserLoginDTO.getUsername()));
             refreshTokenCookie.setPath("/");
@@ -129,19 +136,19 @@ public class FloraeUserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "No cookies found"));
         }
 
-        String refreshToken = null;
+        String refreshToken = Arrays.stream(cookies)
+                .filter(cookie -> cookie.getName().equals("refreshToken"))
+                .map(Cookie::getValue)
+                .collect(Collectors.joining());
 
-        for (Cookie cookie : cookies)
-        {
-            if (cookie.getName().equals("refreshToken"))
-            {
-                refreshToken = cookie.getValue();
-            }
-        }
-
-        if (refreshToken == null)
+        if (refreshToken.isBlank())
         {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Refresh token not found"));
+        }
+
+        if (!jwtService.validateRefreshToken(refreshToken))
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid refresh token"));
         }
 
         String newAccessToken = floraeUserService.refreshAccessToken(refreshToken);
