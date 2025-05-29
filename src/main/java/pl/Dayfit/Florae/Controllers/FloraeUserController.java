@@ -12,20 +12,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
 import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
 import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
+import pl.Dayfit.Florae.DTOs.FloraeUserReposonseDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
+import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserService;
 import pl.Dayfit.Florae.Services.Auth.JWT.JWTService;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Collectors;
-
 
 /**
  * Controller for handling user-related operations in the Florae system.
@@ -54,6 +55,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FloraeUserController {
     private final FloraeUserService floraeUserService;
+    private final FloraeUserCacheService floraeUserCacheService;
     private final JWTService jwtService;
 
     @Value("${florae.secured-cookies.enabled:false}")
@@ -226,5 +228,21 @@ public class FloraeUserController {
         }
 
         return ResponseEntity.ok(Map.of("message", "Logout successful"));
+    }
+
+    @GetMapping("/api/v1/get-user-data")
+    public ResponseEntity<?> getUserData(@AuthenticationPrincipal UserPrincipal user)
+    {
+        if (user == null || user.getUsername() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "User not authenticated"));
+        }
+
+        FloraeUser floraeUser = floraeUserCacheService.getFloraeUser(user.getUsername());
+
+        if (floraeUser == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "User not found"));
+        }
+
+        return ResponseEntity.ok(new FloraeUserReposonseDTO(floraeUser.getUsername(), floraeUser.getEmail()));
     }
 }

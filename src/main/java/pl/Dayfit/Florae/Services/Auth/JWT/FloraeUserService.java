@@ -64,7 +64,8 @@ public class FloraeUserService {
 
         if(floraeUserLoginDTO.getEmail() != null) {
             try {
-                return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserLoginDTO.getEmail().toLowerCase(), floraeUserLoginDTO.getPassword())).isAuthenticated();
+                FloraeUser floraeUser = floraeUserRepository.findByEmail(floraeUserLoginDTO.getEmail().toLowerCase());
+                return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUser.getUsername(), floraeUserLoginDTO.getPassword())).isAuthenticated();
             } catch (AuthenticationException e) {
                 return false;
             }
