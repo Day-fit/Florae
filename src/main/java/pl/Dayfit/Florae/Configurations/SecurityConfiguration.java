@@ -88,7 +88,12 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authManager) throws Exception
     {
         return http
-                .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                .csrf(csrf -> 
+                    {
+                        csrf.ignoringRequestMatchers("/csrf","/auth/register");
+                        csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+                    }
+                )
                 .authorizeHttpRequests(request -> {
                     request.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll(); //To allow the async servlet to work properly
                     request.requestMatchers(PUBLIC_PATHS.toArray(new String[0])).permitAll();
