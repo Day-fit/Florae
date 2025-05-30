@@ -103,13 +103,24 @@ public class FloraeUserController {
     @PostMapping("/auth/login")
     public ResponseEntity<?> loginUser(@RequestBody FloraeUserLoginDTO floraeUserLoginDTO, HttpServletResponse response)
     {
+        FloraeUser user;
+        String username = floraeUserLoginDTO.getUsername();
+        String email = floraeUserLoginDTO.getEmail();
+
+        user = floraeUserLoginDTO.getUsername() == null? floraeUserCacheService.getFloraeUserByEmail(email) : floraeUserCacheService.getFloraeUser(username);
+
+        if (user == null)
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials"));
+        }
+
         if (!floraeUserService.isValid(floraeUserLoginDTO))
         {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials"));
         }
 
         if (floraeUserLoginDTO.getGenerateRefreshToken()) {
-            Cookie refreshTokenCookie = new Cookie("refreshToken", floraeUserService.getRefreshToken(floraeUserLoginDTO.getUsername()));
+            Cookie refreshTokenCookie = new Cookie("refreshToken", floraeUserService.getRefreshToken(user.getUsername()));
             refreshTokenCookie.setPath("/");
             refreshTokenCookie.setMaxAge(60 * 60 * 24 * FloraeUserService.REFRESH_TOKEN_EXPIRATION_TIME);
             refreshTokenCookie.setHttpOnly(true);
@@ -118,7 +129,7 @@ public class FloraeUserController {
             response.addCookie(refreshTokenCookie);
         }
 
-        Cookie accessTokenCookie = new Cookie("accessToken", floraeUserService.generateAccessToken(floraeUserLoginDTO.getUsername()));
+        Cookie accessTokenCookie = new Cookie("accessToken", floraeUserService.generateAccessToken(user.getUsername()));
         accessTokenCookie.setPath("/");
         accessTokenCookie.setMaxAge(60 * FloraeUserService.ACCESS_TOKEN_EXPIRATION_TIME);
         accessTokenCookie.setHttpOnly(true);
