@@ -15,6 +15,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -23,7 +24,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationCandidate;
 import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationToken;
@@ -88,12 +88,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authManager) throws Exception
     {
         return http
-                .csrf(csrf -> 
-                    {
-                        csrf.ignoringRequestMatchers("/csrf","/auth/register");
-                        csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
-                    }
-                )
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> {
                     request.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll(); //To allow the async servlet to work properly
                     request.requestMatchers(PUBLIC_PATHS.toArray(new String[0])).permitAll();
@@ -175,8 +170,9 @@ public class SecurityConfiguration {
     @Bean
     public AuthenticationProvider daoAuthenticationProvider()
     {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(bCryptPasswordEncoder());
+        provider.setUserDetailsService(userDetailsService);
         return provider;
     }
 
