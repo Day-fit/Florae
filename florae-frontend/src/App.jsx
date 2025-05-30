@@ -8,6 +8,7 @@ function App() {
     isLogged: false,
     userData: {},
   });
+  const [modal, setModal] = useState(null);
   // const [viewMode, setViewMode] = useState("home");
 
   const contextValue = {
@@ -23,8 +24,10 @@ function App() {
   }
   return (
     <UserContext value={contextValue}>
-      <Header />
-      <MainSection />
+      <div className="sticky bg-white top-0 z-50">
+        <Header modal={modal} setModal={setModal} />
+      </div>
+      <MainSection setModal={setModal}/>
     </UserContext>
   );
 }
