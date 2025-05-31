@@ -94,6 +94,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authManager) throws Exception
     {
         return http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> {
                     request.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll(); //To allow the async servlet to work properly
@@ -189,9 +190,8 @@ public class SecurityConfiguration {
     @Bean
     public AuthenticationProvider daoAuthenticationProvider()
     {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(bCryptPasswordEncoder());
-        provider.setUserDetailsService(userDetailsService);
         return provider;
     }
 
