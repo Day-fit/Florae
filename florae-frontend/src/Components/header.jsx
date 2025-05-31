@@ -1,4 +1,4 @@
-import { useState, use } from 'react';
+import { use } from 'react';
 import Button from './button.jsx';
 import AuthModal from './auth-modal.jsx';
 import UserMenu from './user-menu.jsx';
@@ -6,8 +6,7 @@ import { UserContext } from '../store/user-context.jsx';
 import PortalComponent from './portal-component.jsx';
 import { navButtons } from '../util/data.js';
 import { GiHamburgerMenu } from 'react-icons/gi';
-import temp from '../assets/temp.png';
-
+import smallerLogo from '../assets/smaller-logo.png'
 /**
  * Header Component
  *
@@ -36,10 +35,8 @@ import temp from '../assets/temp.png';
  *  - Ensure responsive and keyboard-friendly navigation.
  */
 
-export default function Header() {
+export default function Header({setModal, modal}) {
   const { isLogged } = use(UserContext);
-
-  const [modal, setModal] = useState(null);
 
   function handleAuth(action) {
     setModal(action);
@@ -56,7 +53,7 @@ export default function Header() {
     <header className="flex flex-row border-b-stone-200 border-b-2 font-bold">
       <div className="flex flex-row items-center w-full ml-5 ">
         {/* Left: Logo/brand image */}
-        <img src={temp} alt="" className="mt-5 mb-5 h-10 w-10" />
+        <img src={smallerLogo} alt="" className="mt-5 mb-5 h-10 w-10" />
       </div>
       <div className="flex flex-row items-center justify-center w-full gap-6">
         {/* Center: Main navigation/actions */}
