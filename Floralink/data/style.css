@@ -238,6 +238,7 @@ a
     height: 60px;
     width: 160px;
     display: block;
+    cursor: pointer;
 }
 
 @media (max-width: 600px) {

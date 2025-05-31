@@ -11,6 +11,10 @@
 #include <variant>
 #include <Ticker.h>
 #include <ESPDateTime.h>
+#include <DHT.h>
+
+bool isInDev = false;
+String FLORAE_URL = isInDev? "http://localhost:8080" : "florae.dayfit.pl";
 
 void loadSensors();
 void saveData(String key, String value);
@@ -28,25 +32,22 @@ const String TARGET_PASSWORD_KEY = "targetPassword";
 const String FLORAE_ACCESS_KEY = "floraeAccessKey";
 const String WIFI_TIMEOUT = "wifiTimeout";
 
-unsigned long lastRead = 0;
+unsigned long lastRead;
 
 bool isConnected = false;
 
 using dataValuesTypes = std::variant<String, int>;
 std::map<String, dataValuesTypes> configValues;
 
-std::list<Sensor> possibleSensors= 
-{
-    {DHT11, 14},
-    {DHT22, 14}
+enum SensorType{
+    DHT11_TYPE,
+    DHT22_TYPE,
 };
 
-std::list<Sensor> sensors;
-std::list<SensorData> sensorData;
-
-enum SensorType{
-    DHT11,
-    DHT22,
+struct Sensor
+{
+    SensorType type;
+    int pinout;
 };
 
 struct SensorData
@@ -58,13 +59,14 @@ struct SensorData
     double highest24hValue;
 };
 
-struct Sensor
-
-struct Sensor
+std::list<Sensor> possibleSensors = 
 {
-    SensorType type;
-    int pinout;
+    {DHT11_TYPE, 14},
+    {DHT22_TYPE, 14}
 };
+
+std::list<Sensor> sensors;
+std::list<SensorData> sensorData;
 
 const String allowedParameters[3] = 
 {
@@ -117,14 +119,47 @@ void setup()
         request->send(200, "application/json", "{\"connected\": \"" + String(isConnected) + "\"}");
     });
 
-    server.on("/sensorsStatus", HTTP_GET, [](AsyncWebServerRequest *request)
+    server.on("/validate-api-key", HTTP_POST, [](AsyncWebServerRequest *request){}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
     {
+        if (!WiFi.isConnected())
+        {
+            request->send(HTTP_CODE_SERVICE_UNAVAILABLE, "application/json", "{\"error\": \"No internet connection.\"}");
+            return;
+        }
 
-        DynamicJsonDocument json(1024);
+        JsonDocument json;
+        DeserializationError err = deserializeJson(json, data, len);
+
+        if (err)
+        {
+            request->send(HTTP_CODE_BAD_REQUEST, "application/json", "{\"error\": \"Invalid JSON\"}");
+            return;
+        }
+        
+        HTTPClient http;
+
+        String apiKey = json["apiKey"];
+
+        WiFiClient client;
+        String url = FLORAE_URL + "/api/v1/check-key?apiKey=" + std::get<String>(configValues[FLORAE_ACCESS_KEY]);
+        http.begin(client, url);
+        int responseCode = http.GET();
+
+        if (responseCode == HTTP_CODE_OK)
+        {
+            request->send(HTTP_CODE_OK, "application/json", http.getString());
+        }
+
+        request->send(HTTP_CODE_INTERNAL_SERVER_ERROR, "application/json" , "\"error\": \"Server responded with code "+ String(responseCode) +"\"");
+    });
+
+    server.on("/sensors-status", HTTP_GET, [](AsyncWebServerRequest *request)
+    {
+        JsonDocument json;
         JsonArray arr = json.to<JsonArray>();
 
         for (const auto& data : sensorData) {
-            JsonObject obj = arr.createNestedObject();
+            JsonObject obj = arr.add<JsonObject>();
             obj["type"] = data.type;
             obj["value"] = data.currentValue;
             obj["lowest24hValue"] = data.lowest24hValue;
@@ -136,34 +171,41 @@ void setup()
         request->send(200, "application/json", response);
     });
 
-    server.on("/save", HTTP_POST, [](AsyncWebServerRequest *request){
-        int parametersNumb = request->params();
+    server.on("/save", HTTP_POST, [](AsyncWebServerRequest *request){}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
         bool moddifiesWifiCredentials = false;
 
-        for (int i = 0; i < parametersNumb; i++)
+        JsonDocument json;
+        DeserializationError err = deserializeJson(json, data, len);
+
+        if(err)
         {
+            request->send(HTTP_CODE_BAD_REQUEST, "application/json", "\"error\": \"Invalid JSON\"");
+            return;
+        }
 
-            String key = request->getParam(i)->name();
-            String value = request->getParam(i)->value();
-
-            for (String allowedParameter : allowedParameters)
+        for (String allowedParameter : allowedParameters)
+        {
+            if(!json[allowedParameter])
             {
-                if (allowedParameter == key)
-                {
-                    configValues[key] = value;
-                    saveData(key, value);
+                continue;
+            }
 
-                    if (key == TARGET_SSID_KEY || key == TARGET_PASSWORD_KEY)
-                    {
-                        moddifiesWifiCredentials = true;
-                    }
-                }
+            String value = json[allowedParameter];
+            configValues[allowedParameter] = value;
+            saveData(allowedParameter, value);
+
+            Serial.println(allowedParameter + " " + value);
+
+            if (allowedParameter == TARGET_SSID_KEY || allowedParameter == TARGET_PASSWORD_KEY)
+            {
+                moddifiesWifiCredentials = true;
             }
         }
 
         if (moddifiesWifiCredentials)
         {
             WiFi.begin(std::get<String>(configValues[TARGET_SSID_KEY]), std::get<String>(configValues[TARGET_PASSWORD_KEY]));
+            WiFi.printDiag(Serial);
             ticker.attach(1, checkWiFiConnection);
         }
 
@@ -181,9 +223,23 @@ void loop()
 
 void loadSensors()
 {
-    for (auto const sensor : possibleSensors)
+    for (auto const& sensor : possibleSensors)
     {
-
+        switch (sensor.type)
+        {
+            case DHT11_TYPE:
+            {
+                DHT dht(sensor.pinout, DHT11);
+                dht.begin();
+                if (!isnan(dht.readTemperature()) && !isnan(dht.readHumidity()))
+                {
+                    sensors.push_back(sensor);
+                }
+                break;
+            }
+            default:
+                break;
+        }
     }
 }
 
@@ -194,8 +250,7 @@ void setUpTime()
 
 void saveData(String key, String value)
 {
-    const size_t capacity = 512;
-    DynamicJsonDocument json(capacity);
+    JsonDocument json;
 
     File file = LittleFS.open("/config.json", "r");
     if (file) {
@@ -239,6 +294,7 @@ void checkWiFiConnection() {
     if (WiFi.isConnected()) {
         ticker.detach();
         isConnected = true;
+        timeoutCounter = 0;
         Serial.println("Connected to WiFi successfully!");
         setUpTime();
         return;

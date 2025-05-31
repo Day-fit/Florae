@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link rel="stylesheet" href="style.css">
     <title>FloraLink Settings</title>
+    <link rel="preload" role="link" href="florae_logo.png" as="image">
+    <link rel="preload" role="link" href="florae_logo_full.png" as="image">
 </head>
 <body>
     <nav class="top-bar">
         <div class="top-container">            
-            <div class="florae-logo"></div>
+            <a class="florae-logo" href="index.html"></a>
             <div class="burger" onclick="document.getElementById('burger-menu').classList.toggle('active');">&#9776;</div>
         </div>
     </nav>
@@ -26,7 +27,7 @@
     </div>
 
     <div id="form-container">
-        <form id="settings-form">
+        <form id="settings-form" method="post" action="#">
             <div class="form-group">
                 <label for="targetSsid">Your WiFi name</label>
                 <div class="input-icon-wrapper">
@@ -52,10 +53,6 @@
             </div>
 
             <div id="checkresult" class="failed" style="display: none;">&#10006; Invalid key</div>
-            <!--
-                Jeśli chcesz pokazać sukces:
-                <div id="checkresult" class="passed">&#10004; Valid key</div>
-            -->
 
             <button type="submit" class="submit-button">Save Configuration</button>
         </form>
@@ -64,5 +61,7 @@
     <footer>
         <p>FloraLink © 2025</p>
     </footer>
+
+    <script src="settings.js"></script>
 </body>
 </html>
