@@ -1,13 +1,34 @@
-import { useEffect, useRef } from 'react';
+import {useEffect, useRef, use, useContext} from 'react';
 import { userMenuButtons } from '../util/data.js';
 import Button from './button.jsx';
 import { FiSettings } from 'react-icons/fi';
+import axios from "axios";
+import { UserContext } from '../store/user-context.jsx';
 
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function UserMenu({ onClose, open = true }) {
+  const { logOut } = useContext(UserContext);
   const menuRef = useRef(null);
 
-  // Close on blur/click outside
+
+  async function handleLogout() {
+    try {
+      const response = await axios.post(
+          `${API_URL}/auth/logout`,
+          {},
+          {
+        withCredentials: true,
+      });
+
+      logOut();
+      console.log(response.data);
+      onClose();
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
+  }
+
   useEffect(() => {
     function handleClick(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -28,8 +49,6 @@ export default function UserMenu({ onClose, open = true }) {
       document.removeEventListener("keydown", handleKey);
     };
   }, [onClose, open]);
-
-  if (!open) return null;
   return (
     <div
       className="fixed inset-0 z-50"
@@ -56,6 +75,7 @@ export default function UserMenu({ onClose, open = true }) {
                 hover:bg-green-100 hover:rounded-2xl focus:bg-green-100 focus:rounded-2xl
                 outline-none"
               tabIndex={0}
+              onClick={name === "logout" ? handleLogout : undefined}
               role="menuitem"
             />
           ))}

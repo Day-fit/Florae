@@ -4,4 +4,5 @@ export const UserContext = createContext({
   isLogged: false,
   userData: {},
   logIn: () => {},
+  logOut: () => {},
 });
