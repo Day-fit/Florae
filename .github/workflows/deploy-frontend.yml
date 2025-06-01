@@ -28,6 +28,11 @@ jobs:
       - name: Build project
         run: npm run build -- --mode production
 
+      - name: Write SSH key to file
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+
       - name: Sync build to server with rsync
         run: |
-          rsync -avz --delete -e "ssh -i ${{ secrets.SSH_PRIVATE_KEY }} -o StrictHostKeyChecking=no" ./dist/ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/home/deploy/app/
+          rsync -avz --delete -e "ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no" ./dist/ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/home/deploy/app/
