@@ -9,7 +9,7 @@ function App() {
     userData: {},
   });
   const [modal, setModal] = useState(null);
-  // const [viewMode, setViewMode] = useState("home");
+  const [viewMode, setViewMode] = useState("home");
 
   const contextValue = {
     isLogged: user.isLogged,
@@ -17,6 +17,10 @@ function App() {
     logIn: handleLogIn,
     logOut: handleLogout,
   };
+  function handleChangePage(selectedPage){
+    setViewMode(selectedPage);
+    if(modal)setModal(null);
+  }
   function handleLogout() {
     setUser((prev)=>({
       isLogged: !prev.isLogged,
@@ -32,9 +36,9 @@ function App() {
   return (
     <UserContext value={contextValue}>
       <div className="sticky bg-white top-0 z-50">
-        <Header modal={modal} setModal={setModal} />
+        <Header modal={modal} setModal={setModal} changePage={handleChangePage} />
       </div>
-      <MainSection setModal={setModal}/>
+      <MainSection viewMode={viewMode} setModal={setModal}/>
     </UserContext>
   );
 }
