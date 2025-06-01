@@ -1,17 +1,13 @@
-name: Deploy React app to GitHub Pages
+name: Build and Deploy React app via SSH
 
 on:
   push:
     branches:
-      - main  # Change if your default branch is not 'main'
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
 
     defaults:
       run:
@@ -20,18 +16,25 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '21.x'
+
       - name: Install dependencies
         run: npm ci
 
       - name: Build project
         run: npm run build -- --mode production
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Deploy build to server via SSH
+        uses: appleboy/ssh-action@v0.1.7
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./florae-frontend/dist
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            rm -rf /home/deploy/app/*
+            cp -r /home/deploy/build/* /home/deploy/app/
