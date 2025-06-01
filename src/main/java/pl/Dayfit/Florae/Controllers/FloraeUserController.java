@@ -62,7 +62,7 @@ public class FloraeUserController {
 
     @Value("${florae.secured-cookies.enabled:false}")
     private boolean useSecuredCookies;
-    @Value("${florae.cookie.policy}")
+    @Value("${florae.cookie.policy:lax}")
     private String cookiePolicy;
 
     private static final String USERNAME_REGEX = "[a-zA-Z0-9_]+";
