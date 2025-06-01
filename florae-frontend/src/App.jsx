@@ -14,7 +14,14 @@ function App() {
     isLogged: user.isLogged,
     userData: user.userData,
     logIn: handleLogIn,
+    logOut: handleLogout,
   };
+  function handleLogout() {
+    setUser((prev)=>({
+      isLogged: !prev.isLogged,
+      userData: {},
+    }))
+  }
   function handleLogIn(userData) {
     setUser((prev) => ({
       userData: userData,

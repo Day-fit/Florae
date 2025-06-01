@@ -48,7 +48,7 @@ import { useState, use } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function AuthModal({ register, onClose }) {
+export default function AuthModal({ register, onClose, setModal }) {
   const { logIn } = use(UserContext);
 
   const [errors, setErrors] = useState({
@@ -110,6 +110,7 @@ export default function AuthModal({ register, onClose }) {
       console.log(response)
       logIn(formData); //later I need to change it because I can't store password in state
       setFormData({email: '', username: '', password: ''})
+      setModal(null);
       setIsSubmitting(false);
       onClose();
     } catch (err) {
@@ -138,21 +139,24 @@ export default function AuthModal({ register, onClose }) {
     try {
       console.log('Submitting form: ', formData);
       const response = await axios.post(
-        `${API_URL}/auth/register`,
-        {
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
+          `${API_URL}/auth/register`,
+          {
+            username: formData.username,
+            email: formData.email,
+            password: formData.password,
           },
-        }
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
       );
       console.log(response)
-      logIn(formData); //later I need to change it because I can't store password in state
-      setFormData({email: '', username: '', password: ''})
+      try{
+        await handleSignIn(e);
+      }catch(err){
+        console.log("error: " + err)
+      }
       setIsSubmitting(false);
       onClose();
     } catch (err) {
@@ -193,6 +197,7 @@ export default function AuthModal({ register, onClose }) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
         <video
+          disablePictureInPicture
           src={rainyNature}
           className="absolute inset-0 w-full h-full object-cover z-0"
           autoPlay

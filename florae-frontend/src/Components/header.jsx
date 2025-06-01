@@ -88,7 +88,7 @@ export default function Header() {
         )}
         {modal && !isLogged && (
           <PortalComponent element="#auth-modal">
-            <AuthModal register={modal === 'register'} onClose={handleClose} />
+            <AuthModal register={modal === 'register'} setModal={setModal} onClose={handleClose} />
           </PortalComponent>
         )}
         {modal && isLogged && (
