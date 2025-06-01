@@ -23,6 +23,7 @@ services:
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME}
     volumes:
+      - '/home/deploy/app:/home/deploy/app:ro'
       - './privkeys:/etc/ssl/privkeys'
       - './certs:/etc/ssl/certs'
       - './nginx.conf:/etc/nginx/nginx.conf'
