@@ -1,4 +1,6 @@
 name: Run Maven Tests
+permissions:
+  contents: read
 on:
   pull_request:
     paths:

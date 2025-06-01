@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Network error.');
         }
 
-        if(checkApiKey(data["floraeAccessKey"]))
+        if(await checkApiKey(data["floraeAccessKey"]))
         {
             apiKeyInfoPanel.textContent = PASSED_TEXT;
             apiKeyInfoPanel.className = "passed";

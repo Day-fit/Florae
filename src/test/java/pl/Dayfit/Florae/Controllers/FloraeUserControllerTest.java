@@ -10,12 +10,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
 import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
+import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserService;
 
 import java.nio.charset.StandardCharsets;
@@ -33,13 +33,15 @@ class FloraeUserControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Mock
+    private FloraeUserCacheService cacheService;
+
+    @Mock
     private FloraeUserService userService;
 
     @InjectMocks
     private FloraeUserController userController;
 
     @BeforeEach
-    @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
     void setUp() {
         session = new MockHttpSession();
         mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
@@ -155,6 +157,12 @@ class FloraeUserControllerTest {
     @Test
     void loginUser_invalidCredentials_returnsUnauthorized() throws Exception {
         var dto = buildLoginDto("user", "pass");
+        dto.setGenerateRefreshToken(false);
+
+        FloraeUser mockUser = new FloraeUser();
+        mockUser.setUsername("user");
+        when(cacheService.getFloraeUser("user")).thenReturn(mockUser);
+
         when(userService.isValid(any(FloraeUserLoginDTO.class))).thenReturn(false);
 
         mockMvc.perform(post("/auth/login")
@@ -170,6 +178,12 @@ class FloraeUserControllerTest {
     @Test
     void loginUser_validCredentials_assignCookie() throws Exception {
         var dto = buildLoginDto("user1", "pass1");
+        dto.setGenerateRefreshToken(false);
+
+        FloraeUser mockUser = new FloraeUser();
+        mockUser.setUsername("user1");
+
+        when(cacheService.getFloraeUser("user1")).thenReturn(mockUser);
         when(userService.isValid(any(FloraeUserLoginDTO.class))).thenReturn(true);
         when(userService.generateAccessToken("user1")).thenReturn("JWT-TOKEN");
 
@@ -182,5 +196,58 @@ class FloraeUserControllerTest {
 
         verify(userService).isValid(any(FloraeUserLoginDTO.class));
         verify(userService).generateAccessToken("user1");
+    }
+
+    @Test
+    void loginUser_validCredentialsWithEmail_assignCookie() throws Exception {
+        var dto = new FloraeUserLoginDTO();
+        dto.setEmail("test@example.com");
+        dto.setPassword("pass1");
+        dto.setGenerateRefreshToken(false);
+
+        FloraeUser mockUser = new FloraeUser();
+        mockUser.setUsername("user1");
+        mockUser.setEmail("test@example.com");
+
+        when(cacheService.getFloraeUserByEmail("test@example.com")).thenReturn(mockUser);
+        when(userService.isValid(any(FloraeUserLoginDTO.class))).thenReturn(true);
+        when(userService.generateAccessToken("user1")).thenReturn("JWT-TOKEN");
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("accessToken"))
+                .andExpect(cookie().value("accessToken", "JWT-TOKEN"));
+
+        verify(userService).isValid(any(FloraeUserLoginDTO.class));
+        verify(userService).generateAccessToken("user1");
+    }
+
+    @Test
+    void loginUser_withRefreshToken_setsBothCookies() throws Exception {
+        var dto = buildLoginDto("user1", "pass1");
+        dto.setGenerateRefreshToken(true);
+
+        FloraeUser mockUser = new FloraeUser();
+        mockUser.setUsername("user1");
+
+        when(cacheService.getFloraeUser("user1")).thenReturn(mockUser);
+        when(userService.isValid(any(FloraeUserLoginDTO.class))).thenReturn(true);
+        when(userService.generateAccessToken("user1")).thenReturn("ACCESS-TOKEN");
+        when(userService.getRefreshToken("user1")).thenReturn("REFRESH-TOKEN");
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("accessToken"))
+                .andExpect(cookie().value("accessToken", "ACCESS-TOKEN"))
+                .andExpect(cookie().exists("refreshToken"))
+                .andExpect(cookie().value("refreshToken", "REFRESH-TOKEN"));
+
+        verify(userService).isValid(any(FloraeUserLoginDTO.class));
+        verify(userService).generateAccessToken("user1");
+        verify(userService).getRefreshToken("user1");
     }
 }
