@@ -28,13 +28,6 @@ jobs:
       - name: Build project
         run: npm run build -- --mode production
 
-      - name: Deploy build to server via SSH
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            rm -rf /home/deploy/app/*
-            cp -r /home/deploy/build/* /home/deploy/app/
+      - name: Sync build to server with rsync
+        run: |
+          rsync -avz --delete -e "ssh -i ${{ secrets.SSH_PRIVATE_KEY }} -o StrictHostKeyChecking=no" ./dist/ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/home/deploy/app/
