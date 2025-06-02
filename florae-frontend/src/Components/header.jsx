@@ -35,7 +35,7 @@ import smallerLogo from '../assets/smaller-logo.png'
  *  - Ensure responsive and keyboard-friendly navigation.
  */
 
-export default function Header({setModal, modal}) {
+export default function Header({setModal, modal, changePage}) {
   const { isLogged } = use(UserContext);
 
   function handleAuth(action) {
@@ -53,7 +53,7 @@ export default function Header({setModal, modal}) {
     <header className="flex flex-row border-b-stone-200 border-b-2 font-bold">
       <div className="flex flex-row items-center w-full ml-5 ">
         {/* Left: Logo/brand image */}
-        <img src={smallerLogo} alt="" className="mt-5 mb-5 h-10 w-10" />
+        <img src={smallerLogo} alt="" className="mt-5 mb-5 h-10 w-10" onClick={() => changePage("home")}/>
       </div>
       <div className="flex flex-row items-center justify-center w-full gap-6">
         {/* Center: Main navigation/actions */}
@@ -61,6 +61,7 @@ export default function Header({setModal, modal}) {
           <Button
             key={name}
             buttonText={buttonText}
+            onClick={() => changePage(name)}
             className="mt-5 mb-5  text-green-700 hover:text-green-900 active:text-green-900 rounded transition-colors duration-150"
           />
         ))}

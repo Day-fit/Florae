@@ -1,1 +1,6 @@
 @import "tailwindcss";
+@layer base {
+    video::-webkit-media-controls-enclosure {
+        display: none !important;
+    }
+}

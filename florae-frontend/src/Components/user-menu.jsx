@@ -51,7 +51,7 @@ export default function UserMenu({ onClose, open = true }) {
   }, [onClose, open]);
   return (
     <div
-      className="fixed inset-0 z-50"
+      className="fixed inset-0 z-100"
       aria-modal="true"
       tabIndex={-1}
       role="dialog"
