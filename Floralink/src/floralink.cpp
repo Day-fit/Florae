@@ -5,308 +5,318 @@
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
 #include <LittleFS.h>
-#include <string.h>
-#include <map>
-#include <list>
-#include <variant>
-#include <Ticker.h>
 #include <ESPDateTime.h>
 #include <DHT.h>
+#include <vector>
+#include <list>
 
-bool isInDev = false;
-String FLORAE_URL = isInDev? "http://localhost:8080" : "florae.dayfit.pl";
+struct Config {
+    String ssid;
+    String password;
+    String floraeKey;
+    int wifiTimeout = 30;
+};
 
-void loadSensors();
-void saveData(String key, String value);
-String loadData(String key);
-void checkWiFiConnection();
-
-Ticker ticker;
-AsyncWebServer server(80);
+static Config config;
+static bool isConnected = false;
+static bool shouldCheckWiFi = false;
 
 const char* DEFAULT_PASSWORD = "password";
 const unsigned int DEFAULT_TIMEOUT = 30;
+const String FLORAE_URL = "http://localhost:8080";
 
-const String TARGET_SSID_KEY = "targetSsid";
-const String TARGET_PASSWORD_KEY = "targetPassword";
-const String FLORAE_ACCESS_KEY = "floraeAccessKey";
-const String WIFI_TIMEOUT = "wifiTimeout";
+AsyncWebServer server(80);
 
-unsigned long lastRead;
-
-bool isConnected = false;
-
-using dataValuesTypes = std::variant<String, int>;
-std::map<String, dataValuesTypes> configValues;
-
-enum SensorType{
+enum SensorType {
     DHT11_TYPE,
-    DHT22_TYPE,
+    DHT22_TYPE
 };
 
-struct Sensor
-{
+struct Sensor {
     SensorType type;
-    int pinout;
+    int pin;
 };
 
-struct SensorData
-{
+struct ValueTimestamp {
+    double value;
+    unsigned long ts;
+};
+
+struct SensorData {
     String type;
     double currentValue;
     double lowest24hValue;
-    
     double highest24hValue;
+    std::vector<double> lastSecondReadings;
+    double lastSecondAverage = 0.0;
+    unsigned long lastPurge = 0;
+    std::vector<ValueTimestamp> last24hReadings;
+    double avg24h = 0.0;
+    unsigned long lowest24hTimestamp = 0;
+    unsigned long highest24hTimestamp = 0;
 };
 
-std::list<Sensor> possibleSensors = 
-{
-    {DHT11_TYPE, 14},
-    {DHT22_TYPE, 14}
+std::list<Sensor> possibleSensors = {
+    {DHT11_TYPE, 12},
+    {DHT22_TYPE, 12}
 };
 
 std::list<Sensor> sensors;
 std::list<SensorData> sensorData;
 
-const String allowedParameters[3] = 
-{
-    TARGET_SSID_KEY,
-    TARGET_PASSWORD_KEY,
-    FLORAE_ACCESS_KEY
-};
-
-void setup() 
-{
-    DateTime.begin();
-    Serial.begin(115200);
-
-    WiFi.mode(WIFI_AP_STA);
-    WiFi.softAP("FloraLink", DEFAULT_PASSWORD);
-
-    struct tm DEFAULT_TIME;
-    DEFAULT_TIME.tm_hour = 12;
-    DEFAULT_TIME.tm_min = 0;
-    DEFAULT_TIME.tm_sec = 0;
-
-    DateTime.setTime(mktime(&DEFAULT_TIME));
-
-    if (!LittleFS.begin())
-    {
-        Serial.println("Failed to load files !");
-    }
-
-    Serial.println("Loading configuration file...");
-
-    String wifiTimeoutStr = loadData(WIFI_TIMEOUT);
-    configValues[WIFI_TIMEOUT] = (wifiTimeoutStr == "null") ? static_cast<int>(DEFAULT_TIMEOUT) : wifiTimeoutStr.toInt();
-    configValues[TARGET_SSID_KEY] = loadData(TARGET_SSID_KEY);
-    configValues[TARGET_PASSWORD_KEY] = loadData(TARGET_PASSWORD_KEY);
-    configValues[FLORAE_ACCESS_KEY] = loadData(FLORAE_ACCESS_KEY);
-
-    if (std::get<String>(configValues[TARGET_PASSWORD_KEY]) != "" && std::get<String>(configValues[TARGET_SSID_KEY]) != "")
-    {
-        WiFi.begin(std::get<String>(configValues[TARGET_SSID_KEY]), std::get<String>(configValues[TARGET_PASSWORD_KEY]));
-        ticker.attach(1, checkWiFiConnection);
-    }
-    
-    loadSensors();
-
-    Serial.println("Starting server...");
-    
-    server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
-
-    server.on("/connectionStatus", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send(200, "application/json", "{\"connected\": \"" + String(isConnected) + "\"}");
-    });
-
-    server.on("/validate-api-key", HTTP_POST, [](AsyncWebServerRequest *request){}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
-    {
-        if (!WiFi.isConnected())
-        {
-            request->send(HTTP_CODE_SERVICE_UNAVAILABLE, "application/json", "{\"error\": \"No internet connection.\"}");
-            return;
-        }
-
-        JsonDocument json;
-        DeserializationError err = deserializeJson(json, data, len);
-
-        if (err)
-        {
-            request->send(HTTP_CODE_BAD_REQUEST, "application/json", "{\"error\": \"Invalid JSON\"}");
-            return;
-        }
-        
-        HTTPClient http;
-
-        String apiKey = json["apiKey"];
-
-        WiFiClient client;
-        String url = FLORAE_URL + "/api/v1/check-key?apiKey=" + std::get<String>(configValues[FLORAE_ACCESS_KEY]);
-        http.begin(client, url);
-        int responseCode = http.GET();
-
-        if (responseCode == HTTP_CODE_OK)
-        {
-            request->send(HTTP_CODE_OK, "application/json", http.getString());
-        }
-
-        request->send(HTTP_CODE_INTERNAL_SERVER_ERROR, "application/json" , "\"error\": \"Server responded with code "+ String(responseCode) +"\"");
-    });
-
-    server.on("/sensors-status", HTTP_GET, [](AsyncWebServerRequest *request)
-    {
-        JsonDocument json;
-        JsonArray arr = json.to<JsonArray>();
-
-        for (const auto& data : sensorData) {
-            JsonObject obj = arr.add<JsonObject>();
-            obj["type"] = data.type;
-            obj["value"] = data.currentValue;
-            obj["lowest24hValue"] = data.lowest24hValue;
-            obj["highest24hValue"] = data.highest24hValue;
-        }
-
-        String response;
-        serializeJson(json, response);
-        request->send(200, "application/json", response);
-    });
-
-    server.on("/save", HTTP_POST, [](AsyncWebServerRequest *request){}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
-        bool moddifiesWifiCredentials = false;
-
-        JsonDocument json;
-        DeserializationError err = deserializeJson(json, data, len);
-
-        if(err)
-        {
-            request->send(HTTP_CODE_BAD_REQUEST, "application/json", "\"error\": \"Invalid JSON\"");
-            return;
-        }
-
-        for (String allowedParameter : allowedParameters)
-        {
-            if(!json[allowedParameter])
-            {
-                continue;
-            }
-
-            String value = json[allowedParameter];
-            configValues[allowedParameter] = value;
-            saveData(allowedParameter, value);
-
-            Serial.println(allowedParameter + " " + value);
-
-            if (allowedParameter == TARGET_SSID_KEY || allowedParameter == TARGET_PASSWORD_KEY)
-            {
-                moddifiesWifiCredentials = true;
-            }
-        }
-
-        if (moddifiesWifiCredentials)
-        {
-            WiFi.begin(std::get<String>(configValues[TARGET_SSID_KEY]), std::get<String>(configValues[TARGET_PASSWORD_KEY]));
-            WiFi.printDiag(Serial);
-            ticker.attach(1, checkWiFiConnection);
-        }
-
-        request->send(200, "text/plain", "Configuration saved");
-    });
-
-
-    server.begin();
-}
-
-void loop()
-{
-    
-}
-
-void loadSensors()
-{
-    for (auto const& sensor : possibleSensors)
-    {
-        switch (sensor.type)
-        {
-            case DHT11_TYPE:
-            {
-                DHT dht(sensor.pinout, DHT11);
-                dht.begin();
-                if (!isnan(dht.readTemperature()) && !isnan(dht.readHumidity()))
-                {
-                    sensors.push_back(sensor);
-                }
-                break;
-            }
-            default:
-                break;
-        }
-    }
-}
-
-void setUpTime()
-{
-    DateTime.setTimeZone("CET-1CEST,M3.5.0/2,M10.5.0/3");
-}
-
-void saveData(String key, String value)
-{
-    JsonDocument json;
-
+void loadConfig() {
     File file = LittleFS.open("/config.json", "r");
-    if (file) {
-        deserializeJson(json, file);
-        file.close();
+    if (!file) return;
+    JsonDocument doc;
+    if (deserializeJson(doc, file) == DeserializationError::Ok) {
+        config.ssid = doc["targetSsid"] | "";
+        config.password = doc["targetPassword"] | "";
+        config.floraeKey = doc["floraeAccessKey"] | "";
+        config.wifiTimeout = doc["wifiTimeout"] | DEFAULT_TIMEOUT;
     }
-
-    json[key] = value;
-
-    file = LittleFS.open("/config.json", "w");
-    serializeJson(json, file);
     file.close();
 }
 
-String loadData(String key)
-{
-    JsonDocument json;
-    File file = LittleFS.open("/config.json", "r");
-
-    if (!file)
-    {
-        return "null";
-    }
-    
-    DeserializationError error = deserializeJson(json, file);
+void saveConfig() {
+    JsonDocument doc;
+    doc["targetSsid"] = config.ssid;
+    doc["targetPassword"] = config.password;
+    doc["floraeAccessKey"] = config.floraeKey;
+    doc["wifiTimeout"] = config.wifiTimeout;
+    File file = LittleFS.open("/config.json", "w");
+    serializeJson(doc, file);
     file.close();
-
-    if (error)
-    {
-        Serial.println("Error during loading config file");
-        return "null";
-    }
-
-    return json[key].as<String>();
 }
 
 void checkWiFiConnection() {
     static int timeoutCounter = 0;
-    int maxTimeout = std::get<int>(configValues[WIFI_TIMEOUT]); 
-
     if (WiFi.isConnected()) {
-        ticker.detach();
         isConnected = true;
+        shouldCheckWiFi = false;
         timeoutCounter = 0;
-        Serial.println("Connected to WiFi successfully!");
-        setUpTime();
+        DateTime.setTimeZone("CET-1CEST,M3.5.0/2,M10.5.0/3");
         return;
     }
-
     timeoutCounter++;
-    Serial.println("Attempting to connect to WiFi... " + String(timeoutCounter) + "/" + String(maxTimeout));
-    
-    if (timeoutCounter >= maxTimeout) {
-        ticker.detach();
+    if (timeoutCounter >= config.wifiTimeout) {
         WiFi.disconnect(true);
-        Serial.println("WiFi connection timed out!");
         timeoutCounter = 0;
+        shouldCheckWiFi = false;
+    }
+}
+
+void loadSensors() {
+    for (auto const& s : possibleSensors) {
+        DHT dht(s.pin, s.type == DHT11_TYPE ? DHT11 : DHT22);
+        dht.begin();
+        double temp = dht.readTemperature();
+        double hum = dht.readHumidity();
+        if (!isnan(temp) && !isnan(hum)) {
+            sensors.push_back(s);
+            SensorData sd;
+            sd.type = (s.type == DHT11_TYPE ? "DHT11" : "DHT22");
+            sensorData.push_back(sd);
+        }
+    }
+}
+
+void saveData(String key, String value) {
+    JsonDocument doc;
+    File file = LittleFS.open("/config.json", "r");
+    if (file) {
+        if (deserializeJson(doc, file) != DeserializationError::Ok) {
+            doc.clear();
+        }
+        file.close();
+    }
+    doc[key] = value;
+    file = LittleFS.open("/config.json", "w");
+    serializeJson(doc, file);
+    file.close();
+}
+
+String loadData(String key) {
+    JsonDocument doc;
+    File file = LittleFS.open("/config.json", "r");
+    if (!file) return "null";
+    if (deserializeJson(doc, file) != DeserializationError::Ok) {
+        file.close();
+        return "null";
+    }
+    file.close();
+    return doc[key].as<String>();
+}
+
+void setup() {
+    DateTime.begin();
+    Serial.begin(115200);
+    WiFi.mode(WIFI_AP_STA);
+    WiFi.softAP("FloraLink", DEFAULT_PASSWORD);
+    struct tm DEFAULT_TIME;
+    DEFAULT_TIME.tm_hour = 12;
+    DEFAULT_TIME.tm_min = 0;
+    DEFAULT_TIME.tm_sec = 0;
+    DateTime.setTime(mktime(&DEFAULT_TIME));
+    LittleFS.begin();
+    loadConfig();
+    if (config.ssid.length() && config.password.length()) {
+        WiFi.begin(config.ssid.c_str(), config.password.c_str());
+        shouldCheckWiFi = true;
+    }
+    loadSensors();
+    server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
+    server.on("/connectionStatus", HTTP_GET, [](AsyncWebServerRequest *request){
+        JsonDocument doc;
+        doc["connected"] = isConnected;
+        doc["ip"] = WiFi.localIP().toString();
+        String out;
+        serializeJson(doc, out);
+        request->send(200, "application/json", out);
+    });
+    server.on("/validate-api-key", HTTP_POST, [](AsyncWebServerRequest *request){}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+            if (!WiFi.isConnected()) {
+                request->send(503, "application/json", "{\"error\":\"No internet connection.\"}");
+                return;
+            }
+            JsonDocument j;
+            if (deserializeJson(j, data, len) != DeserializationError::Ok) {
+                request->send(400, "application/json", "{\"error\":\"Invalid JSON\"}");
+                return;
+            }
+            if (!j.containsKey("apiKey") || j["apiKey"].as<String>().length() < 1) {
+                request->send(400, "application/json", "{\"error\":\"Missing or invalid apiKey\"}");
+                return;
+            }
+            if (config.floraeKey.length() < 1) {
+                request->send(400, "application/json", "{\"error\":\"No API key configured\"}");
+                return;
+            }
+            WiFiClient client;
+            HTTPClient http;
+            String url = FLORAE_URL + "/api/v1/check-key?apiKey=" + config.floraeKey;
+            http.begin(client, url);
+            int code = http.GET();
+            if (code == HTTP_CODE_OK) {
+                String resp = http.getString();
+                request->send(200, "application/json", resp);
+                http.end();
+                return;
+            }
+            http.end();
+            JsonDocument err;
+            err["error"] = "Server responded with code " + String(code);
+            String out;
+            serializeJson(err, out);
+            request->send(500, "application/json", out);
+        }
+    );
+    server.on("/sensors-status", HTTP_GET, [](AsyncWebServerRequest *request) {
+        JsonDocument doc;
+        JsonArray arr = doc.to<JsonArray>();
+        for (auto const& d : sensorData) {
+            JsonObject o = arr.createNestedObject();
+            o["type"] = d.type;
+            o["value"] = d.lastSecondAverage;
+            o["lowest24hValue"] = d.lowest24hValue;
+            o["highest24hValue"] = d.highest24hValue;
+            o["lowest24hTimestamp"] = d.lowest24hTimestamp;
+            o["highest24hTimestamp"] = d.highest24hTimestamp;
+            o["avg24h"] = d.avg24h;
+        }
+        String out;
+        serializeJson(doc, out);
+        request->send(200, "application/json", out);
+    });
+    server.on("/save", HTTP_POST, [](AsyncWebServerRequest *request){}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+            JsonDocument j;
+            if (deserializeJson(j, data, len) != DeserializationError::Ok) {
+                request->send(400, "application/json", "\"error\":\"Invalid JSON\"");
+                return;
+            }
+            bool modWiFi = false;
+            if (j.containsKey("targetSsid")) {
+                config.ssid = j["targetSsid"].as<String>();
+                saveData("targetSsid", config.ssid);
+                modWiFi = true;
+            }
+            if (j.containsKey("targetPassword")) {
+                config.password = j["targetPassword"].as<String>();
+                saveData("targetPassword", config.password);
+                modWiFi = true;
+            }
+            if (j.containsKey("floraeAccessKey")) {
+                config.floraeKey = j["floraeAccessKey"].as<String>();
+                saveData("floraeAccessKey", config.floraeKey);
+            }
+            if (j.containsKey("wifiTimeout")) {
+                config.wifiTimeout = j["wifiTimeout"].as<int>();
+                saveData("wifiTimeout", String(config.wifiTimeout));
+            }
+            if (modWiFi) {
+                WiFi.begin(config.ssid.c_str(), config.password.c_str());
+                shouldCheckWiFi = true;
+            }
+            request->send(200, "text/plain", "Configuration saved");
+        }
+    );
+    server.begin();
+}
+
+void loop() {
+    static unsigned long lastSample = 0;
+    static unsigned long lastCheck = 0;
+    unsigned long now = millis();
+    if (shouldCheckWiFi && now - lastCheck >= 1000) {
+        lastCheck = now;
+        checkWiFiConnection();
+    }
+    if (now - lastSample >= 100) {
+        lastSample = now;
+        int i = 0;
+        for (auto& s : sensors) {
+            DHT d(s.pin, s.type == DHT11_TYPE ? DHT11 : DHT22);
+            d.begin();
+            double v = d.readTemperature();
+            if (!isnan(v)) {
+                auto it = std::next(sensorData.begin(), i);
+                it->lastSecondReadings.push_back(v);
+                it->currentValue = v;
+                unsigned long p = millis();
+                if (p - it->lastPurge > 1000) {
+                    while (it->lastSecondReadings.size() > 10)
+                        it->lastSecondReadings.erase(it->lastSecondReadings.begin());
+                    it->lastPurge = p;
+                }
+                double sum = 0;
+                for (double x : it->lastSecondReadings) sum += x;
+                if (!it->lastSecondReadings.empty())
+                    it->lastSecondAverage = sum / it->lastSecondReadings.size();
+                unsigned long ts = millis();
+                it->last24hReadings.push_back({v, ts});
+                while (!it->last24hReadings.empty() && (ts - it->last24hReadings.front().ts > 86400000UL)) {
+                    it->last24hReadings.erase(it->last24hReadings.begin());
+                }
+                if (!it->last24hReadings.empty()) {
+                    double minV = it->last24hReadings[0].value;
+                    double maxV = it->last24hReadings[0].value;
+                    unsigned long minT = it->last24hReadings[0].ts;
+                    unsigned long maxT = it->last24hReadings[0].ts;
+                    double sum24 = 0;
+                    for (auto const& vt : it->last24hReadings) {
+                        if (vt.value < minV) { minV = vt.value; minT = vt.ts; }
+                        if (vt.value > maxV) { maxV = vt.value; maxT = vt.ts; }
+                        sum24 += vt.value;
+                    }
+                    it->lowest24hValue = minV;
+                    it->highest24hValue = maxV;
+                    it->lowest24hTimestamp = minT;
+                    it->highest24hTimestamp = maxT;
+                    it->avg24h = sum24 / it->last24hReadings.size();
+                }
+            }
+            i++;
+        }
     }
 }
