@@ -1,25 +1,23 @@
-import {useEffect, useRef, use, useContext} from 'react';
+import { useEffect, useRef, use } from 'react';
 import { userMenuButtons } from '../util/data.js';
 import Button from './button.jsx';
 import { FiSettings } from 'react-icons/fi';
-import axios from "axios";
+import axios from 'axios';
 import { UserContext } from '../store/user-context.jsx';
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 export default function UserMenu({ onClose, open = true }) {
-  const { logOut } = useContext(UserContext);
+  const { logOut } = use(UserContext);
   const menuRef = useRef(null);
-
 
   async function handleLogout() {
     try {
       const response = await axios.post(
-          `${API_URL}/auth/logout`,
-          {},
-          {
-        withCredentials: true,
-      });
+        `/auth/logout`,
+        {},
+        {
+          withCredentials: true,
+        }
+      );
 
       logOut();
       console.log(response.data);
@@ -36,26 +34,21 @@ export default function UserMenu({ onClose, open = true }) {
       }
     }
     function handleKey(e) {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         onClose?.();
       }
     }
     if (open) {
-      document.addEventListener("mousedown", handleClick);
-      document.addEventListener("keydown", handleKey);
+      document.addEventListener('mousedown', handleClick);
+      document.addEventListener('keydown', handleKey);
     }
     return () => {
-      document.removeEventListener("mousedown", handleClick);
-      document.removeEventListener("keydown", handleKey);
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
     };
   }, [onClose, open]);
   return (
-    <div
-      className="fixed inset-0 z-100"
-      aria-modal="true"
-      tabIndex={-1}
-      role="dialog"
-    >
+    <div className="fixed inset-0 z-100" aria-modal="true" tabIndex={-1} role="dialog">
       {/* Overlay for click-outside */}
       <div className="absolute inset-0 bg-transparent" />
       <div
@@ -70,12 +63,20 @@ export default function UserMenu({ onClose, open = true }) {
             <Button
               buttonText={buttonsText}
               key={name}
-              icon={icon ? <FiSettings className="mr-2 w-5 h-5" aria-hidden="true" style={{ strokeWidth: 3 }} /> : undefined}
+              icon={
+                icon ? (
+                  <FiSettings
+                    className="mr-2 w-5 h-5"
+                    aria-hidden="true"
+                    style={{ strokeWidth: 3 }}
+                  />
+                ) : undefined
+              }
               className="w-full pt-5 pb-5 text-left text-[#3B1F0B] font-bold rounded-none px-6 transition-colors group
                 hover:bg-green-100 hover:rounded-2xl focus:bg-green-100 focus:rounded-2xl
                 outline-none"
               tabIndex={0}
-              onClick={name === "logout" ? handleLogout : undefined}
+              onClick={name === 'logout' ? handleLogout : undefined}
               role="menuitem"
             />
           ))}
@@ -84,6 +85,3 @@ export default function UserMenu({ onClose, open = true }) {
     </div>
   );
 }
-
-
-
