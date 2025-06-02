@@ -1,10 +1,11 @@
 import { use } from 'react';
 import { UserContext } from '../store/user-context.jsx';
 import InformationComponent from './information-component.jsx';
-import { plantsVisitorContent } from '../util/plants-page-data.js';
+import { devicesVisitorContent } from '../util/devices-page-data.js';
 
-export default function PlantsPage({ setModal }) {
+export default function DevicesPage({ setModal }) {
   const { isLogged } = use(UserContext);
+
   return (
     <>
       {isLogged && <div></div>}
@@ -13,7 +14,7 @@ export default function PlantsPage({ setModal }) {
           <InformationComponent
             setModal={setModal}
             showFor="not-logged-in"
-            visitorContent={plantsVisitorContent}
+            visitorContent={devicesVisitorContent}
           />
         </div>
       )}

@@ -29,7 +29,7 @@ export const loginFields = [
   },
 ];
 
-export const navButtons= [
+export const navButtons = [
   {
     name: 'home',
     buttonText: 'Home',

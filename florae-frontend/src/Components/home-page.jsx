@@ -1,38 +1,26 @@
-import Button from './button.jsx';
 import TextComponent from './text-component.jsx';
-import { titlePart, bottomPart, bottomPartHeader } from '../util/home-page-data.js';
-import { MdLocalFlorist } from 'react-icons/md';
-import { HiOutlineInformationCircle } from "react-icons/hi";
-import { UserContext } from '../store/user-context.jsx';
-import { use } from 'react';
+import {
+  bottomPart,
+  bottomPartHeader,
+  homeGuestContent,
+  homeVisitorContent,
+} from '../util/home-page-data.js';
+import { HiOutlineInformationCircle } from 'react-icons/hi';
+import InformationComponent from './information-component.jsx';
 
-function handlePlants(){
+function handlePlants() {
   //when I add plants-page. I will add some logic to this function
 }
 
-export default function HomePage({ setModal }){
-  const {isLogged} = use(UserContext)
-  return(
+export default function HomePage({ setModal }) {
+  return (
     <div className="bg-gray-50 m-[4vw] rounded-lg shadow-lg">
-      <div className="flex flex-col items-start justify-center p-8 pt-28 pb-28 mt-8 mb-8 bg-gray-200 bg-opacity-90 rounded-lg shadow-lg">
-        {/* Top part with title etc. */}
-        <h1 className="text-4xl font-bold text-green-900 mb-4">{titlePart.title}</h1>
-        <p className="text-lg text-black mb-6">{titlePart.paragraph}</p>
-        {isLogged ? (
-          <Button
-            buttonText={titlePart.btnLogged}
-            icon={<MdLocalFlorist />}
-            onClick={handlePlants}
-            className="bg-green-700 text-white px-6 py-3 rounded-full font-semibold shadow hover:bg-green-800 transition"
-          />
-        ) : (
-          <Button
-            buttonText={titlePart.btnNotLogged}
-            onClick={() => setModal("register")}
-            className="bg-green-700 text-white px-6 py-3 rounded-full font-semibold shadow hover:bg-green-800 transition"
-          />
-        )}
-      </div>
+      <InformationComponent
+        setModal={setModal}
+        handlePlants={handlePlants}
+        visitorContent={homeVisitorContent}
+        guestContent={homeGuestContent}
+      />
       <div className="flex pl-[2vw] pr-[2vw] justify-between items-center">
         {/* Images */}
         <img
@@ -51,9 +39,7 @@ export default function HomePage({ setModal }){
         <h1 className="text-3xl md:text-4xl font-bold text-green-800 mb-4 ml-22">
           {bottomPartHeader.title}
         </h1>
-        <p className="text-lg text-gray-700 mb-6 max-w-2xl ml-22">
-          {bottomPartHeader.paragraph}
-        </p>
+        <p className="text-lg text-gray-700 mb-6 max-w-2xl ml-22">{bottomPartHeader.paragraph}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 justify-items-center">
           {bottomPart.map(({ name, title, paragraph }) => (
             <div
@@ -70,5 +56,5 @@ export default function HomePage({ setModal }){
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -6,7 +6,7 @@ import { UserContext } from '../store/user-context.jsx';
 import PortalComponent from './portal-component.jsx';
 import { navButtons } from '../util/data.js';
 import { GiHamburgerMenu } from 'react-icons/gi';
-import smallerLogo from '../assets/smaller-logo.png'
+import smallerLogo from '../assets/smaller-logo.png';
 /**
  * Header Component
  *
@@ -35,7 +35,7 @@ import smallerLogo from '../assets/smaller-logo.png'
  *  - Ensure responsive and keyboard-friendly navigation.
  */
 
-export default function Header({setModal, modal, changePage}) {
+export default function Header({ setModal, modal, changePage }) {
   const { isLogged } = use(UserContext);
 
   function handleAuth(action) {
@@ -45,7 +45,7 @@ export default function Header({setModal, modal, changePage}) {
     setModal(null);
   }
 
-  function handleUserMenu(){
+  function handleUserMenu() {
     setModal(true);
   }
 
@@ -53,7 +53,12 @@ export default function Header({setModal, modal, changePage}) {
     <header className="flex flex-row border-b-stone-200 border-b-2 font-bold">
       <div className="flex flex-row items-center w-full ml-5 ">
         {/* Left: Logo/brand image */}
-        <img src={smallerLogo} alt="" className="mt-5 mb-5 h-10 w-10" onClick={() => changePage("home")}/>
+        <img
+          src={smallerLogo}
+          alt=""
+          className="mt-5 mb-5 h-10 w-10"
+          onClick={() => changePage('home')}
+        />
       </div>
       <div className="flex flex-row items-center justify-center w-full gap-6">
         {/* Center: Main navigation/actions */}
@@ -69,7 +74,9 @@ export default function Header({setModal, modal, changePage}) {
       <div className="flex flex-row items-center w-full justify-end mr-5">
         {/* Right: Utility/profile buttons */}
         {isLogged ? (
-          <Button icon={<GiHamburgerMenu className="w-6 h-6 mt-5 mb-5" onClick={handleUserMenu} />} />
+          <Button
+            icon={<GiHamburgerMenu className="w-6 h-6 mt-5 mb-5" onClick={handleUserMenu} />}
+          />
         ) : (
           <>
             <Button
