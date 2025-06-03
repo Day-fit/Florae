@@ -1,8 +1,12 @@
 const FAILED_TEXT = "&#10006; Invalid key";
 const PASSED_TEXT = "&#10004; Valid key";
-const BASE_URL = "https://florae.dayfit.pl";
 
-document.addEventListener('DOMContentLoaded', function() {
+function delay(ms)
+{
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
     const form = document.getElementById('settings-form');
     const apiKeyInfoPanel = document.getElementById('checkresult');
 
@@ -31,17 +35,18 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Network error.');
         }
 
+        await updateWifiStatus();
+
         if(await checkApiKey(data["floraeAccessKey"]))
         {
-            apiKeyInfoPanel.textContent = PASSED_TEXT;
+            apiKeyInfoPanel.innerHTML = PASSED_TEXT;
             apiKeyInfoPanel.className = "passed";
             apiKeyInfoPanel.style.display = "block";
-
         }
 
         else
         {
-            apiKeyInfoPanel.textContent = FAILED_TEXT;
+            apiKeyInfoPanel.innerHTML = FAILED_TEXT;
             apiKeyInfoPanel.className = "failed";
             apiKeyInfoPanel.style.display = "block";
         }
@@ -56,12 +61,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function checkApiKey(apiKey) {
     try {
-        const response = await fetch('/validate-api-key', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ apiKey }),
+        const response = await fetch(BASE_URL + '/validate-api-key?apiKey='+apiKey, {
+            method: 'GET',
         });
         if (response.ok) {
             const result = await response.json();
