@@ -66,8 +66,8 @@ export default async function validateForm(values, mode = 'signIn') {
         'email-or-username',
         'Enter a valid email or username',
         function (value) {
-          const { username } = this.parent;
-          if (!value && !username) {
+          const { email } = this.parent;
+          if (!value && !email) {
             // Both empty: fail
             return false;
           }

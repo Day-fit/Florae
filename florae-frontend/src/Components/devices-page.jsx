@@ -8,7 +8,9 @@ export default function DevicesPage({ setModal }) {
 
   return (
     <>
-      {isLogged && <div></div>}
+      {isLogged && (
+        <></>
+      )}
       {!isLogged && (
         <div>
           <InformationComponent
