@@ -3,6 +3,7 @@ import { UserContext } from './store/user-context.jsx';
 import MainSection from './Components/main-section.jsx';
 import { useState, useEffect } from 'react';
 import { refreshToken } from './util/refresh-function.js';
+import Footer from './Components/footer.jsx';
 
 function App() {
   const [user, setUser] = useState({
@@ -57,6 +58,9 @@ function App() {
         <Header modal={modal} setModal={setModal} changePage={handleChangePage} />
       </div>
       <MainSection viewMode={viewMode} setModal={setModal} />
+      <div className="sticky bg-white z-50">
+        <Footer/>
+      </div>
     </UserContext>
   );
 }
