@@ -61,6 +61,10 @@ public class ApiKey {
     @OneToOne
     private FloraLink linkedFloraLink;
 
+    @OneToOne
+    @JoinColumn(nullable = false)
+    private Plant linkedPlant;
+
     @ManyToOne
     private FloraeUser linkedUser;
 }

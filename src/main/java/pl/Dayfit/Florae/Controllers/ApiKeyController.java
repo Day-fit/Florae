@@ -1,13 +1,15 @@
 package pl.Dayfit.Florae.Controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
+import pl.Dayfit.Florae.DTOs.GenerateApiKeyDTO;
+import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
+import pl.Dayfit.Florae.Services.PlantCacheService;
 
 import java.util.Map;
 
@@ -26,12 +28,23 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ApiKeyController {
     private final ApiKeyService apiKeyService;
+    private final PlantCacheService plantCacheService;
 
-    @CachePut(value = "api-keys", key = "#userPrincipal.username")
     @PostMapping("/api/v1/generate-key")
-    public ResponseEntity<Map<String, String>> generateApiKey(@AuthenticationPrincipal UserPrincipal userPrincipal)
+    public ResponseEntity<Map<String, String>> generateApiKey(@RequestBody GenerateApiKeyDTO apiKeyDTO, @AuthenticationPrincipal UserPrincipal userPrincipal)
     {
-        return ResponseEntity.ok(Map.of("apiKey", apiKeyService.generateApiKey(userPrincipal.getUsername())));
+        Plant plant = plantCacheService.getPlantById(apiKeyDTO.getPlantId());
+
+        if (plant == null)
+        {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid plant id"));
+        }
+
+        try {
+            return ResponseEntity.ok(Map.of("apiKey", apiKeyService.generateApiKey(userPrincipal.getUsername(), plant)));
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", exception.getMessage()));
+        }
     }
 
     @DeleteMapping("/api/v1/revoke-key")

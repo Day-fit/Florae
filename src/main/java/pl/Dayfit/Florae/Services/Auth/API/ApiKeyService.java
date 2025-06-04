@@ -6,10 +6,12 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationCandidate;
 import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Entities.FloraLink;
 import pl.Dayfit.Florae.Entities.FloraeUser;
+import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.Helpers.SpEL.ApiKeysHelper;
 import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
 import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
@@ -52,13 +54,26 @@ public class ApiKeyService {
     private final FloraLinkCacheService floraLinkCacheService;
     private final PasswordEncoder passwordEncoder;
     private final ApiKeysHelper apiKeyHelper;
+    private final ApiKeyCacheService apiKeyCacheService;
 
-    public String generateApiKey(String username) {
+    @Transactional
+    public String generateApiKey(String username, Plant plant) throws IllegalArgumentException {
         String generatedUUID = UUID.randomUUID().toString();
         String encryptedUUID = passwordEncoder.encode(generatedUUID);
 
+        if (!plant.getLinkedUser().getUsername().equals(username))
+        {
+            throw new IllegalArgumentException("Plant is not owned by user");
+        }
+
+        if (plant.getLinkedFloraLink() != null)
+        {
+            throw new IllegalArgumentException("Plant is already linked to a FloraLink");
+        }
+
         ApiKey apiKey = new ApiKey();
         apiKey.setKeyValue(encryptedUUID);
+        apiKey.setLinkedPlant(plant);
         apiKey.setShortKey(apiKeyHelper.generateShortKey(generatedUUID));
         apiKey.setFloraeUser(floraeUserRepository.findByUsername(username));
         apiKeyRepository.save(apiKey);
@@ -105,8 +120,9 @@ public class ApiKeyService {
         return apiKey != null && !apiKey.getIsRevoked();
     }
 
+    @Transactional
     public void connectApi(Authentication authentication) {
-        ApiKey apiKey = (ApiKey) authentication.getCredentials();
+        ApiKey apiKey = apiKeyCacheService.getApiKeyByHash(((ApiKey) authentication.getCredentials()).getKeyValue());
 
         if (apiKey.getLinkedFloraLink() != null)
         {
@@ -117,6 +133,7 @@ public class ApiKeyService {
 
         FloraLink floraLink = new FloraLink();
         floraLink.setId(null);
+        floraLink.setLinkedPlant(apiKey.getLinkedPlant());
         floraLink.setName("FloraLink");
         floraLink.setOwner(floraeUser);
 

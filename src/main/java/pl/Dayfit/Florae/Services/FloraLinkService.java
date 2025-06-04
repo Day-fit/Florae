@@ -3,11 +3,14 @@ package pl.Dayfit.Florae.Services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import pl.Dayfit.Florae.DTOs.FloraLinkSetNameDTO;
 import pl.Dayfit.Florae.DTOs.Sensors.CurrentSensorDataDTO;
 import pl.Dayfit.Florae.DTOs.Sensors.CurrentSensorResponseDataDTO;
 import pl.Dayfit.Florae.DTOs.Sensors.DailySensorDataDTO;
 import pl.Dayfit.Florae.DTOs.Sensors.DailySensorResponseDataDTO;
 import pl.Dayfit.Florae.Entities.ApiKey;
+import pl.Dayfit.Florae.Entities.FloraLink;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Entities.Sensors.CurrentReportData;
 import pl.Dayfit.Florae.Entities.Sensors.CurrentSensorData;
@@ -34,6 +37,7 @@ public class FloraLinkService {
     private final FloraLinkCacheService cacheService;
     private final DailyReportDataCacheService dailyReportDataCacheService;
 
+    @Transactional
     public void handleReportUpload(List<DailySensorDataDTO> uploadedData, Authentication auth) {
         Integer floraLinkId = ((ApiKey) auth.getCredentials())
                 .getLinkedFloraLink()
@@ -66,6 +70,7 @@ public class FloraLinkService {
         dailyReportDataCacheService.save(report);
     }
 
+    @Transactional
     public void handleCurrentDataUpload(List<CurrentSensorDataDTO> uploadedData, Authentication authentication)
     {
         String ownerUsername = ((FloraeUser) authentication
@@ -103,6 +108,7 @@ public class FloraLinkService {
         currentReportDataRepository.save(searchResult);
     }
 
+    @Transactional(readOnly = true)
     public List<CurrentSensorResponseDataDTO> getCurrentDataReport(String username)
     {
         return currentReportDataRepository.findAllByOwnerUsername(username).stream().map(data -> new CurrentSensorResponseDataDTO(
@@ -112,6 +118,7 @@ public class FloraLinkService {
                 ).toList())).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<DailySensorResponseDataDTO> getDailyDataReport(String username) {
         return dailyReportDataCacheService.findAllSensorReadingsByOwnerUsername(username).stream()
                 .map(data -> new DailySensorResponseDataDTO(data.getFloraLink().getId(), data.getSensorDataList().stream().map(sensorData -> {
@@ -124,5 +131,20 @@ public class FloraLinkService {
                     dto.setAverageValue(sensorData.getAverageValue());
                     return dto;
                 }).toList())).toList();
+    }
+
+    @Transactional
+    public void setName(FloraLinkSetNameDTO dto, String username) throws IllegalStateException{
+        FloraeUser floraeUser = floraeUserCacheService.getFloraeUser(username);
+        FloraLink floraLink = cacheService.getFloraLink(dto.getId());
+
+        if (!floraLink.getOwner().equals(floraeUser))
+        {
+            throw new IllegalStateException("User is not the owner of this FloraLink! Cannot change name!");
+        }
+
+        floraLink.setName(dto.getName());
+
+        cacheService.saveFloraLink(floraLink);
     }
 }

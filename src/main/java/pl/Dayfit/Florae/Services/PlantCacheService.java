@@ -5,6 +5,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.Repositories.JPA.PlantRepository;
 
@@ -17,6 +18,7 @@ import pl.Dayfit.Florae.Repositories.JPA.PlantRepository;
 public class PlantCacheService {
     private final PlantRepository plantRepository;
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "plants", key = "#id")
     public Plant getPlantById(int id)
     {
