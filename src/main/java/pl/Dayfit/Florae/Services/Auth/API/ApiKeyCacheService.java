@@ -56,9 +56,9 @@ public class ApiKeyCacheService {
         return apiKeyRepository.findAllByShortKey(shortKey).stream().filter(entity -> passwordEncoder.matches(rawApiKey, entity.getKeyValue())).findFirst().orElse(null);
     }
 
-    @Cacheable(value = "api-keys", key = "#hash")
-    public ApiKey getApiKeyByHash(String hash) {
-        return apiKeyRepository.findByKeyValue(hash);
+    @Cacheable(value = "api-keys", key = "#apiKeyValue")
+    public ApiKey getApiKeyByHash(String apiKeyValue) {
+        return apiKeyRepository.findByKeyValue(apiKeyValue);
     }
 
     public void revokeUnusedApiKeys()

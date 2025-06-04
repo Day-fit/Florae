@@ -62,6 +62,11 @@ public class FloraeUserService {
     public boolean isValid(FloraeUserLoginDTO floraeUserLoginDTO) {
         FloraeUser floraeUser = floraeUserCacheService.findByEmailOrUsername(floraeUserLoginDTO.getEmail(), floraeUserLoginDTO.getUsername());
 
+        if (floraeUser == null)
+        {
+            return false;
+        }
+
         try {
             return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUser.getUsername(), floraeUserLoginDTO.getPassword())).isAuthenticated();
         } catch (AuthenticationException e) {
