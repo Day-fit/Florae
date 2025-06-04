@@ -5,6 +5,7 @@ import { plantsVisitorContent } from '../util/plants-page-data.js';
 import Button from './button.jsx';
 import CreatePlant from './create-plant.jsx';
 import axios from 'axios';
+import PlantCard from "./plant-card.jsx";
 
 export default function PlantsPage({ setModal }) {
   const { isLogged } = use(UserContext);
@@ -61,10 +62,12 @@ export default function PlantsPage({ setModal }) {
               <div>{ownedPlants}</div>
             ) : Array.isArray(ownedPlants) && ownedPlants.length > 0 ? (
               ownedPlants.map((plant) => (
-                <div key={plant.id /* or another unique property */}>
-                  {/* there will be plant card displayed */}
-                  <span>{plant.speciesName}</span>
-                </div>
+                <PlantCard
+                    primaryPhoto={plant.primaryPhoto}
+                    key={plant.id}
+                    speciesName={plant.speciesName}
+                    requirements={plant.requirements}
+                />
               ))
             ) : (
               <div>No plants found.</div>
