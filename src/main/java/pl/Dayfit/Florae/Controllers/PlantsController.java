@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
 import pl.Dayfit.Florae.DTOs.PlantResponseDTO;
+import pl.Dayfit.Florae.DTOs.PlantSetNameDTO;
 import pl.Dayfit.Florae.Services.PlantsService;
 
 /**
@@ -49,6 +50,12 @@ class PlantsController {
                         .body(Map.of("error", "Invalid photo format"));
             }
         };
+    }
+
+    @PostMapping("/api/v1/plant-set-name")
+    public ResponseEntity<?> setPlantName(@RequestBody PlantSetNameDTO plantSetNameDTO, @AuthenticationPrincipal UserPrincipal user)
+    {
+        if (plantSetNameDTO == null) {}
     }
 
     @GetMapping("/api/v1/plant/{id:\\d+}")

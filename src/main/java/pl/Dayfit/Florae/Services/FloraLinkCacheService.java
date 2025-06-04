@@ -1,11 +1,15 @@
 package pl.Dayfit.Florae.Services;
 
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import pl.Dayfit.Florae.Entities.FloraLink;
 import pl.Dayfit.Florae.Repositories.JPA.FloraLinkRepository;
+import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
+
+import java.util.List;
 
 /**
  * Service class for managing FloraLink entities with caching support.
@@ -31,6 +35,7 @@ import pl.Dayfit.Florae.Repositories.JPA.FloraLinkRepository;
 @Service
 @AllArgsConstructor
 public class FloraLinkCacheService {
+    private final FloraeUserCacheService floraeUserCacheService;
     private final FloraLinkRepository floraLinkRepository;
 
     @Cacheable(value = "flora-link", key = "#floraLinkId")
@@ -39,6 +44,13 @@ public class FloraLinkCacheService {
         return floraLinkRepository.findById(floraLinkId).orElse(null);
     }
 
+    @Cacheable(value = "flora-links", key = "#ownerId")
+    public List<FloraLink> getOwnedFloraLinks(Integer ownerId)
+    {
+        return floraLinkRepository.findByOwner(floraeUserCacheService.getFloraeUserById(ownerId));
+    }
+
+    @CacheEvict(value = "flora-links", key = "#result.owner.id")
     @CachePut(value = "flora-link", key = "#floraLink.id")
     public FloraLink saveFloraLink(FloraLink floraLink)
     {
