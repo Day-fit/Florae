@@ -11,7 +11,9 @@ export default function PlantCard({primaryPhoto, speciesName, requirements}){
         if(selection === "optimal"){
             const optimalvalues = {
                 optimal_env_humid: (requirements.max_env_humid + requirements.min_env_humid)/2,
-
+                optimal_light_lux: (requirements.max_light_lux + requirements.min_light_lux)/2,
+                optimal_soil_moist: (requirements.max_soil_moist + requirements.min_soil_moist)/2,
+                optimal_temp: (requirements.max_temp + requirements.min_temp)/2,
             }
         }
     }
