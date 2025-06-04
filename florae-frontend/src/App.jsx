@@ -58,7 +58,7 @@ function App() {
         <Header modal={modal} setModal={setModal} changePage={handleChangePage} />
       </div>
       <MainSection viewMode={viewMode} setModal={setModal} />
-      <div className="sticky bg-white z-50">
+      <div className="sticky bg-white z-49">
         <Footer/>
       </div>
     </UserContext>
