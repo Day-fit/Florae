@@ -73,7 +73,7 @@ public class FloraLinkController {
 
         try {
             floraLinkService.setName(floraLinkSetNameDTO, userPrincipal.getUsername());
-        } catch (IllegalArgumentException exception) {
+        } catch (IllegalStateException exception) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", exception.getMessage()));
         }
 
