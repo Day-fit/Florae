@@ -20,7 +20,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -68,8 +68,6 @@ import java.util.List;
  *  <li> ApiKeyFilter: Filter that authenticates requests containing an API key header.</li>
  *  <li> AuthenticationManager: Manages authentication through multiple providers configured in Spring Security.</li>
  *  <li> AuthenticationEntryPoint: Custom entry point for handling authentication failures.</li>
- *  <li> BCryptPasswordEncoder: A password encoder that uses the BCrypt hashing algorithm
- *   for secure password storage.</li>
  *  <li> ApiKeyAuthenticationProvider: Provider that validates and authenticates API key credentials.</li>
  *  <li> DaoAuthenticationProvider: Configures authentication via a DAO provider using
  *   the UserDetailsService and password encoder.</li>
@@ -89,6 +87,7 @@ public class SecurityConfiguration {
     private final ApiKeyService apiKeyService;
     private final UserDetailsService userDetailsService;
     private final JWTFilter jwtFilter;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authManager) throws Exception
@@ -147,15 +146,8 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public AuthenticationEntryPoint authenticationEntryPoint()
-    {
+    public AuthenticationEntryPoint authenticationEntryPoint() {
         return new FloraeAuthenticationEntryPoint();
-    }
-
-    @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder()
-    {
-        return new BCryptPasswordEncoder(12);
     }
 
     @Bean
@@ -171,12 +163,12 @@ public class SecurityConfiguration {
 
                 String apiKeyValue = ((ApiKey) authentication.getCredentials()).getKeyValue();
 
-                if (!apiKeyService.isValidApiKey(apiKeyValue))
+                if (!apiKeyService.isValidByAuthentication(authentication))
                 {
                     throw new BadCredentialsException("Invalid API key.");
                 }
 
-                ApiKey apiKey = apiKeyService.getApiKey(apiKeyValue);
+                ApiKey apiKey = apiKeyService.getApiKeyByHash(apiKeyValue);
                 return new ApiKeyAuthenticationToken(apiKey);
             }
 
@@ -191,7 +183,7 @@ public class SecurityConfiguration {
     public AuthenticationProvider daoAuthenticationProvider()
     {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
-        provider.setPasswordEncoder(bCryptPasswordEncoder());
+        provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
 

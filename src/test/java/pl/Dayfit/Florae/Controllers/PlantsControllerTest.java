@@ -54,7 +54,10 @@ class PlantsControllerTest {
     }
 
     @Test void shouldReturnSpecies() throws Exception {
-        when(plantsService.saveAndRecognise(any(), eq("testUser"))).thenReturn("rose");
+        Plant plant = new Plant();
+        plant.setSpeciesName("rose");
+
+        when(plantsService.saveAndRecognise(any(), eq("testUser"))).thenReturn(plant);
 
         MockMultipartFile photo = new MockMultipartFile(
                 "photos","photo.jpg",MediaType.IMAGE_JPEG_VALUE,"data".getBytes());
