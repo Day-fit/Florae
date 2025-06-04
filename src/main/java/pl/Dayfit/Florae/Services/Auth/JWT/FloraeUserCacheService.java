@@ -6,6 +6,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
 
@@ -35,30 +36,35 @@ import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
 public class FloraeUserCacheService {
     private final FloraeUserRepository userRepository;
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "florae-users", key = "#username")
     public FloraeUser getFloraeUser(String username)
     {
         return userRepository.findByUsername(username);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "florae-users", key = "#id")
     public FloraeUser getFloraeUserById(int id)
     {
         return userRepository.findById(id).orElse(null);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "florae-users", key = "#email")
     public FloraeUser getFloraeUserByEmail(String email)
     {
         return userRepository.findByEmail(email);
     }
 
+    @Transactional
     @CachePut(value = "florae-users", key = "#user.id")
     public FloraeUser saveFloraeUser(FloraeUser user)
     {
         return userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "florae-users", key = "{#email, #username}")
     public FloraeUser findByEmailOrUsername(String email, String username)
     {

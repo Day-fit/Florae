@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
 import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
 import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
-import pl.Dayfit.Florae.DTOs.FloraeUserReposonseDTO;
+import pl.Dayfit.Florae.DTOs.FloraeUserResponseDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserService;
@@ -235,7 +235,6 @@ public class FloraeUserController {
 
             jwtService.revokeToken(refreshToken);
         }
-
         if (accessToken != null && !accessToken.isBlank() && jwtService.validateAccessToken(accessToken, user.getUsername())) {
             ResponseCookie deletedAccessToken = ResponseCookie.from("accessToken", "")
                     .path("/")
@@ -266,6 +265,6 @@ public class FloraeUserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "User not found"));
         }
 
-        return ResponseEntity.ok(new FloraeUserReposonseDTO(floraeUser.getUsername(), floraeUser.getEmail()));
+        return ResponseEntity.ok(new FloraeUserResponseDTO(floraeUser.getUsername(), floraeUser.getEmail()));
     }
 }

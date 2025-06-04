@@ -7,6 +7,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Helpers.SpEL.ApiKeysHelper;
 import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
@@ -35,6 +36,7 @@ public class ApiKeyCacheService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ApiKeysHelper helper;
 
+    @Transactional
     @CacheEvict(value = "api-keys", key = "@apiKeysHelper.generateShortKey(#rawApiKey)")
     public void revokeApiKey(String rawApiKey) throws IllegalArgumentException{
         String shortKey = helper.generateShortKey(rawApiKey);
@@ -49,6 +51,7 @@ public class ApiKeyCacheService {
         apiKeyRepository.save(apiKey);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "api-keys", key = "@apiKeysHelper.generateShortKey(#rawApiKey)")
     public ApiKey getApiKey(String rawApiKey)
     {
@@ -56,11 +59,13 @@ public class ApiKeyCacheService {
         return apiKeyRepository.findAllByShortKey(shortKey).stream().filter(entity -> passwordEncoder.matches(rawApiKey, entity.getKeyValue())).findFirst().orElse(null);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "api-keys", key = "#apiKeyValue")
     public ApiKey getApiKeyByHash(String apiKeyValue) {
         return apiKeyRepository.findByKeyValue(apiKeyValue);
     }
 
+    @Transactional
     public void revokeUnusedApiKeys()
     {
         apiKeyRepository.findUnusedApiKeysBeforeDate(Instant.now()).forEach(apiKey ->

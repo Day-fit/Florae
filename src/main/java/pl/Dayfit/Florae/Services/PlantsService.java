@@ -21,8 +21,10 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import pl.Dayfit.Florae.DTOs.FloraLinkResponseDTO;
 import pl.Dayfit.Florae.DTOs.PlantRequirementsDTO;
 import pl.Dayfit.Florae.DTOs.PlantResponseDTO;
+import pl.Dayfit.Florae.Entities.FloraLink;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.DTOs.PlantFetchDTO;
@@ -109,12 +111,6 @@ public class PlantsService {
         throw new IllegalStateException("No matches found");
     }
 
-    public PlantResponseDTO getPlantById(Integer id)
-    {
-        Plant plant = plantRepository.findById(id).orElse(null);
-        return mapPlantDTO(plant);
-    }
-
     @Transactional(readOnly = true)
     public List<PlantResponseDTO> getPlantsByUsername(String username)
     {
@@ -133,6 +129,14 @@ public class PlantsService {
             return null;
         }
 
+        FloraLink floraLink = plant.getLinkedFloraLink();
+        FloraLinkResponseDTO floraLinkResponseDTO = null;
+
+        if(floraLink != null)
+        {
+            floraLinkResponseDTO = new FloraLinkResponseDTO(floraLink.getId(), floraLink.getName());
+        }
+
         PlantRequirements plantRequirements = plant.getRequirements();
         PlantResponseDTO mappedElement = new PlantResponseDTO();
         mappedElement.setId(plant.getId());
@@ -140,7 +144,7 @@ public class PlantsService {
         mappedElement.setName(plant.getName());
         mappedElement.setSpeciesName(plant.getSpeciesName());
         mappedElement.setPrimaryPhoto(plant.getPrimaryPhoto());
-        mappedElement.setLinkedFloraLink(plant.getLinkedFloraLink());
+        mappedElement.setLinkedFloraLink(floraLinkResponseDTO);
         mappedElement.setRequirements(
                 new PlantRequirementsDTO(
                         null,
