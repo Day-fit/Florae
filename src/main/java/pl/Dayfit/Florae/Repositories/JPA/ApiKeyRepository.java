@@ -26,7 +26,9 @@ import java.util.List;
  */
 @Repository
 public interface ApiKeyRepository extends JpaRepository<ApiKey, Integer> {
-    ApiKey findAllByKeyValue(String keyValue);
+    ApiKey findByKeyValue(String keyValue);
+
+    List<ApiKey> findByShortKey(String shortKey);
 
     @Query("SELECT a FROM ApiKey a" +
             " WHERE a.createdDate <= :date" +
@@ -37,4 +39,5 @@ public interface ApiKeyRepository extends JpaRepository<ApiKey, Integer> {
     @Modifying
     @Query("DELETE FROM ApiKey a WHERE a.isRevoked = TRUE")
     int deleteRevokedApiKeys();
+    List<ApiKey> findAllByShortKey(String shortKey);
 }

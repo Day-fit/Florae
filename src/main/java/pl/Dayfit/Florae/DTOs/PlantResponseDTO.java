@@ -8,6 +8,7 @@ public class PlantResponseDTO
 {
     private Integer id;
     private String owner;
+    private String name;
     private String speciesName;
     private FloraLink linkedFloraLink;
     private String primaryPhoto;

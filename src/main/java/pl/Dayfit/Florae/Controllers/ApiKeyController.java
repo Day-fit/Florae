@@ -2,6 +2,7 @@ package pl.Dayfit.Florae.Controllers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +42,11 @@ public class ApiKeyController {
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid api key"));
         }
 
-        apiKeyService.revokeApiKey(apiKey);
+        try {
+            apiKeyService.revokeApiKey(apiKey);
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "API key is invalid or has been already revoked."));
+        }
 
         return ResponseEntity.ok(Map.of("message", "API key revoked successfully"));
     }

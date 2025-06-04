@@ -42,6 +42,7 @@ import pl.Dayfit.Florae.Utils.ImageOptimizer;
 @RequiredArgsConstructor
 public class PlantsService {
     private final PlantRepository plantRepository;
+    private final PlantCacheService plantCacheService;
     private final FloraeUserRepository floraeUserRepository;
     private final PlantRequirementsService plantRequirementsService;
     private final RestTemplate restTemplate;
@@ -56,8 +57,13 @@ public class PlantsService {
     @Value("${plant.net.api}")
     private String PLANT_NET_API_KEY;
 
+    public boolean isNotOwner(Integer plantId, String username) {
+        Plant plant = plantCacheService.getPlantById(plantId);
+        return !plant.getLinkedUser().getUsername().equals(username);
+    }
+
     @Transactional
-    public String saveAndRecognise(List<MultipartFile> photos, String username) throws NoSuchElementException, IOException {
+    public Plant saveAndRecognise(List<MultipartFile> photos, String username) throws NoSuchElementException, IOException {
         final MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
         final FloraeUser floraeUser = floraeUserRepository.findByUsername(username);
 
@@ -88,14 +94,15 @@ public class PlantsService {
             String pid = response.getResults().getFirst().getSpecies().getScientificNameWithoutAuthor().toLowerCase();
 
             Plant plant = new Plant();
+            plant.setName(null);
             plant.setSpeciesName(response.getBestMatch());
             plant.setPid(pid);
             plant.setPrimaryPhoto(Base64.getEncoder().encodeToString(ImageOptimizer.optimizeImage(photos.getFirst(), .7f)));
             plant.setLinkedUser(floraeUser);
             plant.setRequirements(plantRequirementsService.getPlantRequirements(pid));
 
-            plantRepository.save(plant);
-            return plant.getSpeciesName();
+            plantCacheService.savePlant(plant);
+            return plant;
         }
 
         log.debug("Florae could not recognise any plant at given photos");
@@ -114,6 +121,12 @@ public class PlantsService {
         return plantRepository.getPlantsByUsername(username).stream().map(this::mapPlantDTO).toList();
     }
 
+    public void saveName(Integer id, String name) {
+        Plant plantToModify = plantCacheService.getPlantById(id);
+        plantToModify.setName(name);
+        plantCacheService.savePlant(plantToModify);
+    }
+
     private PlantResponseDTO mapPlantDTO(Plant plant)
     {
         if(plant == null){
@@ -124,6 +137,7 @@ public class PlantsService {
         PlantResponseDTO mappedElement = new PlantResponseDTO();
         mappedElement.setId(plant.getId());
         mappedElement.setOwner(plant.getLinkedUser().getUsername());
+        mappedElement.setName(plant.getName());
         mappedElement.setSpeciesName(plant.getSpeciesName());
         mappedElement.setPrimaryPhoto(plant.getPrimaryPhoto());
         mappedElement.setLinkedFloraLink(plant.getLinkedFloraLink());

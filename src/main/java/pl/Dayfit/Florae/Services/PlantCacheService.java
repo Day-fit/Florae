@@ -1,0 +1,36 @@
+package pl.Dayfit.Florae.Services;
+
+import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import pl.Dayfit.Florae.Entities.Plant;
+import pl.Dayfit.Florae.Repositories.JPA.PlantRepository;
+
+/**
+ * <p>Service responsible for managing and caching the Plant entity in various ways</p>
+ */
+
+@Service
+@AllArgsConstructor
+public class PlantCacheService {
+    private final PlantRepository plantRepository;
+
+    @Cacheable(value = "plants", key = "#id")
+    public Plant getPlantById(int id)
+    {
+        return plantRepository.findById(id).orElse(null);
+    }
+
+    @CacheEvict(value = "plants", key = "#plantId")
+    public void deletePlant(Integer plantId) {
+        plantRepository.deleteById(plantId);
+    }
+
+    @CachePut(value = "plants", key = "#plant.id")
+    public Plant savePlant(Plant plant)
+    {
+        return plantRepository.save(plant);
+    }
+}

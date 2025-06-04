@@ -2,11 +2,10 @@ package pl.Dayfit.Florae.Services.Auth.JWT;
 
 import lombok.RequiredArgsConstructor;
 
-import org.hibernate.annotations.Cache;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import pl.Dayfit.Florae.Auth.UserPrincipal;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
 
@@ -46,12 +45,23 @@ public class FloraeUserCacheService {
     public FloraeUser getFloraeUserById(int id)
     {
         return userRepository.findById(id).orElse(null);
-
     }
 
     @Cacheable(value = "florae-users", key = "#email")
     public FloraeUser getFloraeUserByEmail(String email)
     {
         return userRepository.findByEmail(email);
+    }
+
+    @CachePut(value = "florae-users", key = "#user.id")
+    public FloraeUser saveFloraeUser(FloraeUser user)
+    {
+        return userRepository.save(user);
+    }
+
+    @Cacheable(value = "florae-users", key = "{#email, #username}")
+    public FloraeUser findByEmailOrUsername(String email, String username)
+    {
+        return userRepository.findByUsernameOrEmail(username, email);
     }
 }

@@ -21,6 +21,7 @@ import java.util.function.Function;
  * Service class responsible for handling JSON Web Tokens (JWT).
  * Provides methods for generating, validating, and extracting
  * claims from JWTs, leveraging a secret key for signature verification.
+ * <p>Please note that we are not encrypting the revoked tokens because it's pointless</p>
 
  * <p>Annotations:
  * <ul>

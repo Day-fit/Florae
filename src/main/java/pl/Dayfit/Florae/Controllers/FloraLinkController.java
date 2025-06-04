@@ -18,6 +18,8 @@ import pl.Dayfit.Florae.Auth.UserPrincipal;
 import pl.Dayfit.Florae.DTOs.Sensors.CurrentSensorDataDTO;
 import pl.Dayfit.Florae.DTOs.Sensors.DailySensorDataDTO;
 import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
+import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
+import pl.Dayfit.Florae.Services.FloraLinkCacheService;
 import pl.Dayfit.Florae.Services.FloraLinkService;
 
 /**
@@ -29,6 +31,8 @@ import pl.Dayfit.Florae.Services.FloraLinkService;
 public class FloraLinkController {
     private final FloraLinkService floraLinkService;
     private final ApiKeyService apiKeyService;
+    private final FloraLinkCacheService floraLinkCacheService;
+    private final FloraeUserCacheService floraeUserCacheService;
 
     @PostMapping("/api/v1/floralink/connect-api")
     public ResponseEntity<?> connectApi(Authentication authentication)
@@ -66,5 +70,10 @@ public class FloraLinkController {
     public ResponseEntity<?> getAllCurrentData(@AuthenticationPrincipal UserPrincipal userPrincipal)
     {
         return ResponseEntity.ok(floraLinkService.getCurrentDataReport((userPrincipal).getUsername()));
+    }
+
+    @GetMapping("/api/v1/get-floralinks")
+    public ResponseEntity<?> getLinkedFloraLinks(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(floraLinkCacheService.getOwnedFloraLinks(floraeUserCacheService.getFloraeUser(userPrincipal.getUsername()).getId()));
     }
 }
