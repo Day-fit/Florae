@@ -1,18 +1,18 @@
 export const footer = [
     {
-        name: "Use cases",
+        name: "Home",
         subpoints: [
-            "UI design",
-            "UX design",
+            "Get started",
+            "Why plant lovers trust us",
             "Wireframing",
             "Diagramming",
             "Brainstorming",
             "Online whiteboard",
-            "Team collaboration"
+            "Contact us"
         ]
     },
     {
-        name: "Explore",
+        name: "Plants",
         subpoints: [
             "Design",
             "Prototyping",
@@ -24,7 +24,7 @@ export const footer = [
         ]
     },
     {
-        name: "Resources",
+        name: "Devices",
         subpoints: [
             "Blog",
             "Best practices",
