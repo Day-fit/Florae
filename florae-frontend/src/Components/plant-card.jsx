@@ -15,6 +15,8 @@ export default function PlantCard({primaryPhoto, speciesName, requirements}){
                 optimal_soil_moist: (requirements.max_soil_moist + requirements.min_soil_moist)/2,
                 optimal_temp: (requirements.max_temp + requirements.min_temp)/2,
             }
+        }else{
+
         }
     }
     return(
