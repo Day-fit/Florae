@@ -9,14 +9,29 @@ export default function PlantCard({primaryPhoto, speciesName, requirements}){
     }
     function renderRequirements(){
         if(selection === "optimal"){
-            const optimalvalues = {
+            const optimalValues = {
                 optimal_env_humid: (requirements.max_env_humid + requirements.min_env_humid)/2,
                 optimal_light_lux: (requirements.max_light_lux + requirements.min_light_lux)/2,
                 optimal_soil_moist: (requirements.max_soil_moist + requirements.min_soil_moist)/2,
                 optimal_temp: (requirements.max_temp + requirements.min_temp)/2,
             }
+            return optimalValues
+        }else if(selection === "min"){
+            const minValue = {
+                min_env_humid:requirements.min_env_humid,
+                min_light_lux: requirements.min_light_lux,
+                min_soil_moist: requirements.min_soil_moist,
+                min_temp: requirements.min_temp,
+            }
+            return minValue
         }else{
-
+            const maxValue = {
+                max_env_humid:requirements.max_env_humid,
+                max_light_lux: requirements.max_light_lux,
+                max_soil_moist: requirements.max_soil_moist,
+                max_temp: requirements.max_temp,
+            }
+            return maxValue
         }
     }
     return(
