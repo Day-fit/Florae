@@ -61,11 +61,6 @@ public class ApiKeyService {
         String generatedUUID = UUID.randomUUID().toString();
         String encryptedUUID = passwordEncoder.encode(generatedUUID);
 
-        if (!plant.getLinkedUser().getUsername().equals(username))
-        {
-            throw new IllegalArgumentException("Plant is not owned by user");
-        }
-
         if (plant.getLinkedFloraLink() != null)
         {
             throw new IllegalArgumentException("Plant is already linked to a FloraLink");
