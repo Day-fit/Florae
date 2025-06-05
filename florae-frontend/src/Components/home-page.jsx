@@ -9,7 +9,7 @@ import { HiOutlineInformationCircle } from 'react-icons/hi';
 import InformationComponent from './information-component.jsx';
 
 function handlePlants() {
-  //when I add plants-page. I will add some logic to this function
+  //when I add plants-page. I will add some logic to this functio
 }
 
 export default function HomePage({ setModal }) {
@@ -21,19 +21,6 @@ export default function HomePage({ setModal }) {
         visitorContent={homeVisitorContent}
         guestContent={homeGuestContent}
       />
-      <div className="flex pl-[2vw] pr-[2vw] justify-between items-center">
-        {/* Images */}
-        <img
-          alt="temp1"
-          src="https://placekitten.com/180/180"
-          className="w-40 h-40 object-cover rounded-md"
-        />
-        <img
-          alt="temp2"
-          src="https://placekitten.com/181/181"
-          className="w-40 h-40 object-cover rounded-md"
-        />
-      </div>
       <div className="w-full py-8 bg-gray-50">
         {/* Headers data about website */}
         <h1 className="text-3xl md:text-4xl font-bold text-green-800 mb-4 ml-22">

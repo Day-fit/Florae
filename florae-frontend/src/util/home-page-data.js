@@ -1,20 +1,17 @@
 export const homeGuestContent = {
   title: 'Florae',
   paragraph:
-    `Your plants missed you. <br/> Head back to your dashboard to check on your green companions. View real-time updates, get personalized care tips, and see what needs your attention today.`,
+    `Your plants missed you. Head back to your dashboard to check on your green companions. View real-time updates, get personalized care tips, and see what needs your attention today.`,
   btnText: 'My plants',
 };
 
 export const homeVisitorContent = {
   title: 'Florae',
   paragraph:
-    `Tired of second-guessing your plant care routine? <br/>
+    `Tired of second-guessing your plant care routine?
 Wondering if you’ve overwatered—or not watered enough? Not sure if your plant is getting enough light or suffering in silence from poor air conditions?
-<br/>
 You’re not alone. Plant care can feel overwhelming, even for experienced growers. But it doesn’t have to be that way.
-<br/>
 Our intelligent plant monitoring system uses real-time data from smart, easy-to-use sensors to give your plants a voice. Now, instead of guessing what your plant needs, you’ll know—down to the exact level of moisture in the soil or the intensity of sunlight it's receiving.
-<br/>
 Whether you’re caring for one houseplant, a full indoor jungle, or an outdoor vegetable patch, our system a simple experience, so your plants stay healthy and happy, and you stay worry-free.`,
   btnText: 'Get Started',
 };
