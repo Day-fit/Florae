@@ -1,5 +1,3 @@
-const isInDevMode = false;
-const BASE_URL = isInDevMode ? "http://192.168.241.192:8080" : "https://florae.dayfit.pl";
 let isConnected;
 
 async function updateWifiStatus() {

@@ -32,7 +32,7 @@
                 <label for="targetSsid">Your WiFi name</label>
                 <div class="input-icon-wrapper">
                     <span class="input-icon">📶</span>
-                    <input id="targetSsid" name="targetSsid" placeholder="Type Your wifi name..." required>
+                    <input id="targetSsid" name="targetSsid" placeholder="Type Your wifi name...">
                 </div>
             </div>
 
@@ -40,7 +40,7 @@
                 <label for="targetPassword">Your WiFi password</label>
                 <div class="input-icon-wrapper">
                     <span class="input-icon">🔒</span>
-                    <input id="targetPassword" name="targetPassword" placeholder="Type Your wifi password..." type="password" required>
+                    <input id="targetPassword" name="targetPassword" placeholder="Type Your wifi password..." type="password">
                 </div>
             </div>
 
@@ -48,11 +48,12 @@
                 <label for="floraeAccessKey">Your Florae Access key</label>
                 <div class="input-icon-wrapper">
                     <span class="input-icon">🔑</span>
-                    <input id="floraeAccessKey" name="floraeAccessKey" type="password" placeholder="Paste Your florae access key..." required>
+                    <input id="floraeAccessKey" name="floraeAccessKey" type="password" placeholder="Paste Your florae access key...">
                 </div>
             </div>
 
             <div id="checkresult" class="failed" style="display: none;">&#10006; Invalid key</div>
+            <div id="wifi-spinner" style="display:none;"></div>
 
             <button type="submit" class="submit-button">Save Configuration</button>
         </form>

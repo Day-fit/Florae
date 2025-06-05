@@ -60,44 +60,29 @@ export default async function validateForm(values, mode = 'signIn') {
         .required('Password is required'),
     });
   } else {
-    // login: allow email or username in one field
     schema = Yup.object().shape({
-      email: Yup.string().test(
-        'email-or-username',
-        'Enter a valid email or username',
-        function (value) {
-          const { email } = this.parent;
-          if (!value && !email) {
-            // Both empty: fail
-            return false;
-          }
-          if (value) {
-            // Validate email only if provided
-            return (
-              /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) &&
-              !/\.[a-zA-Z]{1}\.[a-zA-Z]+$/.test(value) &&
-              !/\.[a-zA-Z]{1}$/.test(value)
-            );
-          }
-          // Not required if username filled
-          return true;
-        }
-      ),
       username: Yup.string().test(
         'email-or-username',
         'Enter a valid email or username',
         function (value) {
           const { email } = this.parent;
-          if (!value && !email) {
-            // Both empty: fail
-            return false;
-          }
-          if (value) {
-            // Validate username only if provided
-            return /^[a-zA-Z0-9_]{3,20}$/.test(value);
-          }
-          // Not required if email filled
-          return true;
+          // Both empty
+          if (!email && !value) return false;
+          if (!value) return true; // Email can validate
+          // Username: 3-20 chars, letters, numbers, underscores
+          return /^[a-zA-Z0-9_]{3,20}$/.test(value);
+        }
+      ),
+      email: Yup.string().test(
+        'email-or-username',
+        'Enter a valid email or username',
+        function (value) {
+          const { username } = this.parent;
+          // Both empty
+          if (!value && !username) return false;
+          if (!value) return true; // Username can validate
+          // Email validation (basic RFC mostly)
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
         }
       ),
       password: Yup.string().required('Password is required'),

@@ -28,7 +28,7 @@ export default function MainSection({ setModal, viewMode }) {
       <div className="relative z-20">
         {viewMode === 'home' && <HomePage setModal={setModal} />}
         {viewMode === 'plants' && <PlantsPage setModal={setModal} />}
-        {viewMode === 'devices' && <DevicesPage setModal={setModal} /> }
+        {viewMode === 'devices' && <DevicesPage setModal={setModal} />}
       </div>
     </div>
   );

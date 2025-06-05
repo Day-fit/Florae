@@ -10,14 +10,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
+import pl.Dayfit.Florae.DTOs.FloraLinkSetNameDTO;
 import pl.Dayfit.Florae.DTOs.Sensors.CurrentSensorDataDTO;
 import pl.Dayfit.Florae.DTOs.Sensors.DailySensorDataDTO;
 import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
+import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
+import pl.Dayfit.Florae.Services.FloraLinkCacheService;
 import pl.Dayfit.Florae.Services.FloraLinkService;
 
 /**
@@ -29,14 +29,15 @@ import pl.Dayfit.Florae.Services.FloraLinkService;
 public class FloraLinkController {
     private final FloraLinkService floraLinkService;
     private final ApiKeyService apiKeyService;
+    private final FloraLinkCacheService floraLinkCacheService;
+    private final FloraeUserCacheService floraeUserCacheService;
 
     @PostMapping("/api/v1/floralink/connect-api")
     public ResponseEntity<?> connectApi(Authentication authentication)
     {
-        try{
+        try {
             apiKeyService.connectApi(authentication);
-        } catch (IllegalStateException exception)
-        {
+        } catch (IllegalStateException exception) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", exception.getMessage()));
         }
         return ResponseEntity.ok(Map.of("message", "API connected successfully."));
@@ -62,9 +63,31 @@ public class FloraLinkController {
         return ResponseEntity.ok(Map.of("message", "Data uploaded successfully."));
     }
 
+    @PostMapping("/api/v1/floralink/set-name")
+    public ResponseEntity<?> setFloraLinkName(@RequestBody FloraLinkSetNameDTO floraLinkSetNameDTO, @AuthenticationPrincipal UserPrincipal userPrincipal)
+    {
+        if (floraLinkSetNameDTO == null || floraLinkSetNameDTO.getId() == null || floraLinkSetNameDTO.getName() == null || floraLinkSetNameDTO.getName().isBlank())
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Incorrect request body"));
+        }
+
+        try {
+            floraLinkService.setName(floraLinkSetNameDTO, userPrincipal.getUsername());
+        } catch (IllegalStateException exception) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", exception.getMessage()));
+        }
+
+        return ResponseEntity.ok(Map.of("message", "Name set successfully."));
+    }
+
     @GetMapping("/api/v1/floralink/get-all-current-data")
     public ResponseEntity<?> getAllCurrentData(@AuthenticationPrincipal UserPrincipal userPrincipal)
     {
         return ResponseEntity.ok(floraLinkService.getCurrentDataReport((userPrincipal).getUsername()));
+    }
+
+    @GetMapping("/api/v1/get-floralinks")
+    public ResponseEntity<?> getLinkedFloraLinks(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(floraLinkCacheService.getOwnedFloraLinks(floraeUserCacheService.getFloraeUser(userPrincipal.getUsername()).getId()));
     }
 }

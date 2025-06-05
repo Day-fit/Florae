@@ -4,10 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationCandidate;
 import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Entities.FloraLink;
 import pl.Dayfit.Florae.Entities.FloraeUser;
+import pl.Dayfit.Florae.Entities.Plant;
+import pl.Dayfit.Florae.Helpers.SpEL.ApiKeysHelper;
 import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
 import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
@@ -47,12 +52,24 @@ public class ApiKeyService {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final FloraeUserCacheService floraeUserCacheService;
     private final FloraLinkCacheService floraLinkCacheService;
+    private final PasswordEncoder passwordEncoder;
+    private final ApiKeysHelper apiKeyHelper;
+    private final ApiKeyCacheService apiKeyCacheService;
 
-    public String generateApiKey(String username) {
+    @Transactional
+    public String generateApiKey(String username, Plant plant) throws IllegalArgumentException {
         String generatedUUID = UUID.randomUUID().toString();
+        String encryptedUUID = passwordEncoder.encode(generatedUUID);
+
+        if (plant.getLinkedFloraLink() != null)
+        {
+            throw new IllegalArgumentException("Plant is already linked to a FloraLink");
+        }
 
         ApiKey apiKey = new ApiKey();
-        apiKey.setKeyValue(generatedUUID);
+        apiKey.setKeyValue(encryptedUUID);
+        apiKey.setLinkedPlant(plant);
+        apiKey.setShortKey(apiKeyHelper.generateShortKey(generatedUUID));
         apiKey.setFloraeUser(floraeUserRepository.findByUsername(username));
         apiKeyRepository.save(apiKey);
 
@@ -66,12 +83,17 @@ public class ApiKeyService {
         return apiKey.getFloraeUser().getUsername();
     }
 
-    public void revokeApiKey(String apiKeyValue) {
+    public void revokeApiKey(String apiKeyValue) throws IllegalArgumentException{
         cacheService.revokeApiKey(apiKeyValue);
     }
 
     public ApiKey getApiKey(String apiKeyValue) {
         return cacheService.getApiKey(apiKeyValue);
+    }
+
+    public ApiKey getApiKeyByHash(String hash)
+    {
+        return cacheService.getApiKeyByHash(hash);
     }
 
     public boolean isOwner(String apiKeyValue, String username) {
@@ -83,8 +105,19 @@ public class ApiKeyService {
         return apiKey != null && !apiKey.getIsRevoked();
     }
 
-    public void connectApi(Authentication authentication) {
+    public boolean isValidByAuthentication(Authentication authentication) {
+        if (!(authentication instanceof ApiKeyAuthenticationCandidate))
+        {
+            return false;
+        }
+
         ApiKey apiKey = (ApiKey) authentication.getCredentials();
+        return apiKey != null && !apiKey.getIsRevoked();
+    }
+
+    @Transactional
+    public void connectApi(Authentication authentication) {
+        ApiKey apiKey = apiKeyCacheService.getApiKeyByHash(((ApiKey) authentication.getCredentials()).getKeyValue());
 
         if (apiKey.getLinkedFloraLink() != null)
         {
@@ -95,6 +128,7 @@ public class ApiKeyService {
 
         FloraLink floraLink = new FloraLink();
         floraLink.setId(null);
+        floraLink.setLinkedPlant(apiKey.getLinkedPlant());
         floraLink.setName("FloraLink");
         floraLink.setOwner(floraeUser);
 

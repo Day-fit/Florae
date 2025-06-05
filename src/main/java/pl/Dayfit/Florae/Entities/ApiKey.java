@@ -21,6 +21,7 @@ import java.time.Instant;
  * - {@code keyValue}: The string representation of the API key. This is a required field.
  * - {@code linkedFloraLink}: The FloraLink entity associated with the API key, representing a link to a specific ESP device.
  * - {@code linkedUser}: Another user, potentially linked to managing or operating the API key.
+ * - {@code shortKey}: A shortened version of the API key string, used for display.
 
  * Annotations:
  * - {@code @Entity}: Marks this class as a JPA entity to map to the database.
@@ -54,8 +55,15 @@ public class ApiKey {
     @Column(nullable = false)
     private String keyValue; //The API key String representation
 
+    @Column(nullable = false, length = 12)
+    private String shortKey;
+
     @OneToOne
     private FloraLink linkedFloraLink;
+
+    @OneToOne
+    @JoinColumn(nullable = false)
+    private Plant linkedPlant;
 
     @ManyToOne
     private FloraeUser linkedUser;
