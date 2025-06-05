@@ -175,5 +175,6 @@ export default function DevicesCard({ id }) {
     </div>
   );
 }
+/*missclick*/
 
 
