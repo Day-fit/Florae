@@ -40,6 +40,9 @@ import { useState, use } from 'react';
  * - [ ] Carefully review all authentication flows for security and user experience!
  *
  * - [ ] Optional: Add remember-me and forgot-password functionality
+ *
+ *
+ * - fix login
  */
 
 export default function AuthModal({ register, onClose, setModal }) {
@@ -58,7 +61,9 @@ export default function AuthModal({ register, onClose, setModal }) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const userProp = formData.username ? { username: formData.username } : { email: formData.email };
+  const userProp = !isEmail(formData.username)
+    ? { username: formData.username }
+    : { email: formData.email };
 
   const errorClass =
     'border-red-500 bg-red-50 text-red-700 placeholder-red-400 focus:border-red-600';
@@ -165,26 +170,12 @@ export default function AuthModal({ register, onClose, setModal }) {
     }
   }
 
-  function handleFormInput(e, name, isLogging) {
-    if (isLogging) {
-      const isLoginEmail = isEmail(name);
-      if (!isLoginEmail) {
-        setFormData((prev) => ({
-          ...prev,
-          [name]: e.target.value,
-        }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          email: e.target.value,
-        }));
-      }
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: e.target.value,
-      }));
-    }
+  function handleFormInput(e, name) {
+    const value = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   }
 
   return (
@@ -215,7 +206,7 @@ export default function AuthModal({ register, onClose, setModal }) {
                   placeholder={field.label}
                   errorMsg={errors[field.name] || ''}
                   value={formData[field.name] || ''}
-                  onChange={(e) => handleFormInput(e, field.name, false)}
+                  onChange={(e) => handleFormInput(e, field.name)}
                   className={`${baseInputClass} ${errors[field.name] ? errorClass : noErrorClass}`}
                   autoComplete={
                     field.name === 'username'
@@ -252,7 +243,7 @@ export default function AuthModal({ register, onClose, setModal }) {
                   placeholder={field.label}
                   errorMsg={errors[field.name] || ''}
                   value={formData[field.name] || ''}
-                  onChange={(e) => handleFormInput(e, field.name, true)}
+                  onChange={(e) => handleFormInput(e, field.name)}
                   className={`${baseInputClass} ${errors[field.name] ? errorClass : noErrorClass}`}
                   autoComplete={
                     field.name === 'username'

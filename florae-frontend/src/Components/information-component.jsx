@@ -8,6 +8,7 @@ export default function InformationComponent({
   handleTask,
   guestContent,
   visitorContent,
+  withOutButton = false,
   showFor = 'both',
 }) {
   const { isLogged } = use(UserContext);
@@ -26,12 +27,14 @@ export default function InformationComponent({
       <p className="text-lg text-black mb-6">
         {isLogged ? guestContent.paragraph : visitorContent.paragraph}
       </p>
-      <Button
-        buttonText={isLogged ? guestContent.btnText : visitorContent.btnText}
-        icon={isLogged ? <MdLocalFlorist /> : undefined}
-        onClick={isLogged ? handleTask : () => setModal('register')}
-        className="bg-green-700 text-white px-6 py-3 rounded-full font-semibold shadow hover:bg-green-800 transition"
-      />
+      {!withOutButton && (
+        <Button
+          buttonText={isLogged ? guestContent.btnText : visitorContent.btnText}
+          icon={isLogged ? <MdLocalFlorist /> : undefined}
+          onClick={isLogged ? handleTask : () => setModal('register')}
+          className="bg-green-700 text-white px-6 py-3 rounded-full font-semibold shadow hover:bg-green-800 transition"
+        />
+      )}
     </div>
   );
 }
