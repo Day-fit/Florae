@@ -1,38 +1,38 @@
 export const footer = [
-  {
-    name: 'Use cases',
-    subpoints: [
-      'UI design',
-      'UX design',
-      'Wireframing',
-      'Diagramming',
-      'Brainstorming',
-      'Online whiteboard',
-      'Team collaboration',
-    ],
-  },
-  {
-    name: 'Explore',
-    subpoints: [
-      'Design',
-      'Prototyping',
-      'Development features',
-      'Design systems',
-      'Collaboration features',
-      'Design process',
-      'FigJam',
-    ],
-  },
-  {
-    name: 'Resources',
-    subpoints: [
-      'Blog',
-      'Best practices',
-      'Colors',
-      'Color wheel',
-      'Support',
-      'Developers',
-      'Resource library',
-    ],
-  },
-];
+    {
+        name: "Home",
+        subpoints: [
+            "Get started",
+            "Why plant lovers trust us",
+            "Wireframing",
+            "Diagramming",
+            "Brainstorming",
+            "Online whiteboard",
+            "Contact us"
+        ]
+    },
+    {
+        name: "Plants",
+        subpoints: [
+            "Design",
+            "Prototyping",
+            "Development features",
+            "Design systems",
+            "Collaboration features",
+            "Design process",
+            "FigJam"
+        ]
+    },
+    {
+        name: "Devices",
+        subpoints: [
+            "Blog",
+            "Best practices",
+            "Colors",
+            "Color wheel",
+            "Support",
+            "Developers",
+            "Resource library"
+        ]
+    }
+]
