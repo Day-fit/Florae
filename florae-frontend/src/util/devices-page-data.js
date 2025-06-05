@@ -6,5 +6,5 @@ export const devicesVisitorContent = {
 };
 export const devicesGuestContent = {
   title: 'Title',
-  paragraph: 'restart to smth',
+  paragraph: 'restart if not renders (click f5) and u cant add api to a plant more than 1 time ',
 };
