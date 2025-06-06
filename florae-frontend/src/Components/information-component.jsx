@@ -19,9 +19,9 @@ export default function InformationComponent({
   }
 
   return (
-    <div className="flex flex-col items-start justify-center p-8 pt-28 pb-28 mt-8 mb-8 bg-gray-200 bg-opacity-90 rounded-lg shadow-lg">
+    <div className="flex flex-col items-center md:items-start justify-center p-8 pt-28 pb-28 mt-8 mb-8 bg-gray-200 bg-opacity-90 rounded-lg shadow-lg text-center md:text-left">
       {/* Top part with title etc. */}
-      <h1 className="text-4xl font-bold text-green-900 mb-4">
+      <h1 className="text-4xl font-bold text-green-900 mb-4 w-full">
         {isLogged ? guestContent.title : visitorContent.title}
       </h1>
       <p className="text-lg text-black mb-6">

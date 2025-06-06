@@ -8,7 +8,7 @@
  * ```
  */
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import Button from './button.jsx';
 import AuthModal from './auth-modal.jsx';
 import UserMenu from './user-menu.jsx';
@@ -17,6 +17,8 @@ import PortalComponent from './portal-component.jsx';
 import { navButtons } from '../util/data.js';
 import { GiHamburgerMenu } from 'react-icons/gi';
 import smallerLogo from '../assets/smaller-logo.png';
+import { RxCross1 } from 'react-icons/rx';
+
 /**
  * Header Component
  *
@@ -47,21 +49,25 @@ import smallerLogo from '../assets/smaller-logo.png';
 
 export default function Header({ setModal, modal, changePage }) {
   const { isLogged } = use(UserContext);
-
+  const [menuOpen, setMenuOpen] = useState(false);
+  
   function handleAuth(action) {
     setModal(action);
+    setMenuOpen(false);
   }
   function handleClose() {
     setModal(null);
+    setMenuOpen(false);
   }
 
   function handleUserMenu() {
     setModal(true);
+    setMenuOpen(false);
   }
 
   return (
     <header className="flex flex-row border-b-stone-200 border-b-2 font-bold">
-      <div className="flex flex-row items-center w-full ml-5 ">
+      <div className="flex flex-row md:items-center w-full ml-5 ">
         {/* Left: Logo/brand image */}
         <img
           src={smallerLogo}
@@ -70,8 +76,8 @@ export default function Header({ setModal, modal, changePage }) {
           onClick={() => changePage('home')}
         />
       </div>
-      <div className="flex flex-row items-center justify-center w-full gap-6">
-        {/* Center: Main navigation/actions */}
+      <div className="hidden md:flex flex flex-row items-center justify-center w-full gap-6">
+        {/* Center: Main navigation/actions on PC */}
         {navButtons.map(({ name, buttonText }) => (
           <Button
             key={name}
@@ -81,8 +87,52 @@ export default function Header({ setModal, modal, changePage }) {
           />
         ))}
       </div>
-      <div className="flex flex-row items-center w-full justify-end mr-5">
-        {/* Right: Utility/profile buttons */}
+      {menuOpen && (
+        <div className="flex flex-col items-center gap-4 pb-4 md:hidden">
+          {/* Center: Main navigation/actions and utility/profile buttons on mobile */}
+          {navButtons.map(({ name, buttonText }) => (
+            <Button
+              key={name}
+              buttonText={buttonText}
+              onClick={() => {
+                changePage(name);
+                setMenuOpen(false);
+              }}
+              className="text-green-700 hover:text-green-900"
+            />
+          ))}
+
+          {!isLogged ? (
+            <>
+              <Button
+                buttonText="Sign in"
+                className="text-green-700 hover:text-green-900"
+                onClick={() => handleAuth('login')}
+              />
+              <Button
+                buttonText="Register"
+                className="text-green-700 hover:text-green-900"
+                onClick={() => handleAuth('register')}
+              />
+            </>
+          ) : (
+            <>
+              <Button
+                buttonText="Settings"
+                onClick={() => changePage('settings')}
+                className="text-green-700 hover:text-green-900"
+              />
+              <Button
+                buttonText="Log out"
+                onClick={() => changePage('logout')}
+                className="text-green-700 hover:text-green-900"
+              />
+            </>
+          )}
+        </div>
+      )}
+      <div className="hidden md:flex flex-row items-center w-full justify-end mr-5">
+        {/* Right: Utility/profile buttons on PC */}
         {isLogged ? (
           <Button
             icon={<GiHamburgerMenu className="w-6 h-6 mt-5 mb-5" onClick={handleUserMenu} />}
@@ -111,6 +161,12 @@ export default function Header({ setModal, modal, changePage }) {
             <UserMenu onClose={handleClose} />
           </PortalComponent>
         )}
+      </div>
+      <div className="flex w-full justify-end items-start mt-5 mr-5 md:hidden">
+        {/* Right: Button to open and close navigational menu on mobile */}
+        <button onClick={() => setMenuOpen(!menuOpen)}>
+          {menuOpen ? <RxCross1 className="w-6 h-6" /> : <GiHamburgerMenu className="w-6 h-6" />}
+        </button>
       </div>
     </header>
   );
