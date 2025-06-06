@@ -66,7 +66,7 @@ public class ApiKeyCacheService {
     @Transactional
     public void revokeUnusedApiKeys(Integer id)
     {
-        apiKeyRepository.findUnusedApiKeysBeforeDate(id).forEach(apiKey ->
+        apiKeyRepository.findUnusedApiKey(id).forEach(apiKey ->
         {
             apiKey.setIsRevoked(true);
             redisTemplate.delete(apiKey.getKeyValue());

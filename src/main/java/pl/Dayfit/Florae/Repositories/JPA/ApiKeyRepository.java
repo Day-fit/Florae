@@ -33,7 +33,7 @@ public interface ApiKeyRepository extends JpaRepository<ApiKey, Integer> {
             " WHERE a.id = :id" +
             " AND a.isRevoked = FALSE" +
             " AND a.linkedFloraLink IS NULL")
-    List<ApiKey> findUnusedApiKeysBeforeDate(Integer id);
+    List<ApiKey> findUnusedApiKey(Integer id);
 
     @Modifying
     @Query("DELETE FROM ApiKey a WHERE a.isRevoked = TRUE")
