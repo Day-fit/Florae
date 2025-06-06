@@ -21,12 +21,25 @@ export default function HomePage({ setModal }) {
         visitorContent={homeVisitorContent}
         guestContent={homeGuestContent}
       />
+      <div className="flex flex-col md:flex-row pl-[2vw] pr-[2vw] justify-between items-center">
+        {/* Images */}
+        <img
+          alt="temp1"
+          src="https://placekitten.com/180/180"
+          className="w-40 h-40 object-cover rounded-md"
+        />
+        <img
+          alt="temp2"
+          src="https://placekitten.com/181/181"
+          className="w-40 h-40 object-cover rounded-md"
+        />
+      </div>
       <div className="w-full py-8 bg-gray-50">
         {/* Headers data about website */}
-        <h1 className="text-3xl md:text-4xl font-bold text-green-800 mb-4 ml-22">
+        <h1 className="text-3xl md:text-4xl font-bold text-green-800 mb-4 md:ml-22 text-center md:text-left">
           {bottomPartHeader.title}
         </h1>
-        <p className="text-lg text-gray-700 mb-6 max-w-2xl ml-22">{bottomPartHeader.paragraph}</p>
+        <p className="text-lg text-gray-700 mb-6 max-w-2xl md:ml-22 text-center md:text-left">{bottomPartHeader.paragraph}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 justify-items-center">
           {bottomPart.map(({ name, title, paragraph }) => (
             <div

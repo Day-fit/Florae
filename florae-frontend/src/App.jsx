@@ -19,7 +19,7 @@ function App() {
       </div>
       <MainSection viewMode={viewMode} setModal={setModal} />
       <div className="sticky bg-white z-49">
-        <Footer />
+        <Footer/>
       </div>
     </>
   );
