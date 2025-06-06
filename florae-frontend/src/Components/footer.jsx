@@ -13,10 +13,7 @@ export default function Footer(){
                     {subpoints.map(subpoint => (
                         <p className="mb-2" key={subpoint}>{subpoint}</p>
                     ))}
-                </div>
-
-            ))}
-          </div>
+            </div>
         ))}
       </div>
     </footer>
