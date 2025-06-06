@@ -12,8 +12,6 @@ import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Helpers.SpEL.ApiKeysHelper;
 import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
 
-import java.time.Instant;
-
 /**
  * Service class responsible for managing and caching API keys in the application.
  * It integrates with a database repository and a Redis cache to facilitate
@@ -66,9 +64,9 @@ public class ApiKeyCacheService {
     }
 
     @Transactional
-    public void revokeUnusedApiKeys()
+    public void revokeUnusedApiKeys(Integer id)
     {
-        apiKeyRepository.findUnusedApiKeysBeforeDate(Instant.now()).forEach(apiKey ->
+        apiKeyRepository.findUnusedApiKeysBeforeDate(id).forEach(apiKey ->
         {
             apiKey.setIsRevoked(true);
             redisTemplate.delete(apiKey.getKeyValue());

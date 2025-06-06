@@ -66,6 +66,14 @@ public class ApiKeyService {
             throw new IllegalArgumentException("Plant is already linked to a FloraLink");
         }
 
+        ApiKey linkedApiKey = plant.getLinkedApiKey();
+        if (linkedApiKey != null)
+        {
+            linkedApiKey.setIsRevoked(true);
+            linkedApiKey.setLinkedPlant(null);
+            apiKeyRepository.save(linkedApiKey);
+        }
+
         ApiKey apiKey = new ApiKey();
         apiKey.setKeyValue(encryptedUUID);
         apiKey.setLinkedPlant(plant);
@@ -73,7 +81,7 @@ public class ApiKeyService {
         apiKey.setFloraeUser(floraeUserRepository.findByUsername(username));
         apiKeyRepository.save(apiKey);
 
-        scheduler.schedule(cacheService::revokeUnusedApiKeys, 5, TimeUnit.MINUTES);
+        scheduler.schedule(() -> cacheService.revokeUnusedApiKeys(apiKey.getId()), 5, TimeUnit.MINUTES);
 
         return generatedUUID;
     }
