@@ -1,4 +1,24 @@
-import { useState, useEffect, useRef } from 'react';
+/**
+ * ApiKeyProducer is a React component for generating or managing API keys.
+ * It provides a form interface for users to create new keys and view them securely.
+ *
+ * Props:
+ * - None (unless component is extended).
+ *
+ * Behavior:
+ * - Presents a form for API key creation and displays new or existing keys to the user.
+ *
+ * Usage:
+ * ```
+ * <ApiKeyProducer />
+ * ```
+ *
+ * Note:
+ * - Security best practices are encouraged when displaying sensitive keys.
+ * - This component does not handle device connectivity logic.
+ */
+
+import { useState, useEffect } from 'react';
 import Button from './button.jsx';
 import { useTimer, formatTime } from '../util/timer.jsx';
 import { FiCopy, FiCheck } from 'react-icons/fi';

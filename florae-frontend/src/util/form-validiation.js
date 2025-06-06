@@ -60,16 +60,15 @@ export default async function validateForm(values, mode = 'signIn') {
         .required('Password is required'),
     });
   } else {
+    console.log(values)
     schema = Yup.object().shape({
       username: Yup.string().test(
         'email-or-username',
         'Enter a valid email or username',
         function (value) {
           const { email } = this.parent;
-          // Both empty
           if (!email && !value) return false;
-          if (!value) return true; // Email can validate
-          // Username: 3-20 chars, letters, numbers, underscores
+          if (!value) return true;
           return /^[a-zA-Z0-9_]{3,20}$/.test(value);
         }
       ),
@@ -78,10 +77,8 @@ export default async function validateForm(values, mode = 'signIn') {
         'Enter a valid email or username',
         function (value) {
           const { username } = this.parent;
-          // Both empty
           if (!value && !username) return false;
-          if (!value) return true; // Username can validate
-          // Email validation (basic RFC mostly)
+          if (!value) return true;
           return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
         }
       ),

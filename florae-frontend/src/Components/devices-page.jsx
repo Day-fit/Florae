@@ -1,3 +1,18 @@
+/**
+ * DevicesPage is the main page component for viewing and managing all devices.
+ *
+ * Behavior:
+ * - Lists all available/connected devices and provides management options.
+ *
+ * Usage:
+ * ```
+ * <DevicesPage />
+ * ```
+ *
+ * Note:
+ * - This is a high-level page component, typically routed in your app.
+ */
+
 import { use, useState, useEffect } from 'react';
 import { UserContext } from '../store/user-context.jsx';
 import InformationComponent from './information-component.jsx';
