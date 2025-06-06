@@ -26,7 +26,6 @@ export default function RootApp() {
     });
   }
 
-  // On mount: try to refresh session and get user data if successful
   useEffect(() => {
     async function initializeAuth() {
       try {
@@ -36,8 +35,6 @@ export default function RootApp() {
         const userRes = await axios.get('/api/v1/get-user-data', { withCredentials: true });
         handleLogIn(userRes.data);
 
-        // If additional login-related requests are required after successful refresh:
-        // await axios.post('/some-login-request', userRes.data, {...});
       } catch (error) {
         console.error('Auth initialization failed:', error);
         handleLogout();
@@ -47,7 +44,6 @@ export default function RootApp() {
     initializeAuth();
   }, []);
 
-  // When logged in, refresh token every 13.5 minutes
   useEffect(() => {
     if (!user.isLogged) return;
 

@@ -1,3 +1,16 @@
+/**
+ * CreatePlant is a React component for adding a new plant.
+ * It presents a form for users to input plant details and handles the submit logic.
+ *
+ * Props:
+ * - onCreate (function): Callback for when plant creation succeeds.
+ *
+ * Usage:
+ * ```
+ * <CreatePlant onCreate={refreshPlantsList} />
+ * ```
+ */
+
 import React, { useRef, useState } from 'react';
 import axios from 'axios';
 

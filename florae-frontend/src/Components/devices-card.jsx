@@ -1,3 +1,19 @@
+
+/**
+ * DevicesCard displays information and controls for an individual device.
+ *
+ * Props:
+ * - device (object): The device data to display.
+ *
+ * Usage:
+ * ```
+* <DevicesCard device={deviceData} />
+* ```
+ *
+ * Note:
+ * - Can be used as part of a list/grid of devices on a devices overview page.
+ */
+
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { reqUnits, reqMeta } from '../util/snippets-values.jsx';

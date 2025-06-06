@@ -1,3 +1,13 @@
+/**
+ * Header is a layout component for rendering the application’s main
+ * navigation bar, often including branding, navigation links, and user info.
+ *
+ * Usage:
+ * ```
+ * <Header />
+ * ```
+ */
+
 import { use, useState } from 'react';
 import Button from './button.jsx';
 import AuthModal from './auth-modal.jsx';

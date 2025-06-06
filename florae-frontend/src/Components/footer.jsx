@@ -1,3 +1,14 @@
+/**
+ * Footer is a layout component for displaying application footer content,
+ * such as links or branding.
+ *
+ * Usage:
+ * ```
+ * <Footer />
+ * ```
+ */
+
+
 import { footer } from '../util/footer-data.js';
 
 export default function Footer(){
