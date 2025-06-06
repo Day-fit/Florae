@@ -5,12 +5,11 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
 import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
-import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
 
 /**
  * Service class responsible for user-related operations in the Florae system.
@@ -36,8 +35,8 @@ import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
 @Service
 @RequiredArgsConstructor
 public class FloraeUserService {
-    private final FloraeUserRepository floraeUserRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final FloraeUserCacheService floraeUserCacheService;
+    private final PasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authManager;
     private final JWTService jwtService;
 
@@ -46,7 +45,7 @@ public class FloraeUserService {
 
     public void registerUser(FloraeUserRegisterDTO floraeUserRegisterDTO) throws DuplicateKeyException
     {
-        if (floraeUserRepository.existsByEmailOrUsername(floraeUserRegisterDTO.getEmail(), floraeUserRegisterDTO.getUsername()))
+        if (floraeUserCacheService.findByEmailOrUsername(floraeUserRegisterDTO.getEmail(), floraeUserRegisterDTO.getUsername()) != null)
         {
             throw new DuplicateKeyException("Username already exists or email already exists. Please try again with different username or email.");
         }
@@ -57,35 +56,22 @@ public class FloraeUserService {
         floraeUser.setPassword(bCryptPasswordEncoder.encode(floraeUserRegisterDTO.getPassword()));
         floraeUser.setRoles("USER");
 
-        floraeUserRepository.save(floraeUser);
+        floraeUserCacheService.saveFloraeUser(floraeUser);
     }
 
     public boolean isValid(FloraeUserLoginDTO floraeUserLoginDTO) {
+        FloraeUser floraeUser = floraeUserCacheService.findByEmailOrUsername(floraeUserLoginDTO.getEmail(), floraeUserLoginDTO.getUsername());
 
-        if(floraeUserLoginDTO.getEmail() != null) {
-            try {
-                FloraeUser floraeUser = floraeUserRepository.findByEmail(floraeUserLoginDTO.getEmail().toLowerCase());
-
-                if (floraeUser == null)
-                {
-                    return false;
-                }
-
-                return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUser.getUsername(), floraeUserLoginDTO.getPassword())).isAuthenticated();
-            } catch (AuthenticationException e) {
-                return false;
-            }
+        if (floraeUser == null)
+        {
+            return false;
         }
 
-        if (floraeUserLoginDTO.getUsername() != null) {
-            try {
-                return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUserLoginDTO.getUsername().toLowerCase(), floraeUserLoginDTO.getPassword())).isAuthenticated();
-            } catch (AuthenticationException e) {
-                return false;
-            }
+        try {
+            return authManager.authenticate(new UsernamePasswordAuthenticationToken(floraeUser.getUsername(), floraeUserLoginDTO.getPassword())).isAuthenticated();
+        } catch (AuthenticationException e) {
+            return false;
         }
-
-        return false;
     }
 
     public String generateAccessToken(String username) {

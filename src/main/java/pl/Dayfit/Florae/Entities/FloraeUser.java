@@ -1,11 +1,10 @@
 package pl.Dayfit.Florae.Entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 /**
  * Represents a user in the Florae system.
@@ -17,6 +16,7 @@ import lombok.Setter;
  *     <li>{@code username}: The username chosen by the user, unique and required, with a maximum length of 64 characters</li>
  *     <li>{@code email}: The email address of the user, unique and required, with a maximum length of 254 characters</li>
  *     <li>{@code password}: The hashed password of the user, required, with a maximum length of 70 characters</li>
+ *     <li>{@code linkedPlants}: A list of plants associated with the user, mapped as a one-to-many relationship with cascading operations enabled</li>
  *     <li>{@code roles}: The roles assigned to the user for authorization purposes, with a default value of 'USER'</li>
  * </ul>
  *
@@ -56,6 +56,9 @@ public class FloraeUser {
 
     @Column(nullable = false, length = MAX_PASSWORD_LENGTH)
     private String password;
+
+    @OneToMany(mappedBy = "linkedUser", cascade = CascadeType.ALL)
+    private List<Plant> linkedPlants;
 
     @Column(nullable = false)
     private String roles = "USER";

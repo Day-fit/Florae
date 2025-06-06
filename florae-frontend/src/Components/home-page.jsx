@@ -9,7 +9,7 @@ import { HiOutlineInformationCircle } from 'react-icons/hi';
 import InformationComponent from './information-component.jsx';
 
 function handlePlants() {
-  //when I add plants-page. I will add some logic to this function
+  //when I add plants-page. I will add some logic to this functio
 }
 
 export default function HomePage({ setModal }) {

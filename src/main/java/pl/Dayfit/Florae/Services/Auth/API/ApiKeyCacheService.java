@@ -1,11 +1,15 @@
 package pl.Dayfit.Florae.Services.Auth.API;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CachePut;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.Dayfit.Florae.Entities.ApiKey;
+import pl.Dayfit.Florae.Helpers.SpEL.ApiKeysHelper;
 import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
 
 import java.time.Instant;
@@ -23,25 +27,45 @@ import java.time.Instant;
  * - {@code @Service}: Marks this class as a Spring service component.
  * - {@code @RequiredArgsConstructor}: Generates a constructor for required dependencies.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ApiKeyCacheService {
     private final ApiKeyRepository apiKeyRepository;
+    private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ApiKeysHelper helper;
 
-    @Cacheable(value = "api-keys", key = "#apiKeyValue")
-    public ApiKey getApiKey(String apiKeyValue)
-    {
-        return apiKeyRepository.findAllByKeyValue(apiKeyValue);
-    }
+    @Transactional
+    @CacheEvict(value = "api-keys", key = "@apiKeysHelper.generateShortKey(#rawApiKey)")
+    public void revokeApiKey(String rawApiKey) throws IllegalArgumentException{
+        String shortKey = helper.generateShortKey(rawApiKey);
+        ApiKey apiKey = apiKeyRepository.findByShortKey(shortKey).stream().filter(entity -> passwordEncoder.matches(rawApiKey, entity.getKeyValue())).findFirst().orElse(null);
 
-    @CachePut(value = "api-keys", key = "#apiKeyValue")
-    public void revokeApiKey(String apiKeyValue) {
-        ApiKey apiKey = apiKeyRepository.findAllByKeyValue(apiKeyValue);
+        if (apiKey == null)
+        {
+            throw new IllegalArgumentException("API key does not exist or is already revoked");
+        }
+
         apiKey.setIsRevoked(true);
         apiKeyRepository.save(apiKey);
     }
 
+    @Transactional(readOnly = true)
+    @Cacheable(value = "api-keys", key = "@apiKeysHelper.generateShortKey(#rawApiKey)")
+    public ApiKey getApiKey(String rawApiKey)
+    {
+        String shortKey = helper.generateShortKey(rawApiKey);
+        return apiKeyRepository.findAllByShortKey(shortKey).stream().filter(entity -> passwordEncoder.matches(rawApiKey, entity.getKeyValue())).findFirst().orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "api-keys", key = "#apiKeyValue")
+    public ApiKey getApiKeyByHash(String apiKeyValue) {
+        return apiKeyRepository.findByKeyValue(apiKeyValue);
+    }
+
+    @Transactional
     public void revokeUnusedApiKeys()
     {
         apiKeyRepository.findUnusedApiKeysBeforeDate(Instant.now()).forEach(apiKey ->

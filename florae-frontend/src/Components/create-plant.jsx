@@ -1,9 +1,9 @@
-import React, { useRef, useState } from "react";
-import axios from "axios";
+import React, { useRef, useState } from 'react';
+import axios from 'axios';
 
 export default function CreatePlant({ onClose }) {
-  const nameRef = useRef("");
-  const fileRef = useRef("");
+  const nameRef = useRef('');
+  const fileRef = useRef('');
 
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -17,38 +17,57 @@ export default function CreatePlant({ onClose }) {
     if (files.length < 1 || files.length > 5) {
       setErrors((prev) => ({
         ...prev,
-        file: "You must select between 1 and 5 photos."
+        file: 'You must select between 1 and 5 photos.',
       }));
       return;
     }
 
     setSubmitting(true);
     const formData = new FormData();
-    Array.from(files).forEach(file => {
-      formData.append("photos", file);
+    Array.from(files).forEach((file) => {
+      formData.append('photos', file);
     });
 
-
     try {
-      const response = await axios.post(
-        "/api/v1/add-plant",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          withCredentials: true,
-        });
-      console.log(response);
+      // 1. Create the plant and get its ID from the response
+      const response = await axios.post('/api/v1/add-plant', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true,
+      });
+
+      // Let's assume response.data contains the created plant, including its ID
+      const plantId = response.data?.id;
+
+      // 2. Fetch the custom name using the plantId
+      let customName = '';
+      if (plantId) {
+        try {
+          const nameRes = await axios.post(
+            '/api/v1/plant-set-name',
+            { plantId: plantId, name: nameRef.current.value },
+            { withCredentials: true }
+          );
+          customName = nameRes.data?.customName || '';
+          console.log(customName);
+        } catch (e) {
+          console.log(e);
+          customName = '';
+          console.log(customName);
+        }
+      }
       onClose();
+
     } catch (error) {
       setErrors((prev) => ({
         ...prev,
-        submit: "Failed to create plant. Try again later."
+        submit: 'Failed to create plant. Try again later.',
       }));
       console.error(error);
     } finally {
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
@@ -91,7 +110,7 @@ export default function CreatePlant({ onClose }) {
             className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
             disabled={submitting}
           >
-            {submitting ? "Creating..." : "Create"}
+            {submitting ? 'Creating...' : 'Create'}
           </button>
         </form>
       </div>

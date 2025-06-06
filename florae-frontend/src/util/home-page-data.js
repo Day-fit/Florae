@@ -1,57 +1,61 @@
 export const homeGuestContent = {
-  title: 'Title',
+  title: 'Florae',
   paragraph:
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit maximus diam, id fringilla ipsum faucibus eu. Integer et commodo ante. Maecenas sem ligula, venenatis vitae ex nec, fringilla sodales arcu. Phasellus a ullamcorper ante. Nunc in imperdiet mauris, eu fringilla dui. Sed egestas, ex sit amet convallis viverra, tortor lectus placerat sem, eget ultricies libero ante vitae turpis. Nullam mollis tincidunt aliquet. Mauris accumsan fermentum blandit. Ut eleifend mi purus, vel sodales ipsum viverra in. Nullam egestas nibh quis lectus imperdiet lacinia. Donec pulvinar luctus felis ac egestas. In nibh neque, imperdiet vitae convallis id, suscipit sit amet erat. Etiam justo augue, vulputate nec est vel, porta suscipit augue. Sed vitae malesuada nisl. Ut eu semper nunc. Mauris consequat, urna eu commodo auctor, mi nunc faucibus elit, eget ultricies risus ante a lectus.',
+    `Your plants missed you. Head back to your dashboard to check on your green companions. View real-time updates, get personalized care tips, and see what needs your attention today.`,
   btnText: 'My plants',
 };
 
 export const homeVisitorContent = {
-  title: 'Title',
+  title: 'Florae',
   paragraph:
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit maximus diam, id fringilla ipsum faucibus eu. Integer et commodo ante. Maecenas sem ligula, venenatis vitae ex nec, fringilla sodales arcu. Phasellus a ullamcorper ante. Nunc in imperdiet mauris, eu fringilla dui. Sed egestas, ex sit amet convallis viverra, tortor lectus placerat sem, eget ultricies libero ante vitae turpis. Nullam mollis tincidunt aliquet. Mauris accumsan fermentum blandit. Ut eleifend mi purus, vel sodales ipsum viverra in. Nullam egestas nibh quis lectus imperdiet lacinia. Donec pulvinar luctus felis ac egestas. In nibh neque, imperdiet vitae convallis id, suscipit sit amet erat. Etiam justo augue, vulputate nec est vel, porta suscipit augue. Sed vitae malesuada nisl. Ut eu semper nunc. Mauris consequat, urna eu commodo auctor, mi nunc faucibus elit, eget ultricies risus ante a lectus.',
+    `Tired of second-guessing your plant care routine?
+Wondering if you’ve overwatered—or not watered enough? Not sure if your plant is getting enough light or suffering in silence from poor air conditions?
+You’re not alone. Plant care can feel overwhelming, even for experienced growers. But it doesn’t have to be that way.
+Our intelligent plant monitoring system uses real-time data from smart, easy-to-use sensors to give your plants a voice. Now, instead of guessing what your plant needs, you’ll know—down to the exact level of moisture in the soil or the intensity of sunlight it's receiving.
+Whether you’re caring for one houseplant, a full indoor jungle, or an outdoor vegetable patch, our system a simple experience, so your plants stay healthy and happy, and you stay worry-free.`,
   btnText: 'Get Started',
 };
 
 export const bottomPartHeader = {
-  title: 'Heading',
-  paragraph: 'Subheading',
+  title: "Why Plant Lovers Trust Us",
+  paragraph: "Features you'll love :",
 };
 
 export const bottomPart = [
   {
     name: 'text1',
-    title: 'Title',
+    title: 'Easy setup',
     paragraph:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit maximus diam, id fringilla ipsum faucibus eu. Integer et commodo ante. ',
+      'No technical skills needed. Place the sensor, connect the app, and you’re done. Our wireless system is designed to be simple, intuitive, and frustration-free, even if you’ve never used smart devices before.',
   },
   {
     name: 'text2',
-    title: 'Title',
+    title: 'Real-time data',
     paragraph:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit maximus diam, id fringilla ipsum faucibus eu. Integer et commodo ante. ',
+      " Whether you’re at home, at work, or on vacation, you can check your plant's status anytime and take action before issues arise.",
   },
   {
     name: 'text3',
-    title: 'Title',
+    title: 'Multi-Plant Monitoring',
     paragraph:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit maximus diam, id fringilla ipsum faucibus eu. Integer et commodo ante. ',
+      'Monitor multiple sensors at once using a single account. Whether you’re caring for three houseplants or an entire garden, you’ll have full visibility of every plant’s environment in one simple dashboard.',
   },
   {
     name: 'text4',
-    title: 'Title',
+    title: 'Instant alerts',
     paragraph:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit maximus diam, id fringilla ipsum faucibus eu.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit maximus diam, id fringilla ipsum faucibus eu.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit maximus diam, id fringilla ipsum faucibus eu.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit maximus diam, id fringilla ipsum faucibus eu.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit maximus diam, id fringilla ipsum faucibus eu.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit maximus diam, id fringilla ipsum faucibus eu. Integer et commodo ante. ',
+      'You’ll receive instant notifications when conditions fall outside your plant’s ideal range. Get alerted when it’s time to water, when sunlight is too low, or when temperatures spike unexpectedly.',
   },
   {
     name: 'text5',
-    title: 'Title',
+    title: 'Mobile & Web Access',
     paragraph:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit maximus diam, id fringilla ipsum faucibus eu. Integer et commodo ante. ',
+      'Whether you prefer using your smartphone, tablet, or computer, your dashboard is always within reach. Monitor your garden on the go, from your desk, or while traveling.',
   },
   {
     name: 'text6',
-    title: 'Title',
+    title: 'Privacy & Data Security',
     paragraph:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit maximus diam, id fringilla ipsum faucibus eu. Integer et commodo ante. ',
+      'We respect your privacy. All your plant data is encrypted and securely stored on your account. We never sell or share your personal information or plant data.',
   },
 ];

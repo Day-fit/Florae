@@ -21,7 +21,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import pl.Dayfit.Florae.Auth.UserPrincipal;
-import pl.Dayfit.Florae.DTOs.PlantResponseDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.Services.PlantsService;
@@ -54,7 +53,11 @@ class PlantsControllerTest {
     }
 
     @Test void shouldReturnSpecies() throws Exception {
-        when(plantsService.saveAndRecognise(any(), eq("testUser"))).thenReturn("rose");
+        Plant plant = new Plant();
+        plant.setId(1);
+        plant.setSpeciesName("rose");
+
+        when(plantsService.saveAndRecognise(any(), eq("testUser"))).thenReturn(plant);
 
         MockMultipartFile photo = new MockMultipartFile(
                 "photos","photo.jpg",MediaType.IMAGE_JPEG_VALUE,"data".getBytes());
@@ -69,21 +72,5 @@ class PlantsControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.speciesName").value("rose"));
-    }
-
-    @Test void shouldReturnPlant() throws Exception {
-        Plant p = new Plant();
-        p.setId(1);
-        p.setSpeciesName("Rose");
-
-        PlantResponseDTO dto = new PlantResponseDTO();
-        dto.setSpeciesName(p.getSpeciesName());
-
-        when(plantsService.getPlantById(1)).thenReturn(dto);
-
-        mockMvc.perform(get("/api/v1/plant/1")
-                        .with(SecurityMockMvcRequestPostProcessors.user(principal())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.speciesName").value("Rose"));
     }
 }

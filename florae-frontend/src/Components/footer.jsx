@@ -1,4 +1,4 @@
-import { footer } from "../util/footer-data.js";
+import { footer } from '../util/footer-data.js';
 
 export default function Footer(){
     return(
@@ -14,8 +14,11 @@ export default function Footer(){
                         <p className="mb-2" key={subpoint}>{subpoint}</p>
                     ))}
                 </div>
+
             ))}
-            </div>
-        </footer>
-    );
+          </div>
+        ))}
+      </div>
+    </footer>
+  );
 }

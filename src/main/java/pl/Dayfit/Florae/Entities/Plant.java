@@ -1,7 +1,9 @@
 package pl.Dayfit.Florae.Entities;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -19,11 +21,15 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Plant {
     @Id
     @GeneratedValue
     private Integer id;
+
+    private String name;
 
     @Column(nullable = false, length = 50)
     private String speciesName;
@@ -31,10 +37,10 @@ public class Plant {
     @Column(nullable = false, length = 50)
     private String pid;
 
-    @OneToOne(cascade = CascadeType.DETACH)
+    @OneToOne(mappedBy = "linkedPlant", cascade = CascadeType.ALL)
     private FloraLink linkedFloraLink;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(nullable = false)
     private FloraeUser linkedUser;
 
