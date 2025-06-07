@@ -27,7 +27,7 @@ This repository contains the application's source code, allowing you to host it 
 
 ## Requirements
 
-- ESP32 platform (schematics for the PCB and `.ino` source code will be added later).
+- ESP32 platform (code in Floralink folder (schematics for the PCB later).
 - **If hosting:** Docker-enviroment
 
 ## License
