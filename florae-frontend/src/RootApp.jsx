@@ -3,6 +3,8 @@ import axios from 'axios';
 import { refreshToken } from './util/refresh-function.js';
 import { UserContext } from './store/user-context.jsx';
 import App from './App.jsx';
+import { setCsrfToken } from './axios-setup';
+
 
 export default function RootApp() {
   const [user, setUser] = useState({
@@ -10,7 +12,6 @@ export default function RootApp() {
     userData: {},
   });
 
-  // Log in handler
   function handleLogIn(userData) {
     setUser({
       isLogged: true,
@@ -18,13 +19,25 @@ export default function RootApp() {
     });
   }
 
-  // Log out handler
   function handleLogout() {
     setUser({
       isLogged: false,
       userData: {},
     });
   }
+
+  useEffect(() => {
+    async function fetchToken() {
+      try {
+        const res = await axios.get('/api/csrf-token', { withCredentials: true });
+        setCsrfToken(res.data.csrfToken);
+      } catch (err) {
+        console.error('Failed to get CSRF token:', err);
+      }
+    }
+    fetchToken();
+  }, []);
+
 
   useEffect(() => {
     async function initializeAuth() {
