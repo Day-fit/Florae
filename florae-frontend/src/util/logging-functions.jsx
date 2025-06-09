@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import axios from './axiosClient.js';
 import validateForm, { isEmail } from './form-validiation.js';
 
 export default function useAuthHandlers({ logIn, onClose, setModal }) {
@@ -15,6 +15,12 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function getCsrfToken()
+  {
+    const response = await axios.get('/csrf', { withCredentials: true });
+    return response.data.token;
+  }
 
   async function handleSignIn(e) {
     e.preventDefault();
@@ -44,7 +50,10 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
           generateRefreshToken: true,
         },
         {
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-XSRF-TOKEN': await getCsrfToken(),
+          },
         }
       );
 
