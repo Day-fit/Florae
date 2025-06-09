@@ -1,6 +1,7 @@
 package pl.Dayfit.Florae.Services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import pl.Dayfit.Florae.Entities.Sensors.CurrentReportData;
 import pl.Dayfit.Florae.Entities.Sensors.CurrentSensorData;
 import pl.Dayfit.Florae.Entities.Sensors.DailySensorData;
 import pl.Dayfit.Florae.Entities.Sensors.DailyReportData;
+import pl.Dayfit.Florae.Events.CurrentDataUploadedEvent;
 import pl.Dayfit.Florae.Repositories.Redis.CurrentReportDataRepository;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 
@@ -71,8 +73,12 @@ public class FloraLinkService {
     }
 
     @Transactional
-    public void handleCurrentDataUpload(List<CurrentSensorDataDTO> uploadedData, Authentication authentication)
+    @EventListener()
+    public void handleCurrentDataUpload(CurrentDataUploadedEvent event)
     {
+        Authentication authentication = event.authentication();
+        List<CurrentSensorDataDTO> uploadedData = event.data();
+
         String ownerUsername = ((FloraeUser) authentication
                 .getPrincipal())
                 .getUsername();

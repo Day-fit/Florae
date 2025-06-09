@@ -13,7 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
 import pl.Dayfit.Florae.DTOs.FloraLinkSetNameDTO;
-import pl.Dayfit.Florae.DTOs.Sensors.CurrentSensorDataDTO;
 import pl.Dayfit.Florae.DTOs.Sensors.DailySensorDataDTO;
 import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
@@ -56,11 +55,10 @@ public class FloraLinkController {
         return ResponseEntity.ok(floraLinkService.getDailyDataReport((userPrincipal).getUsername()));
     }
 
-    @PostMapping("/api/v1/floralink/upload-current-data")
-    public ResponseEntity<?> uploadCurrentData(@RequestBody @Valid List<CurrentSensorDataDTO> uploadedData, Authentication authentication)
+    @GetMapping("/api/v1/floralink/get-all-current-data")
+    public ResponseEntity<?> getAllCurrentData(@AuthenticationPrincipal UserPrincipal userPrincipal)
     {
-        floraLinkService.handleCurrentDataUpload(uploadedData, authentication);
-        return ResponseEntity.ok(Map.of("message", "Data uploaded successfully."));
+        return ResponseEntity.ok(floraLinkService.getCurrentDataReport((userPrincipal).getUsername()));
     }
 
     @PostMapping("/api/v1/floralink/set-name")
@@ -78,12 +76,6 @@ public class FloraLinkController {
         }
 
         return ResponseEntity.ok(Map.of("message", "Name set successfully."));
-    }
-
-    @GetMapping("/api/v1/floralink/get-all-current-data")
-    public ResponseEntity<?> getAllCurrentData(@AuthenticationPrincipal UserPrincipal userPrincipal)
-    {
-        return ResponseEntity.ok(floraLinkService.getCurrentDataReport((userPrincipal).getUsername()));
     }
 
     @GetMapping("/api/v1/get-floralinks")

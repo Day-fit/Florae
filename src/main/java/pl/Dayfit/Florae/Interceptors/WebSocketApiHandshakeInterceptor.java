@@ -1,37 +1,50 @@
 package pl.Dayfit.Florae.Interceptors;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.websocket.AuthenticationException;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
+import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationToken;
+import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Services.Auth.API.ApiKeyCacheService;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class WebSocketsAuthInterceptor implements HandshakeInterceptor {
-    private final @Getter AtomicInteger connectedFloraLinks = new AtomicInteger(0);
+public class WebSocketApiHandshakeInterceptor implements HandshakeInterceptor {
     private final ApiKeyCacheService apiKeyCacheService;
 
     @Override
-    public boolean beforeHandshake(ServerHttpRequest request, @NonNull ServerHttpResponse response, @NonNull WebSocketHandler wsHandler, @NonNull Map<String, Object> attributes) throws Exception {
-        String apiKey = request.getHeaders().getFirst("X-API-KEY");
+    public boolean beforeHandshake(@NonNull ServerHttpRequest request, @NonNull ServerHttpResponse response, @NonNull WebSocketHandler wsHandler, @NonNull Map<String, Object> attributes) throws Exception {
+        if (!(request instanceof ServletServerHttpRequest serverRequest))
+        {
+            return false;
+        }
 
-        if(apiKey == null || apiKey.isBlank())
+        String apiKeyRawValue = serverRequest.getHeaders().getFirst("X-API-KEY");
+
+        if(apiKeyRawValue == null || apiKeyRawValue.isBlank())
         {
             throw new AuthenticationException("X-API-KEY header is missing or blank");
         }
 
-        return apiKeyCacheService.getApiKey(apiKey) != null;
+        ApiKey apiKey = apiKeyCacheService.getApiKey(apiKeyRawValue);
+
+        if (apiKey == null)
+        {
+            throw new AuthenticationException("Invalid API key");
+        }
+
+        attributes.put("auth", new ApiKeyAuthenticationToken(apiKey));
+        return true;
     }
 
     @Override
