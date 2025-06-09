@@ -3,8 +3,6 @@ import axios from 'axios';
 import { refreshToken } from './util/refresh-function.js';
 import { UserContext } from './store/user-context.jsx';
 import App from './App.jsx';
-import { setCsrfToken } from './axios-setup';
-
 
 export default function RootApp() {
   const [user, setUser] = useState({
@@ -12,11 +10,31 @@ export default function RootApp() {
     userData: {},
   });
 
+  const [csrfToken, setCsrfToken] = useState('');
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const res = await axios.get('/csrf', {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        });
+        setCsrfToken(res.data.token);
+        console.log('CSRF token fetched:', res.data.token);
+      } catch (err) {
+        console.error('Failed to get CSRF token:', err);
+      }
+    };
+
+    fetchToken();
+  }, []);
+
   function handleLogIn(userData) {
     setUser({
       isLogged: true,
       userData: userData || {},
     });
+
   }
 
   function handleLogout() {
@@ -27,23 +45,13 @@ export default function RootApp() {
   }
 
   useEffect(() => {
-    async function fetchToken() {
-      try {
-        const res = await axios.get('/api/csrf-token', { withCredentials: true });
-        setCsrfToken(res.data.csrfToken);
-      } catch (err) {
-        console.error('Failed to get CSRF token:', err);
-      }
-    }
-    fetchToken();
-  }, []);
-
-
-  useEffect(() => {
     async function initializeAuth() {
       try {
         const refreshData = await refreshToken();
-        if (!refreshData) throw new Error('Refresh failed: no data returned.');
+        if (!refreshData) {
+          console.log('No refresh data returned, user likely not logged in');
+          return;
+        }
 
         const userRes = await axios.get('/api/v1/get-user-data', { withCredentials: true });
         handleLogIn(userRes.data);
@@ -81,13 +89,14 @@ export default function RootApp() {
   const contextValue = {
     isLogged: user.isLogged,
     userData: user.userData,
+    csrfToken,
     logIn: handleLogIn,
     logOut: handleLogout,
   };
 
   return (
-    <UserContext value={contextValue}>
+    <UserContext.Provider value={contextValue}>
       <App />
-    </UserContext>
+    </UserContext.Provider>
   );
 }

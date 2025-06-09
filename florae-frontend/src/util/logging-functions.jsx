@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, use } from 'react';
 import axios from 'axios';
 import validateForm, { isEmail } from './form-validiation.js';
+import { UserContext } from '../store/user-context.jsx';
 
 export default function useAuthHandlers({ logIn, onClose, setModal }) {
+  const { csrfToken } = use(UserContext)
   const [errors, setErrors] = useState({
     email: '',
     username: '',
@@ -44,7 +46,8 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
           generateRefreshToken: true,
         },
         {
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': csrfToken },
+          withCredentials: true,
         }
       );
 
@@ -81,6 +84,7 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
     setIsSubmitting(true);
 
     try {
+      console.log(csrfToken)
       await axios.post(
         `/auth/register`,
         {
@@ -89,7 +93,8 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
           password: formData.password,
         },
         {
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': csrfToken },
+          withCredentials: true,
         }
       );
 
@@ -105,7 +110,6 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
         ...prev,
         email: 'Wrong email or username',
         username: 'Wrong email or username',
-        form: 'Wrong email or username',
       }));
       setIsSubmitting(false);
     }
