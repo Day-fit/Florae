@@ -2,10 +2,11 @@ package pl.Dayfit.Florae.Services.Auth.API;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.Dayfit.Florae.Entities.ApiKey;
@@ -30,15 +31,21 @@ import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
 @RequiredArgsConstructor
 public class ApiKeyCacheService {
     private final ApiKeyRepository apiKeyRepository;
-    private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ApiKeysHelper helper;
 
     @Transactional
-    @CacheEvict(value = "api-keys", key = "@apiKeysHelper.generateShortKey(#rawApiKey)")
+    @CacheEvict(value = "api-keys", key = "#apiKey.shortKey")
+    public void delete(ApiKey apiKey)
+    {
+        apiKeyRepository.delete(apiKey);
+    }
+
+    @Transactional
+    @CachePut(value = "api-keys", key = "@apiKeysHelper.generateShortKey(#rawApiKey)")
     public void revokeApiKey(String rawApiKey) throws IllegalArgumentException{
         String shortKey = helper.generateShortKey(rawApiKey);
-        ApiKey apiKey = apiKeyRepository.findByShortKey(shortKey).stream().filter(entity -> passwordEncoder.matches(rawApiKey, entity.getKeyValue())).findFirst().orElse(null);
+        ApiKey apiKey = apiKeyRepository.findByShortKey(shortKey).stream().filter(entity -> DigestUtils.sha256Hex(rawApiKey).equals(entity.getKeyValue())).findFirst().orElse(null);
 
         if (apiKey == null)
         {
@@ -54,13 +61,14 @@ public class ApiKeyCacheService {
     public ApiKey getApiKey(String rawApiKey)
     {
         String shortKey = helper.generateShortKey(rawApiKey);
-        return apiKeyRepository.findAllByShortKey(shortKey).stream().filter(entity -> passwordEncoder.matches(rawApiKey, entity.getKeyValue())).findFirst().orElse(null);
+        return apiKeyRepository.findAllByShortKey(shortKey).stream().filter(entity -> DigestUtils.sha256Hex(rawApiKey).equals(entity.getKeyValue())).findFirst().orElse(null);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "api-keys", key = "#apiKeyValue")
+    @Cacheable(value = "api-keys", key = "@apiKeysHelper.generateShortFromHash(#apiKeyValue)")
     public ApiKey getApiKeyByHash(String apiKeyValue) {
-        return apiKeyRepository.findByKeyValue(apiKeyValue);
+        String shortKey = helper.generateShortKey(apiKeyValue);
+        return apiKeyRepository.findAllByShortKey(shortKey).stream().filter(entity -> DigestUtils.sha256Hex(apiKeyValue).equals(entity.getKeyValue())).findFirst().orElse(null);
     }
 
     @Transactional
@@ -69,8 +77,15 @@ public class ApiKeyCacheService {
         apiKeyRepository.findUnusedApiKey(id).forEach(apiKey ->
         {
             apiKey.setIsRevoked(true);
-            redisTemplate.delete(apiKey.getKeyValue());
+            redisTemplate.delete(apiKey.getShortKey());
             apiKeyRepository.save(apiKey);
         });
+    }
+
+    @Transactional
+    @CachePut(value = "api-keys", key = "#apiKey.shortKey")
+    public void save(ApiKey apiKey)
+    {
+        apiKeyRepository.save(apiKey);
     }
 }

@@ -1,4 +1,4 @@
-package pl.Dayfit.Florae.Handler;
+package pl.Dayfit.Florae.Handlers;
 
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.lang.NonNull;

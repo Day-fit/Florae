@@ -7,59 +7,42 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import pl.Dayfit.Florae.Services.Auth.JWT.JWTService;
 
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
 import java.util.Arrays;
-import java.util.List;
+
 
 /**
- * A filter that intercepts HTTP requests to validate and process JSON Web Tokens (JWT)
- * for authentication purposes.
- * This filter extends the {@link OncePerRequestFilter} to ensure it is executed once per request.
- * It extracts the Authorization header, validates the provided JWT, and sets the user
- * authentication context if the token is valid. This enables stateless authentication for the
- * application by leveraging JWTs.
- *
- * <p>Dependencies:</p>
- * <ul>
- *   <li>{@link JWTService}: Provides methods to extract and validate the JWT.</li>
- *   <li>{@link UserDetailsService}: Loads user-specific data for authentication.</li>
- * </ul>
- *
- * <p>Key Functionality:</p>
- * <ul>
- *   <li>Extracts the JWT from the "Authorization" header of incoming HTTP requests.</li>
- *   <li>Validates the JWT using the {@code JWTService}.</li>
- *   <li>If valid, retrieves user details via {@code UserDetailsService} and sets up authentication
- *       in the {@link SecurityContextHolder}.</li>
- *   <li>Passes the request and response objects to the next filter in the chain if validation succeeds.</li>
- *   <li>Skips filtering for requests where authentication is already present or for specific request paths.</li>
- * </ul>
- *
- * <p>Annotations:</p>
- * <ul>
- *   <li>{@code @Component}: Marks this class as a Spring-managed component.</li>
- *   <li>{@code @RequiredArgsConstructor}: Generates constructor for injecting final fields.</li>
- * </ul>
- *
- * <p>Integration:</p>
- * <ul>
- *   <li>Works in conjunction with {@link ApiKeyFilter} in the security filter chain.</li>
- *   <li>Part of the stateless authentication mechanism using Spring Security.</li>
- * </ul>
+ * A custom filter that intercepts HTTP requests to validate JSON Web Tokens (JWT)
+ * included in cookies for authentication and authorization purposes. It extends
+ * the {@code OncePerRequestFilter} class to ensure that the filter is executed once
+ * per request in a web application.
+ * <p>
+ * Responsibilities include:
+ * - Verifying the presence and validity of the "accessToken" cookie in incoming requests.
+ * - Extracting user details from a valid JWT and setting up the security context.
+ * - Enforcing security by rejecting requests with invalid or missing authentication details.
+ * - Allowing unfiltered access for non-protected paths or requests with a valid API key.
+ * <p>
+ * Dependencies:
+ * - {@code JWTService}: Provides methods for JWT validation and extraction of token claims.
+ * - {@code UserDetailsService}: Loads user-specific data from the application's data store.
+ * <p>
+ * Annotations:
+ * - {@code @Component}: Indicates that this class is a Spring-managed component.
+ * - {@code @RequiredArgsConstructor}: Automates the construction of instances with required dependencies.
  */
 @Component
 @RequiredArgsConstructor
@@ -67,12 +50,12 @@ public class JWTFilter extends OncePerRequestFilter {
     private final JWTService jwtService;
     private final UserDetailsService userDetailsService;
 
-    @Value("${security.public-paths}")
-    private List<String> PUBLIC_PATHS;
+    @Value("${security.protected-paths}")
+    private String PROTECTED_PATHS;
 
     @Override
     @SuppressWarnings("NullableProblems")
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, BadCredentialsException {
         if (hasValidAccessTokenCookie(request))
         {
             handleCookieAccess(request);
@@ -80,54 +63,21 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        String authHeader = request.getHeader("Authorization");
-
-        String token;
-        String username;
-
-        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new BadCredentialsException("Invalid JWT (missing Bearer prefix) or missing Authorization header. Please provide a valid JWT in the Authorization header.");
-        }
-
-        token = authHeader.substring(7).trim();
-        username = jwtService.extractUsername(token);
-
-        if (username == null || SecurityContextHolder.getContext().getAuthentication() != null) {
-            throw new BadRequestException("Invalid JWT (missing username or already authenticated). Please provide a valid JWT in the Authorization header.");
-        }
-
-        UserDetails userDetails;
-
-        try{
-            userDetails = userDetailsService.loadUserByUsername(username);
-        } catch (UsernameNotFoundException ex) {
-            logger.error("User not found with username: " + username);
-            throw new AccessDeniedException("User not found with username: " + username);
-        }
-
-        if (!jwtService.validateAccessToken(token, username)){
-            throw new AccessDeniedException("Invalid JWT (expired or invalid signature). Please provide a valid JWT in the Authorization header.");
-        }
-
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
-        filterChain.doFilter(request, response);
+        throw new BadCredentialsException("Credentials are invalid");
     }
 
-    private boolean hasValidAccessTokenCookie(HttpServletRequest request)
+    private boolean hasValidAccessTokenCookie(HttpServletRequest request) throws AuthenticationException
     {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
-            return false;
+            throw new AuthenticationCredentialsNotFoundException("No cookies found in request");
         }
         String accessToken;
         Cookie accessTokenCookie = Arrays.stream(cookies).filter(cookie -> cookie.getName().equals("accessToken")).findFirst().orElse(null);
 
         if(accessTokenCookie == null)
         {
-            return false;
+            throw new AuthenticationCredentialsNotFoundException("No accessToken cookie found in request");
         }
 
         accessToken = accessTokenCookie.getValue();
@@ -155,9 +105,14 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request)
     {
-        boolean validApiKey = request.getHeader("X-API-KEY") != null && (request.getRequestURI().contains("/api/v1/floralink/upload") || request.getRequestURI().contains("/api/v1/floralink/connect-api"));
-        boolean publicPath = PUBLIC_PATHS.stream().anyMatch(path -> path.equalsIgnoreCase(request.getRequestURI()));
+        String uri = request.getRequestURI();
+        boolean hasValidApiKey = request.getHeader("X-API-KEY") != null
+                && (uri.contains("/api/v1/floralink/upload") || uri.contains("/api/v1/floralink/connect-api"));
 
-        return validApiKey || publicPath;
+        boolean isProtectedPath = Arrays.stream(PROTECTED_PATHS.split(","))
+                .map(String::trim)
+                .anyMatch(uri::startsWith);
+
+        return hasValidApiKey || !isProtectedPath;
     }
 }

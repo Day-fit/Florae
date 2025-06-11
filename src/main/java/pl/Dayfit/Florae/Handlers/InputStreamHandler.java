@@ -1,4 +1,4 @@
-package pl.Dayfit.Florae.Handler;
+package pl.Dayfit.Florae.Handlers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

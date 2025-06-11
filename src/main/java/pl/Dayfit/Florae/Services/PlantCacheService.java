@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.Repositories.JPA.PlantRepository;
 
+import java.util.List;
+
 /**
  * <p>Service responsible for managing and caching the Plant entity in various ways</p>
  */
@@ -34,5 +36,10 @@ public class PlantCacheService {
     public Plant savePlant(Plant plant)
     {
         return plantRepository.save(plant);
+    }
+
+    @Cacheable(value = "user-plants", key = "#username")
+    public List<Plant> getAllPlants(String username) {
+        return plantRepository.getPlantsByUsername(username);
     }
 }

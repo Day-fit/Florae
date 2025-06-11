@@ -55,12 +55,6 @@ public class FloraLinkController {
         return ResponseEntity.ok(floraLinkService.getDailyDataReport((userPrincipal).getUsername()));
     }
 
-    @GetMapping("/api/v1/floralink/get-all-current-data")
-    public ResponseEntity<?> getAllCurrentData(@AuthenticationPrincipal UserPrincipal userPrincipal)
-    {
-        return ResponseEntity.ok(floraLinkService.getCurrentDataReport((userPrincipal).getUsername()));
-    }
-
     @PostMapping("/api/v1/floralink/set-name")
     public ResponseEntity<?> setFloraLinkName(@RequestBody FloraLinkSetNameDTO floraLinkSetNameDTO, @AuthenticationPrincipal UserPrincipal userPrincipal)
     {

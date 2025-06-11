@@ -19,7 +19,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class WebSocketApiHandshakeInterceptor implements HandshakeInterceptor {
+public class ApiHandshakeInterceptor implements HandshakeInterceptor {
     private final ApiKeyCacheService apiKeyCacheService;
 
     @Override
@@ -44,6 +44,8 @@ public class WebSocketApiHandshakeInterceptor implements HandshakeInterceptor {
         }
 
         attributes.put("auth", new ApiKeyAuthenticationToken(apiKey));
+        attributes.put("owner", apiKey.getFloraeUser().getUsername());
+
         return true;
     }
 
