@@ -1,6 +1,8 @@
 package pl.Dayfit.Florae.Services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,16 +14,13 @@ import pl.Dayfit.Florae.DTOs.Sensors.DailySensorResponseDataDTO;
 import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Entities.FloraLink;
 import pl.Dayfit.Florae.Entities.FloraeUser;
-import pl.Dayfit.Florae.Entities.Sensors.CurrentReportData;
-import pl.Dayfit.Florae.Entities.Sensors.CurrentSensorData;
 import pl.Dayfit.Florae.Entities.Sensors.DailySensorData;
 import pl.Dayfit.Florae.Entities.Sensors.DailyReportData;
-import pl.Dayfit.Florae.Repositories.Redis.CurrentReportDataRepository;
+import pl.Dayfit.Florae.Events.CurrentDataUploadedEvent;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Service class responsible for handling operations related to FloraLink data,
@@ -32,10 +31,10 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class FloraLinkService {
-    private final CurrentReportDataRepository currentReportDataRepository;
     private final FloraeUserCacheService floraeUserCacheService;
     private final FloraLinkCacheService cacheService;
     private final DailyReportDataCacheService dailyReportDataCacheService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional
     public void handleReportUpload(List<DailySensorDataDTO> uploadedData, Authentication auth) {
@@ -71,8 +70,12 @@ public class FloraLinkService {
     }
 
     @Transactional
-    public void handleCurrentDataUpload(List<CurrentSensorDataDTO> uploadedData, Authentication authentication)
+    @EventListener
+    public void handleCurrentDataUpload(CurrentDataUploadedEvent event)
     {
+        Authentication authentication = event.authentication();
+        List<CurrentSensorDataDTO> uploadedData = event.data();
+
         String ownerUsername = ((FloraeUser) authentication
                 .getPrincipal())
                 .getUsername();
@@ -83,39 +86,8 @@ public class FloraLinkService {
                 .getId()
                 .toString();
 
-        CurrentReportData searchResult = currentReportDataRepository.findByFloraLinkId(floraLinkId);
-
-        String sensorDataId = UUID.randomUUID().toString();
-
-        if (searchResult == null)
-        {
-            String id = UUID.randomUUID().toString();
-            searchResult = new CurrentReportData(id, floraLinkId, ownerUsername, uploadedData.stream()
-                    .map(
-                            data -> new CurrentSensorData(
-                                    sensorDataId,
-                                    data.getType(),
-                                    data.getValue()
-                            )
-                    ).toList());
-        }
-
-        else{
-            searchResult.getCurrentSensorDataList().clear();
-            searchResult.getCurrentSensorDataList().addAll(uploadedData.stream().map(data -> new CurrentSensorData(sensorDataId, data.getType(), data.getValue())).toList());
-        }
-
-        currentReportDataRepository.save(searchResult);
-    }
-
-    @Transactional(readOnly = true)
-    public List<CurrentSensorResponseDataDTO> getCurrentDataReport(String username)
-    {
-        return currentReportDataRepository.findAllByOwnerUsername(username).stream().map(data -> new CurrentSensorResponseDataDTO(
-                Integer.valueOf(data.getFloraLinkId()),
-                data.getCurrentSensorDataList().stream().map(
-                        sensorData -> new CurrentSensorDataDTO(sensorData.getType(), sensorData.getValue())
-                ).toList())).toList();
+        CurrentSensorResponseDataDTO mappedDTO = new CurrentSensorResponseDataDTO(Integer.valueOf(floraLinkId), uploadedData);
+        redisTemplate.convertAndSend("user." + ownerUsername, mappedDTO);
     }
 
     @Transactional(readOnly = true)

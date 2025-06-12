@@ -13,4 +13,8 @@ public class ApiKeysHelper {
     public String generateShortKey(String rawApiKey) {
         return DigestUtils.sha256Hex(rawApiKey).substring(0, 12); //Used to reduce the query results
     }
+
+    public String generateShortFromHash(String hashedApiKey) {
+        return hashedApiKey.substring(0, 12);
+    }
 }

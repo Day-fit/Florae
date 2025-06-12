@@ -40,7 +40,7 @@ public class Plant {
     @OneToOne(mappedBy = "linkedPlant", cascade = CascadeType.ALL)
     private FloraLink linkedFloraLink;
 
-    @OneToOne(mappedBy = "linkedPlant", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "linkedPlant", cascade = CascadeType.ALL, orphanRemoval = true)
     private ApiKey linkedApiKey;
 
     @ManyToOne

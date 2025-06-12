@@ -26,7 +26,6 @@ import java.util.List;
 @Repository
 public interface ApiKeyRepository extends JpaRepository<ApiKey, Integer> {
     ApiKey findByKeyValue(String keyValue);
-
     List<ApiKey> findByShortKey(String shortKey);
 
     @Query("SELECT a FROM ApiKey a" +

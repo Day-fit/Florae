@@ -30,7 +30,6 @@ import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.DTOs.PlantFetchDTO;
 import pl.Dayfit.Florae.Entities.PlantRequirements;
 import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
-import pl.Dayfit.Florae.Repositories.JPA.PlantRepository;
 import pl.Dayfit.Florae.Utils.ImageOptimizer;
 
 
@@ -43,7 +42,6 @@ import pl.Dayfit.Florae.Utils.ImageOptimizer;
 @Service
 @RequiredArgsConstructor
 public class PlantsService {
-    private final PlantRepository plantRepository;
     private final PlantCacheService plantCacheService;
     private final FloraeUserRepository floraeUserRepository;
     private final PlantRequirementsService plantRequirementsService;
@@ -114,7 +112,7 @@ public class PlantsService {
     @Transactional(readOnly = true)
     public List<PlantResponseDTO> getPlantsByUsername(String username)
     {
-        return plantRepository.getPlantsByUsername(username).stream().map(this::mapPlantDTO).toList();
+        return plantCacheService.getAllPlants(username).stream().map(this::mapPlantDTO).toList();
     }
 
     public void saveName(Integer id, String name) {
