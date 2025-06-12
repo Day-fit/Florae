@@ -25,7 +25,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class UserHandshakeInterceptor implements HandshakeInterceptor {
+public class UserDetailsHandshakeInterceptor implements HandshakeInterceptor {
     private final JWTService jwtService;
     private final FloraeUserCacheService floraeUserCacheService;
 

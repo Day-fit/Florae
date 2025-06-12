@@ -3,9 +3,9 @@ package pl.Dayfit.Florae.Services;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.WebSocketSession;
 import pl.Dayfit.Florae.Events.UserConnectionClosed;
@@ -22,7 +22,7 @@ public class RedisMessageService {
     private final RedisMessageListenerContainer container;
     private final UserChannelHandler userChannelHandler;
     private final Map<String, ChannelTopic> topics = new ConcurrentHashMap<>();
-    private final Map<String, MessageListenerAdapter> listeners = new ConcurrentHashMap<>();
+    private final Map<String, MessageListener> listeners = new ConcurrentHashMap<>();
 
     @EventListener
     public void register(UserConnectionEstablished event)
@@ -33,12 +33,12 @@ public class RedisMessageService {
         String username = (String) session.getAttributes().get("username");
 
         ChannelTopic topic = new ChannelTopic("user." + username);
-        MessageListenerAdapter adapter = new MessageListenerAdapter(userChannelHandler, "handleMessage");
 
-        container.addMessageListener(adapter, topic);
+        MessageListener messageListener = userChannelHandler;
 
+        container.addMessageListener(messageListener, topic);
         topics.put(username, topic);
-        listeners.put(username, adapter);
+        listeners.put(username, messageListener);
     }
 
     @EventListener

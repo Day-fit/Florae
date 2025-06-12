@@ -70,7 +70,7 @@ public class FloraLinkService {
     }
 
     @Transactional
-    @EventListener()
+    @EventListener
     public void handleCurrentDataUpload(CurrentDataUploadedEvent event)
     {
         Authentication authentication = event.authentication();

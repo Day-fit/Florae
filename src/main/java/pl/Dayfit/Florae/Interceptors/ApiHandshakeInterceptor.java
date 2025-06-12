@@ -43,6 +43,11 @@ public class ApiHandshakeInterceptor implements HandshakeInterceptor {
             throw new AuthenticationException("Invalid API key");
         }
 
+        if(apiKey.getLinkedFloraLink() == null)
+        {
+            throw new AuthenticationException("API key is not linked to any FloraLink");
+        }
+
         attributes.put("auth", new ApiKeyAuthenticationToken(apiKey));
         attributes.put("owner", apiKey.getFloraeUser().getUsername());
 
