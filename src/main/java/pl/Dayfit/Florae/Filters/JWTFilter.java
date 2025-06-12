@@ -113,6 +113,6 @@ public class JWTFilter extends OncePerRequestFilter {
                 .map(String::trim)
                 .anyMatch(uri::startsWith);
 
-        return hasValidApiKey || !isProtectedPath;
+        return hasValidApiKey && !isProtectedPath;
     }
 }
