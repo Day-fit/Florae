@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, use } from 'react';
 import axios from './axiosClient.js';
+import {UserContext} from "../store/user-context.jsx";
 import validateForm, { isEmail } from './form-validiation.js';
 
 export default function useAuthHandlers({ logIn, onClose, setModal }) {
+  const { csrfToken } = use(UserContext)
+
   const [errors, setErrors] = useState({
     email: '',
     username: '',
@@ -15,12 +18,6 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  async function getCsrfToken()
-  {
-    const response = await axios.get('/csrf', { withCredentials: true });
-    return response.data.token;
-  }
 
   async function handleSignIn(e) {
     e.preventDefault();
@@ -52,11 +49,11 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
         {
           headers: {
             'Content-Type': 'application/json',
-            'X-XSRF-TOKEN': await getCsrfToken(),
+            'X-XSRF-TOKEN': csrfToken,
           },
         }
       );
-
+      console.log('User logged in successfully');
       const userRes = await axios.get('/api/v1/get-user-data', { withCredentials: true });
       logIn(userRes.data);
 
@@ -98,10 +95,13 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
           password: formData.password,
         },
         {
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-XSRF-TOKEN': csrfToken,
+          },
         }
       );
-
+      console.log('User registered successfully');
       await handleSignIn(e);
 
       setIsSubmitting(false);
