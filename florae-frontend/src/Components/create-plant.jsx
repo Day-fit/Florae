@@ -6,15 +6,17 @@
  * - onCreate (function): Callback for when plant creation succeeds.
  *
  * Usage:
- * ```
+ *
  * <CreatePlant onCreate={refreshPlantsList} />
  * ```
  */
 
 import React, { useRef, useState } from 'react';
+import {useCsrfToken} from "../util/useCsrfToken.jsx";
 import axios from 'axios';
 
 export default function CreatePlant({ onClose }) {
+  const csrfToken = useCsrfToken();
   const nameRef = useRef('');
   const fileRef = useRef('');
 
@@ -44,7 +46,10 @@ export default function CreatePlant({ onClose }) {
     try {
       // 1. Create the plant and get its ID from the response
       const response = await axios.post('/api/v1/add-plant', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-XSRF-TOKEN': csrfToken,
+        },
         withCredentials: true,
       });
 

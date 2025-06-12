@@ -1,10 +1,11 @@
 import { useState, use } from 'react';
-import axios from 'axios';
+import axios from './axiosClient.js';
+import {UserContext} from "../store/user-context.jsx";
 import validateForm, { isEmail } from './form-validiation.js';
-import { UserContext } from '../store/user-context.jsx';
 
 export default function useAuthHandlers({ logIn, onClose, setModal }) {
   const { csrfToken } = use(UserContext)
+
   const [errors, setErrors] = useState({
     email: '',
     username: '',
@@ -46,11 +47,13 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
           generateRefreshToken: true,
         },
         {
-          headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': csrfToken },
-          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-XSRF-TOKEN': csrfToken,
+          },
         }
       );
-
+      console.log('User logged in successfully');
       const userRes = await axios.get('/api/v1/get-user-data', { withCredentials: true });
       logIn(userRes.data);
 
@@ -84,7 +87,6 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
     setIsSubmitting(true);
 
     try {
-      console.log(csrfToken)
       await axios.post(
         `/auth/register`,
         {
@@ -93,11 +95,13 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
           password: formData.password,
         },
         {
-          headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': csrfToken },
-          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-XSRF-TOKEN': csrfToken,
+          },
         }
       );
-
+      console.log('User registered successfully');
       await handleSignIn(e);
 
       setIsSubmitting(false);
@@ -110,6 +114,7 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
         ...prev,
         email: 'Wrong email or username',
         username: 'Wrong email or username',
+        form: 'Wrong email or username',
       }));
       setIsSubmitting(false);
     }
