@@ -130,6 +130,11 @@
 			<artifactId>commons-codec</artifactId>
 			<version>1.18.0</version>
 		</dependency>
+		<dependency>
+		    <groupId>org.postgresql</groupId>
+		    <artifactId>postgresql</artifactId>
+		    <version>42.7.7</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
