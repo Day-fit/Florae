@@ -3,6 +3,8 @@ package pl.Dayfit.Florae.Auth;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import pl.Dayfit.Florae.Entities.ApiKey;
 
+import java.util.Objects;
+
 /**
  * Represents an authentication candidate for API key-based authentication.
  * This class extends {@link AbstractAuthenticationToken}
@@ -34,7 +36,7 @@ public class ApiKeyAuthenticationCandidate extends AbstractAuthenticationToken {
     public ApiKeyAuthenticationCandidate(ApiKey apiKey)
     {
         super(null);
-        this.apiKey = apiKey;
+        this.apiKey = Objects.requireNonNull(apiKey, "API key cannot be null");
         setAuthenticated(false);
     }
 

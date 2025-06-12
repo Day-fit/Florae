@@ -16,6 +16,7 @@ import pl.Dayfit.Florae.Helpers.SpEL.ApiKeysHelper;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 import pl.Dayfit.Florae.Services.FloraLinkCacheService;
 
+import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -73,6 +74,7 @@ public class ApiKeyService {
         apiKey.setLinkedPlant(plant);
         apiKey.setShortKey(apiKeyHelper.generateShortKey(generatedUUID));
         apiKey.setFloraeUser(floraeUserCacheService.getFloraeUser(username));
+        apiKey.setCreatedDate(Instant.now());
         cacheService.save(apiKey);
 
         scheduler.schedule(() -> cacheService.revokeUnusedApiKeys(apiKey.getId()), 5, TimeUnit.MINUTES);

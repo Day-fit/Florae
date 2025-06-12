@@ -67,8 +67,7 @@ public class ApiKeyCacheService {
     @Transactional(readOnly = true)
     @Cacheable(value = "api-keys", key = "@apiKeysHelper.generateShortFromHash(#apiKeyValue)")
     public ApiKey getApiKeyByHash(String apiKeyValue) {
-        String shortKey = helper.generateShortKey(apiKeyValue);
-        return apiKeyRepository.findAllByShortKey(shortKey).stream().filter(entity -> DigestUtils.sha256Hex(apiKeyValue).equals(entity.getKeyValue())).findFirst().orElse(null);
+        return apiKeyRepository.findByKeyValue(apiKeyValue);
     }
 
     @Transactional

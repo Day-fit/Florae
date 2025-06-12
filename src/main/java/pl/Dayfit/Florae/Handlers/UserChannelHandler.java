@@ -20,7 +20,6 @@ public class UserChannelHandler implements MessageListener {
 
     private void handleMessage(String message, String channel)
     {
-        log.info("message: {}, channel {}", message, channel);
         String username = channel.replace("user.", "");
         WebSocketSession session = sessionService.getSessionByUsername(username);
 
