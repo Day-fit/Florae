@@ -6,7 +6,7 @@
  * - onCreate (function): Callback for when plant creation succeeds.
  *
  * Usage:
- * ```
+ *
  * <CreatePlant onCreate={refreshPlantsList} />
  * ```
  */
