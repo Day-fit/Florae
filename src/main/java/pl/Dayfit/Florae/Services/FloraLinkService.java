@@ -3,6 +3,7 @@ package pl.Dayfit.Florae.Services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -106,13 +107,13 @@ public class FloraLinkService {
     }
 
     @Transactional
-    public void setName(FloraLinkSetNameDTO dto, String username) throws IllegalStateException{
+    public void setName(FloraLinkSetNameDTO dto, String username) throws AccessDeniedException {
         FloraeUser floraeUser = floraeUserCacheService.getFloraeUser(username);
         FloraLink floraLink = cacheService.getFloraLink(dto.getId());
 
         if (!floraLink.getOwner().equals(floraeUser))
         {
-            throw new IllegalStateException("User is not the owner of this FloraLink! Cannot change name!");
+            throw new AccessDeniedException("User is not the owner of this FloraLink! Cannot change name!");
         }
 
         floraLink.setName(dto.getName());

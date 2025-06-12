@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -56,18 +57,14 @@ public class FloraLinkController {
     }
 
     @PostMapping("/api/v1/floralink/set-name")
-    public ResponseEntity<?> setFloraLinkName(@RequestBody FloraLinkSetNameDTO floraLinkSetNameDTO, @AuthenticationPrincipal UserPrincipal userPrincipal)
+    public ResponseEntity<?> setFloraLinkName(@RequestBody FloraLinkSetNameDTO floraLinkSetNameDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) throws AccessDeniedException
     {
         if (floraLinkSetNameDTO == null || floraLinkSetNameDTO.getId() == null || floraLinkSetNameDTO.getName() == null || floraLinkSetNameDTO.getName().isBlank())
         {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Incorrect request body"));
+            throw new IllegalArgumentException("Incorrect request body");
         }
 
-        try {
-            floraLinkService.setName(floraLinkSetNameDTO, userPrincipal.getUsername());
-        } catch (IllegalStateException exception) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", exception.getMessage()));
-        }
+        floraLinkService.setName(floraLinkSetNameDTO, userPrincipal.getUsername());
 
         return ResponseEntity.ok(Map.of("message", "Name set successfully."));
     }

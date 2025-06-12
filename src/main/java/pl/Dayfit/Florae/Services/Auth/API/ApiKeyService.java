@@ -12,6 +12,7 @@ import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Entities.FloraLink;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Entities.Plant;
+import pl.Dayfit.Florae.Exceptions.PlantAlreadyLinkedException;
 import pl.Dayfit.Florae.Helpers.SpEL.ApiKeysHelper;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 import pl.Dayfit.Florae.Services.FloraLinkCacheService;
@@ -53,13 +54,13 @@ public class ApiKeyService {
     private final ApiKeyCacheService apiKeyCacheService;
 
     @Transactional
-    public String generateApiKey(String username, Plant plant) throws IllegalArgumentException {
+    public String generateApiKey(String username, Plant plant) throws PlantAlreadyLinkedException {
         String generatedUUID = UUID.randomUUID().toString();
         String encryptedUUID = DigestUtils.sha256Hex(generatedUUID);
 
         if (plant.getLinkedFloraLink() != null)
         {
-            throw new IllegalArgumentException("Plant is already linked to a FloraLink");
+            throw new PlantAlreadyLinkedException("Plant is already linked to a FloraLink");
         }
 
         ApiKey linkedApiKey = plant.getLinkedApiKey();

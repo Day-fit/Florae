@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
 import pl.Dayfit.Florae.DTOs.GenerateApiKeyDTO;
 import pl.Dayfit.Florae.Entities.Plant;
+import pl.Dayfit.Florae.Exceptions.PlantAlreadyLinkedException;
 import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
 import pl.Dayfit.Florae.Services.PlantCacheService;
 
@@ -29,7 +30,7 @@ public class ApiKeyController {
     private final PlantCacheService plantCacheService;
 
     @PostMapping("/api/v1/generate-key")
-    public ResponseEntity<Map<String, String>> generateApiKey(@RequestBody GenerateApiKeyDTO apiKeyDTO, @AuthenticationPrincipal UserPrincipal userPrincipal)
+    public ResponseEntity<Map<String, String>> generateApiKey(@RequestBody GenerateApiKeyDTO apiKeyDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) throws PlantAlreadyLinkedException
     {
         Plant plant = plantCacheService.getPlantById(apiKeyDTO.getPlantId());
 
@@ -38,11 +39,7 @@ public class ApiKeyController {
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid plant id"));
         }
 
-        try {
-            return ResponseEntity.ok(Map.of("apiKey", apiKeyService.generateApiKey(userPrincipal.getUsername(), plant)));
-        } catch (IllegalArgumentException exception) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", exception.getMessage()));
-        }
+        return ResponseEntity.ok(Map.of("apiKey", apiKeyService.generateApiKey(userPrincipal.getUsername(), plant)));
     }
 
     @DeleteMapping("/api/v1/revoke-key")
@@ -71,5 +68,12 @@ public class ApiKeyController {
         }
 
         return ResponseEntity.ok(Map.of("result", apiKeyService.isValidApiKey(apiKey)));
+    }
+
+    @ExceptionHandler(PlantAlreadyLinkedException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<Map<String, String>> handlePlantAlreadyLinkedException(PlantAlreadyLinkedException exception)
+    {
+        return ResponseEntity.badRequest().body(Map.of("error", exception.getMessage()));
     }
 }
