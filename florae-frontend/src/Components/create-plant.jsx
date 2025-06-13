@@ -12,7 +12,7 @@
  */
 
 import React, { useRef, useState } from 'react';
-import axios from 'axios';
+import axios from '../util/axios-client.js';
 import getCsrfToken from '../util/getCsrfToken.js';
 
 export default function CreatePlant({ onClose }) {
@@ -54,6 +54,7 @@ export default function CreatePlant({ onClose }) {
         },
         withCredentials: true
       };
+
       const response = await axios.post('/api/v1/add-plant', formData, config);
 
       const plantId = response.data?.id;
