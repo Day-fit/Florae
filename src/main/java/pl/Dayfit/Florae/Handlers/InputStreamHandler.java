@@ -28,13 +28,13 @@ public class InputStreamHandler implements WebSocketHandler {
     private @Getter AtomicInteger activeFloraLinks = new AtomicInteger(0);
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) {
+    public void afterConnectionEstablished(@NonNull WebSocketSession session) {
         activeFloraLinks.incrementAndGet();
         log.trace("New connection established at {}", session.getLocalAddress());
     }
 
     @Override
-    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) {
+    public void handleMessage(@NonNull WebSocketSession session, @NonNull WebSocketMessage<?> message) {
         log.trace("Received message at {}: {}", session.getLocalAddress(), message.getPayload());
 
         if (!(message instanceof TextMessage textMessage))
@@ -80,7 +80,7 @@ public class InputStreamHandler implements WebSocketHandler {
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) {
+    public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus closeStatus) {
         activeFloraLinks.decrementAndGet();
         log.trace("Connection closed at {}. Reason: {}", session.getLocalAddress(), closeStatus.getReason());
     }

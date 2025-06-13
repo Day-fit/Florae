@@ -30,7 +30,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationCandidate;
 import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationToken;
-import pl.Dayfit.Florae.Auth.FloraeAuthenticationEntryPoint;
 import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Filters.ApiKeyFilter;
 import pl.Dayfit.Florae.Filters.JWTFilter;
@@ -84,6 +83,7 @@ public class SecurityConfiguration {
     private String PROTECTED_PATHS;
 
     private final ApiKeyService apiKeyService;
+    private final AuthenticationEntryPoint authenticationEntryPoint;
     private final UserDetailsService userDetailsService;
     private final JWTFilter jwtFilter;
     private final PasswordEncoder passwordEncoder;
@@ -100,7 +100,7 @@ public class SecurityConfiguration {
                     request.requestMatchers(PROTECTED_PATHS.split(",")).authenticated();
                     request.anyRequest().permitAll();
                 })
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint()))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(apiKeyFilter(authManager), JWTFilter.class)
@@ -143,11 +143,6 @@ public class SecurityConfiguration {
                 .authenticationProvider(apiKeyAuthenticationProvider(apiKeyService))
                 .authenticationProvider(daoAuthenticationProvider())
                 .build();
-    }
-
-    @Bean
-    public AuthenticationEntryPoint authenticationEntryPoint() {
-        return new FloraeAuthenticationEntryPoint();
     }
 
     @Bean

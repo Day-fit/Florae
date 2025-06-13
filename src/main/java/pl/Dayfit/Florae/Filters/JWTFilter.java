@@ -5,9 +5,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import pl.Dayfit.Florae.Auth.FloraeAuthenticationEntryPoint;
 import pl.Dayfit.Florae.Services.Auth.JWT.JWTService;
 
 import java.io.IOException;
@@ -49,21 +50,25 @@ import java.util.Arrays;
 public class JWTFilter extends OncePerRequestFilter {
     private final JWTService jwtService;
     private final UserDetailsService userDetailsService;
+    private final FloraeAuthenticationEntryPoint floraeAuthenticationEntryPoint;
 
     @Value("${security.protected-paths}")
     private String PROTECTED_PATHS;
 
     @Override
-    @SuppressWarnings("NullableProblems")
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, BadCredentialsException {
-        if (hasValidAccessTokenCookie(request))
-        {
-            handleCookieAccess(request);
-            filterChain.doFilter(request, response);
-            return;
-        }
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException, BadCredentialsException {
+        try {
+            if (hasValidAccessTokenCookie(request))
+            {
+                handleCookieAccess(request);
+                filterChain.doFilter(request, response);
+                return;
+            }
 
-        throw new BadCredentialsException("Credentials are invalid");
+            throw new BadCredentialsException("Access token is invalid, or expired");
+        } catch (AuthenticationException exception) {
+            floraeAuthenticationEntryPoint.commence(request, response, exception);
+        }
     }
 
     private boolean hasValidAccessTokenCookie(HttpServletRequest request) throws AuthenticationException
