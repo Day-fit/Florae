@@ -25,7 +25,7 @@ public class SessionService {
 
         if (session == null) {
             log.warn("Session is null for event: {}", event);
-            return;
+            throw new IllegalStateException("Session is null for event: " + event);
         }
 
         Principal principal = session.getPrincipal();
