@@ -47,14 +47,13 @@ export default function CreatePlant({ onClose }) {
 
       console.log('CSRF Token:', csrfToken);
 
-      const response = await axios.post('/api/v1/add-plant', formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'X-XSRF-TOKEN': csrfToken,
-          },
-          withCredentials: true
-        });
+      const response = await axios.post('/api/v1/add-plant', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-XSRF-TOKEN': csrfToken,
+        },
+        withCredentials: true,
+      });
 
       const plantId = response.data?.id;
 
@@ -67,7 +66,7 @@ export default function CreatePlant({ onClose }) {
             headers: {
               'X-XSRF-TOKEN': csrfToken,
             },
-            withCredentials: true
+            withCredentials: true,
           };
           const nameRes = await axios.post(
             '/api/v1/plant-set-name',
@@ -83,7 +82,6 @@ export default function CreatePlant({ onClose }) {
         }
       }
       onClose();
-
     } catch (error) {
       setErrors((prev) => ({
         ...prev,
@@ -94,7 +92,6 @@ export default function CreatePlant({ onClose }) {
       setSubmitting(false);
     }
   };
-
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">

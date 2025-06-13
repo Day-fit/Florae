@@ -20,7 +20,6 @@
  * - Does not manage device connections or external integrations.
  */
 
-
 import Input from './input.jsx';
 import Button from './button.jsx';
 import { UserContext } from '../store/user-context.jsx';
@@ -29,6 +28,7 @@ import useAuthHandlers from '../util/logging-functions.jsx';
 import { registerFields, loginFields } from '../util/data.js';
 import rainyNature from '../assets/rainyNature.mp4';
 import { use } from 'react';
+import { UiContext } from '../store/ui-context.jsx';
 /**
  * =====================================
  *        TODOs FOR AUTH COMPONENTS
@@ -38,8 +38,10 @@ import { use } from 'react';
  *
  */
 
-export default function AuthModal({ register, onClose, setModal }) {
+export default function AuthModal({ register, onClose }) {
+  const { setModal } = use(UiContext);
   const { logIn } = use(UserContext);
+
   const {
     formData,
     errors,
@@ -156,7 +158,7 @@ export default function AuthModal({ register, onClose, setModal }) {
                     setModal('register');
                     clearErrors();
                     clearFormData();
-                    }}
+                  }}
                   buttonText="Don't have an account? Sign up"
                 />
               </div>

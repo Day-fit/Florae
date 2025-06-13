@@ -15,10 +15,10 @@
  *
  * Usage:
  * ```
-  * <AnimatedModal>
-    *   <div>Your modal content here.</div>
-    * </AnimatedModal>
-  * ```
+ * <AnimatedModal>
+ *   <div>Your modal content here.</div>
+ * </AnimatedModal>
+ * ```
  *
  * Note:
  * - This modal does not include logic for closing or backdrop

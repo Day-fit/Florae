@@ -1,4 +1,3 @@
-
 /**
  * DevicesCard displays information and controls for an individual device.
  *
@@ -7,8 +6,8 @@
  *
  * Usage:
  * ```
-* <DevicesCard device={deviceData} />
-* ```
+ * <DevicesCard device={deviceData} />
+ * ```
  *
  * Note:
  * - Can be used as part of a list/grid of devices on a devices overview page.
@@ -20,17 +19,40 @@ import { reqUnits, reqMeta } from '../util/snippets-values.jsx';
 
 // Your getRequirementRows function
 function getRequirementRows(requirements) {
-
   if (!requirements) return [];
 
   const attrs = [
-    { label: 'Env. Humidity', minKey: 'min_env_humid', maxKey: 'max_env_humid', key: 'humidity', metaIdx: 0 },
-    { label: 'Light (lux)', minKey: 'min_light_lux', maxKey: 'max_light_lux', key: 'light', metaIdx: 1 },
-    { label: 'Soil Moisture', minKey: 'min_soil_moist', maxKey: 'max_soil_moist', key: 'moisture', metaIdx: 2 },
-    { label: 'Temperature', minKey: 'min_temp', maxKey: 'max_temp', key: 'temperature', metaIdx: 3 }
+    {
+      label: 'Env. Humidity',
+      minKey: 'min_env_humid',
+      maxKey: 'max_env_humid',
+      key: 'humidity',
+      metaIdx: 0,
+    },
+    {
+      label: 'Light (lux)',
+      minKey: 'min_light_lux',
+      maxKey: 'max_light_lux',
+      key: 'light',
+      metaIdx: 1,
+    },
+    {
+      label: 'Soil Moisture',
+      minKey: 'min_soil_moist',
+      maxKey: 'max_soil_moist',
+      key: 'moisture',
+      metaIdx: 2,
+    },
+    {
+      label: 'Temperature',
+      minKey: 'min_temp',
+      maxKey: 'max_temp',
+      key: 'temperature',
+      metaIdx: 3,
+    },
   ];
 
-  return attrs.map(attr => {
+  return attrs.map((attr) => {
     const minVal = requirements[attr.minKey];
     const maxVal = requirements[attr.maxKey];
     return {
@@ -39,7 +61,7 @@ function getRequirementRows(requirements) {
       min: minVal,
       max: maxVal,
       unit: reqUnits[attr.metaIdx] || '',
-      metaIdx: attr.metaIdx
+      metaIdx: attr.metaIdx,
     };
   });
 }
@@ -53,11 +75,11 @@ export default function DevicesCard({ id }) {
 
     const fetchData = async () => {
       try {
-        console.log("y")
+        console.log('y');
         const response = await axios.get('/api/v1/floralink/get-all-current-data');
         if (isMounted) setSensorData(response.data);
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     };
 
@@ -74,9 +96,7 @@ export default function DevicesCard({ id }) {
     const fetchPlant = async () => {
       try {
         const response = await axios.get('/api/v1/plants');
-        const connectedPlant = response.data.find(
-          p => p.linkedFloraLink.floraLinkId === id
-        );
+        const connectedPlant = response.data.find((p) => p.linkedFloraLink.floraLinkId === id);
         setPlant(connectedPlant || null);
       } catch (error) {
         console.error('Failed to fetch plants:', error);
@@ -89,7 +109,9 @@ export default function DevicesCard({ id }) {
   useEffect(() => {
     const fetchSensorData = async () => {
       try {
-        const response = await axios.get(`/api/v1/floralink/get-all-daily-data`, { withCredentials: true });
+        const response = await axios.get(`/api/v1/floralink/get-all-daily-data`, {
+          withCredentials: true,
+        });
         setSensorData(response.data);
       } catch (error) {
         console.error('Failed to fetch sensor data:', error);
@@ -98,9 +120,7 @@ export default function DevicesCard({ id }) {
     };
 
     fetchSensorData();
-    }, [id]);
-
-
+  }, [id]);
 
   function getImgSrc(plant) {
     if (!plant || !plant.primaryPhoto) return null;
@@ -127,11 +147,7 @@ export default function DevicesCard({ id }) {
         </h2>
         <div className="w-40 h-40 bg-stone-200 rounded-2xl mb-5 overflow-hidden flex items-center justify-center">
           {plant && plant.primaryPhoto ? (
-            <img
-              src={getImgSrc(plant)}
-              alt={plant.name}
-              className="object-cover w-full h-full"
-            />
+            <img src={getImgSrc(plant)} alt={plant.name} className="object-cover w-full h-full" />
           ) : (
             <span className="text-stone-400 text-5xl">🌱</span>
           )}
@@ -152,9 +168,7 @@ export default function DevicesCard({ id }) {
               <div className="flex flex-row justify-center gap-1 w-full" key={rowIdx}>
                 {row.map((req) => {
                   const sensorValue =
-                    sensorData && sensorData[req.key] != null
-                      ? sensorData[req.key]
-                      : '--';
+                    sensorData && sensorData[req.key] != null ? sensorData[req.key] : '--';
                   const isGood = isValueGood(sensorValue, req.min, req.max);
 
                   return (
@@ -165,7 +179,7 @@ export default function DevicesCard({ id }) {
                             `}
                     >
                       <div className="flex items-center justify-center pt-4">
-                        <span className={isGood ? "text-green-500" : "text-red-800"}>
+                        <span className={isGood ? 'text-green-500' : 'text-red-800'}>
                           {reqMeta[req.metaIdx]?.icon}
                         </span>
                       </div>
@@ -176,7 +190,7 @@ export default function DevicesCard({ id }) {
                         </span>
                       </div>
                       <div
-                        className={`pb-3 pt-2 text-xs font-medium ${isGood ? "text-green-600" : "text-red-800"}`}
+                        className={`pb-3 pt-2 text-xs font-medium ${isGood ? 'text-green-600' : 'text-red-800'}`}
                       >
                         {req.label}
                       </div>
@@ -192,5 +206,3 @@ export default function DevicesCard({ id }) {
   );
 }
 /*missclick*/
-
-
