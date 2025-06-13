@@ -25,6 +25,12 @@ public class GlobalExceptionHandler {
         return Map.of("error", exception.getMessage());
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleIllegalStateException(IllegalStateException exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public Map<String, String> handleAccessDeniedException(AccessDeniedException exception) {

@@ -9,6 +9,7 @@ import org.springframework.web.socket.WebSocketSession;
 import pl.Dayfit.Florae.Events.UserConnectionClosed;
 import pl.Dayfit.Florae.Events.UserConnectionEstablished;
 
+import java.security.Principal;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -27,12 +28,14 @@ public class SessionService {
             return;
         }
 
-        if (session.getPrincipal() == null || session.getPrincipal().getName() == null)
+        Principal principal = session.getPrincipal();
+        if (principal == null || principal.getName() == null)
         {
             log.warn("Session {} is null or principal name is null", session.getId());
+            throw new IllegalStateException("Session principal is null or has no name");
         }
 
-        sessions.put(session.getPrincipal().getName(), session);
+        sessions.put(principal.getName(), session);
     }
 
 

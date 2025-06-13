@@ -48,6 +48,17 @@ public class ImageOptimizer {
      */
     public static byte[] optimizeImage(MultipartFile file, float quality, int width, int height) throws IOException, IllegalArgumentException
     {
+        if(file == null || file.isEmpty())
+        {
+            throw new IllegalArgumentException("File is null or empty");
+        }
+
+        String contentType = file.getContentType();
+
+        if (contentType == null) {
+            throw new IllegalArgumentException("File content type is null");
+        }
+
         if (!Objects.equals(file.getContentType(), "image/jpeg") && !Objects.equals(file.getContentType(), "image/jpg") && !Objects.equals(file.getContentType(), "image/png"))
         {
             throw new IllegalArgumentException("Files are not of type JPEG, PNG or JPG");
@@ -70,7 +81,7 @@ public class ImageOptimizer {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        if (file.getContentType().equals("image/jpeg") || file.getContentType().equals("image/jpg"))
+        if (contentType.equals("image/jpeg") || contentType.equals("image/jpg"))
         {
             ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
             ImageOutputStream ios = ImageIO.createImageOutputStream(baos);
