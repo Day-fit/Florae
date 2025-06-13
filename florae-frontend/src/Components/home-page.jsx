@@ -7,6 +7,7 @@ import {
 } from '../util/home-page-data.js';
 import { HiOutlineInformationCircle } from 'react-icons/hi';
 import InformationComponent from './information-component.jsx';
+import temp from '../assets/temp.png'
 
 function handlePlants() {
   //when I add plants-page. I will add some logic to this functio
@@ -21,17 +22,17 @@ export default function HomePage({ setModal }) {
         visitorContent={homeVisitorContent}
         guestContent={homeGuestContent}
       />
-      <div className="flex flex-col md:flex-row pl-[2vw] pr-[2vw] justify-between items-center">
+      <div className="flex flex-col md:flex-row pl-[2vw] pr-[2vw] justify-center gap-20 items-center">
         {/* Images */}
         <img
           alt="temp1"
-          src="https://placekitten.com/180/180"
-          className="w-40 h-40 object-cover rounded-md"
+          src={temp}
+          className="w-120 h-80 object-cover rounded-md"
         />
         <img
           alt="temp2"
-          src="https://placekitten.com/181/181"
-          className="w-40 h-40 object-cover rounded-md"
+          src={temp}
+          className="w-120 h-80 object-cover rounded-md"
         />
       </div>
       <div className="w-full py-8 bg-gray-50">

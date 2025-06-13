@@ -104,14 +104,10 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request)
     {
-        String uri = request.getRequestURI();
-        boolean hasValidApiKey = request.getHeader("X-API-KEY") != null
-                && (uri.contains("/api/v1/floralink/upload") || uri.contains("/api/v1/floralink/connect-api"));
-
         boolean isProtectedPath = Arrays.stream(PROTECTED_PATHS.split(","))
                 .map(String::trim)
-                .anyMatch(uri::startsWith);
+                .anyMatch(request.getRequestURI()::startsWith);
 
-        return hasValidApiKey && !isProtectedPath;
+        return !isProtectedPath;
     }
 }
