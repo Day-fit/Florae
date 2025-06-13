@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationCandidate;
+import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
 
 import java.io.IOException;
@@ -75,7 +76,10 @@ public class ApiKeyFilter extends OncePerRequestFilter {
             return;
         }
 
-        Authentication authResult = authenticationManager.authenticate(new ApiKeyAuthenticationCandidate(apiKeyService.getApiKey(apiKey)));
+
+        ApiKey apikey = apiKeyService.getApiKey(apiKey);
+
+        Authentication authResult = authenticationManager.authenticate(new ApiKeyAuthenticationCandidate(apikey));
         SecurityContextHolder.getContext().setAuthentication(authResult);
         filterChain.doFilter(request, response);
     }

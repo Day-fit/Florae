@@ -37,7 +37,6 @@ import pl.Dayfit.Florae.Filters.JWTFilter;
 import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
 
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -81,8 +80,8 @@ public class SecurityConfiguration {
     @Value("${allowed.origins.patterns:localhost*}")
     private String ALLOWED_ORIGINS_PATTERNS;
 
-    @Value("${security.public-paths}")
-    private final List<String> PUBLIC_PATHS = new ArrayList<>();
+    @Value("${security.protected-paths}")
+    private String PROTECTED_PATHS;
 
     private final ApiKeyService apiKeyService;
     private final UserDetailsService userDetailsService;
@@ -98,8 +97,8 @@ public class SecurityConfiguration {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .authorizeHttpRequests(request -> {
                     request.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll(); //To allow the async servlet to work properly
-                    request.requestMatchers(PUBLIC_PATHS.toArray(new String[0])).permitAll();
-                    request.anyRequest().authenticated();
+                    request.requestMatchers(PROTECTED_PATHS.split(",")).authenticated();
+                    request.anyRequest().permitAll();
                 })
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

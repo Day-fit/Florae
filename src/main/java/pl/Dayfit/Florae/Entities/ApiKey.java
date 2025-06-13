@@ -64,7 +64,4 @@ public class ApiKey {
     @OneToOne
     @JoinColumn(nullable = false)
     private Plant linkedPlant;
-
-    @ManyToOne
-    private FloraeUser linkedUser;
 }
