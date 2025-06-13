@@ -82,17 +82,17 @@ public class FloraeUserController {
     {
         if (floraeUserRegisterDTO.getUsername() == null || floraeUserRegisterDTO.getUsername().isBlank() || !floraeUserRegisterDTO.getUsername().matches(USERNAME_REGEX) || floraeUserRegisterDTO.getUsername().length() > FloraeUser.MAX_USERNAME_LENGTH)
         {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Username is not valid"));
+           throw new IllegalArgumentException("Username is not valid");
         }
 
         if (floraeUserRegisterDTO.getEmail() == null || floraeUserRegisterDTO.getEmail().isBlank() || !floraeUserRegisterDTO.getEmail().matches(EMAIL_REGEX) || floraeUserRegisterDTO.getEmail().length() > FloraeUser.MAX_EMAIL_LENGTH)
         {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Email is not valid"));
+            throw new IllegalArgumentException("Email is not valid");
         }
 
         if (floraeUserRegisterDTO.getPassword() == null || floraeUserRegisterDTO.getPassword().isBlank() || floraeUserRegisterDTO.getPassword().getBytes(StandardCharsets.UTF_8).length > FloraeUser.MAX_PASSWORD_LENGTH)
         {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Password is not valid"));
+            throw new IllegalArgumentException("Password is not valid");
         }
 
         try {

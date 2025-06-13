@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import pl.Dayfit.Florae.Exceptions.ApiKeyAssociationException;
+
 import javax.naming.AuthenticationException;
 import java.util.Map;
 
@@ -26,6 +28,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public Map<String, String> handleAccessDeniedException(AccessDeniedException exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(ApiKeyAssociationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleApiKeyAssociationException(ApiKeyAssociationException exception) {
         return Map.of("error", exception.getMessage());
     }
 }

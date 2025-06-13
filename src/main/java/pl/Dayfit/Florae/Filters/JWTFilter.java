@@ -5,9 +5,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -54,8 +54,7 @@ public class JWTFilter extends OncePerRequestFilter {
     private String PROTECTED_PATHS;
 
     @Override
-    @SuppressWarnings("NullableProblems")
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, BadCredentialsException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException, BadCredentialsException {
         if (hasValidAccessTokenCookie(request))
         {
             handleCookieAccess(request);
@@ -63,7 +62,7 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        throw new BadCredentialsException("Credentials are invalid");
+        throw new BadCredentialsException("Access token is invalid, or exprired");
     }
 
     private boolean hasValidAccessTokenCookie(HttpServletRequest request) throws AuthenticationException

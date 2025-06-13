@@ -1,7 +1,6 @@
 package pl.Dayfit.Florae.Controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -72,12 +71,5 @@ public class ApiKeyController {
         }
 
         return ResponseEntity.ok(Map.of("result", apiKeyService.isValidApiKey(apiKey)));
-    }
-
-    @ExceptionHandler(ApiKeyAssociationException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ResponseEntity<Map<String, String>> handleApiKeyAssociationException(ApiKeyAssociationException exception)
-    {
-        return ResponseEntity.badRequest().body(Map.of("error", exception.getMessage()));
     }
 }

@@ -19,7 +19,7 @@ public class OutputStreamHandler implements WebSocketHandler {
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) {
+    public void afterConnectionEstablished(@NonNull WebSocketSession session) {
         log.trace("New connection established at {}, publishing event...", session.getLocalAddress());
         eventPublisher.publishEvent(new UserConnectionEstablished(session));
     }
@@ -35,7 +35,7 @@ public class OutputStreamHandler implements WebSocketHandler {
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, @NonNull CloseStatus closeStatus) {
+    public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus closeStatus) {
         log.trace("Connection closed at {}, publishing event...", session.getLocalAddress());
         eventPublisher.publishEvent(new UserConnectionClosed(session));
     }

@@ -22,6 +22,11 @@ public class SessionService {
     public void registerSession(UserConnectionEstablished event) {
         WebSocketSession session = event.session();
 
+        if (session == null) {
+            log.warn("Session is null for event: {}", event);
+            return;
+        }
+
         if (session.getPrincipal() == null || session.getPrincipal().getName() == null)
         {
             log.warn("Session {} is null or principal name is null", session.getId());
