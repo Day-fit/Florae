@@ -47,14 +47,14 @@ export default function CreatePlant({ onClose }) {
 
       console.log('CSRF Token:', csrfToken);
 
-      const config = {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'X-XSRF-TOKEN': csrfToken,
-        },
-        withCredentials: true
-      };
-      const response = await axios.post('/api/v1/add-plant', formData, config);
+      const response = await axios.post('/api/v1/add-plant', formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-XSRF-TOKEN': csrfToken,
+          },
+          withCredentials: true
+        });
 
       const plantId = response.data?.id;
 

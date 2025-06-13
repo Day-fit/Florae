@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from './util/axios-client.js';
 import { refreshToken } from './util/refresh-function.js';
 import { UserContext } from './store/user-context.jsx';
 import App from './App.jsx';
@@ -49,20 +49,18 @@ export default function RootApp() {
   useEffect(() => {
     if (!user.isLogged) return;
 
-    const interval = setInterval(
-        () => {
-          refreshToken()
-              .then((data) => {
-                if (data) {
-                  console.log('Token refreshed');
-                } else {
-                  console.warn('Token refresh: No data, may be session expired.');
-                }
-              })
-              .catch((error) => console.error('Token refresh failed:', error));
-        },
-        1000 * 60 * 13.5
-    );
+    const interval = setInterval(async () => {
+      try {
+        const data = await refreshToken();
+        if (data) {
+          console.log('Token refreshed');
+        } else {
+          console.warn('Token refresh: No data, may be session expired.');
+        }
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+      }
+    }, 1000 * 60 * 13.5);
 
     return () => clearInterval(interval);
   }, [user.isLogged]);

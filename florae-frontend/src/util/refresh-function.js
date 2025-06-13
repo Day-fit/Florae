@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from './axios-client.js';
 import getCsrfToken from './getCsrfToken.js';
 
 export async function refreshToken() {
@@ -14,6 +14,8 @@ export async function refreshToken() {
       return null;
     }
 
+    console.log('Sending token refresh request...');
+
     const response = await axios.post('/auth/refresh', {},
       {
         headers: {
@@ -22,8 +24,8 @@ export async function refreshToken() {
         withCredentials: true,
       }
     );
-
     console.log('Token refresh successful');
+    console.log(response.data)
     return response.data;
   } catch (error) {
     console.log('Token refresh failed:', error);
