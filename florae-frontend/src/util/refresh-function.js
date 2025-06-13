@@ -19,7 +19,7 @@ export async function refreshToken() {
     const response = await axios.post('/auth/refresh', {},
       {
         headers: {
-          'X-XSRF-Token': csrfToken,
+          'X-XSRF-TOKEN': csrfToken,
         },
         withCredentials: true,
       }
