@@ -2,8 +2,9 @@ import { useEffect, useRef, use } from 'react';
 import { userMenuButtons } from '../util/data.js';
 import Button from './button.jsx';
 import { FiSettings } from 'react-icons/fi';
-import axios from 'axios';
+import axios from '../util/axios-client.js';
 import { UserContext } from '../store/user-context.jsx';
+import getCsrfToken from '../util/getCsrfToken.js';
 
 export default function UserMenu({ onClose, open = true }) {
   const { logOut } = use(UserContext);
@@ -11,13 +12,17 @@ export default function UserMenu({ onClose, open = true }) {
 
   async function handleLogout() {
     try {
-      const response = await axios.post(
-        `/auth/logout`,
-        {},
+      const csrfToken = await getCsrfToken();
+
+      console.log('CSRF Token:', csrfToken);
+
+      const response = await axios.post(`/auth/logout`, {},
         {
-          withCredentials: true,
-        }
-      );
+          headers: {
+            'X-XSRF-TOKEN': csrfToken,
+          },
+          withCredentials: true
+        });
 
       logOut();
       console.log(response.data);

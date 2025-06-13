@@ -3,6 +3,8 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
+const isProd = process.env.NODE_ENV === 'production';
+
 export default [
   { ignores: ['dist'] },
   {
@@ -28,6 +30,9 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      'no-console': isProd
+        ? ['error', { allow: ['warn', 'error'] }]
+        : 'off',
     },
   },
 ]

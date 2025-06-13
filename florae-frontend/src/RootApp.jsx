@@ -1,24 +1,24 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from './util/axios-client.js';
 import { refreshToken } from './util/refresh-function.js';
 import { UserContext } from './store/user-context.jsx';
 import App from './App.jsx';
 
 export default function RootApp() {
+
   const [user, setUser] = useState({
     isLogged: false,
     userData: {},
   });
 
-  // Log in handler
   function handleLogIn(userData) {
     setUser({
       isLogged: true,
       userData: userData || {},
     });
+
   }
 
-  // Log out handler
   function handleLogout() {
     setUser({
       isLogged: false,
@@ -30,8 +30,10 @@ export default function RootApp() {
     async function initializeAuth() {
       try {
         const refreshData = await refreshToken();
-        if (!refreshData) throw new Error('Refresh failed: no data returned.');
-
+        if (!refreshData) {
+          console.log('No refresh data returned, user likely not logged in');
+          return;
+        }
         const userRes = await axios.get('/api/v1/get-user-data', { withCredentials: true });
         handleLogIn(userRes.data);
 
@@ -47,20 +49,18 @@ export default function RootApp() {
   useEffect(() => {
     if (!user.isLogged) return;
 
-    const interval = setInterval(
-      () => {
-        refreshToken()
-          .then((data) => {
-            if (data) {
-              console.log('Token refreshed');
-            } else {
-              console.warn('Token refresh: No data, may be session expired.');
-            }
-          })
-          .catch((error) => console.error('Token refresh failed:', error));
-      },
-      1000 * 60 * 13.5
-    );
+    const interval = setInterval(async () => {
+      try {
+        const data = await refreshToken();
+        if (data) {
+          console.log('Token refreshed');
+        } else {
+          console.warn('Token refresh: No data, may be session expired.');
+        }
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+      }
+    }, 1000 * 60 * 13.5);
 
     return () => clearInterval(interval);
   }, [user.isLogged]);
@@ -73,8 +73,8 @@ export default function RootApp() {
   };
 
   return (
-    <UserContext value={contextValue}>
-      <App />
-    </UserContext>
+      <UserContext.Provider value={contextValue}>
+        <App />
+      </UserContext.Provider>
   );
 }
