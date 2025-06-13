@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.Dayfit.Florae.Entities.ApiKey;
+import pl.Dayfit.Florae.Exceptions.ApiKeyAssociationException;
 import pl.Dayfit.Florae.Helpers.SpEL.ApiKeysHelper;
 import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
 
@@ -21,6 +22,7 @@ import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
  * Dependencies:
  * - ApiKeyRepository: Provides access to the database for CRUD operations on API key entities.
  * - RedisTemplate: Used for interacting with the Redis key-value store to manage cached API key data.
+ * - ApiKeysHelper: A helper class that provides utility methods for generating short keys from raw API keys or hashes.
  * <p>
  * Annotations:
  * - {@code @Service}: Marks this class as a Spring service component.
@@ -45,11 +47,17 @@ public class ApiKeyCacheService {
     @CachePut(value = "api-keys", key = "@apiKeysHelper.generateShortKey(#rawApiKey)")
     public void revokeApiKey(String rawApiKey) throws IllegalArgumentException{
         String shortKey = helper.generateShortKey(rawApiKey);
-        ApiKey apiKey = apiKeyRepository.findByShortKey(shortKey).stream().filter(entity -> DigestUtils.sha256Hex(rawApiKey).equals(entity.getKeyValue())).findFirst().orElse(null);
+        ApiKey apiKey = apiKeyRepository.findByShortKey(shortKey)
+                            .stream()
+                            .filter(entity -> !entity.getIsRevoked())
+                            .filter(entity -> DigestUtils.sha256Hex(rawApiKey)
+                            .equals(entity.getKeyValue()))
+                            .findFirst()
+                            .orElse(null);
 
         if (apiKey == null)
         {
-            throw new IllegalArgumentException("API key does not exist or is already revoked");
+            throw new ApiKeyAssociationException("API key does not exist or is already revoked");
         }
 
         apiKey.setIsRevoked(true);

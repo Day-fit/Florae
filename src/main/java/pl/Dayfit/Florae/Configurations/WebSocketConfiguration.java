@@ -3,6 +3,7 @@ package pl.Dayfit.Florae.Configurations;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.web.socket.config.annotation.*;
 import pl.Dayfit.Florae.Handlers.Handshake.UserDetailsHandshakeHandler;
 import pl.Dayfit.Florae.Handlers.InputStreamHandler;
@@ -26,7 +27,7 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
     private String allowedOriginsPatterns;
 
     @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+    public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
         registry
                 .addHandler(inputStreamHandler, "/ws/input-stream")
                 .addInterceptors(apiHandshakeInterceptor)

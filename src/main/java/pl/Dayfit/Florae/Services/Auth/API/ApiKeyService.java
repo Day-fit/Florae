@@ -12,7 +12,7 @@ import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Entities.FloraLink;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Entities.Plant;
-import pl.Dayfit.Florae.Exceptions.PlantAlreadyLinkedException;
+import pl.Dayfit.Florae.Exceptions.ApiKeyAssociationException;
 import pl.Dayfit.Florae.Helpers.SpEL.ApiKeysHelper;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 import pl.Dayfit.Florae.Services.FloraLinkCacheService;
@@ -54,13 +54,13 @@ public class ApiKeyService {
     private final ApiKeyCacheService apiKeyCacheService;
 
     @Transactional
-    public String generateApiKey(String username, Plant plant) throws PlantAlreadyLinkedException {
+    public String generateApiKey(String username, Plant plant) throws ApiKeyAssociationException {
         String generatedUUID = UUID.randomUUID().toString();
         String encryptedUUID = DigestUtils.sha256Hex(generatedUUID);
 
         if (plant.getLinkedFloraLink() != null)
         {
-            throw new PlantAlreadyLinkedException("Plant is already linked to a FloraLink");
+            throw new ApiKeyAssociationException("Plant is already linked to a FloraLink");
         }
 
         ApiKey linkedApiKey = plant.getLinkedApiKey();
@@ -88,7 +88,7 @@ public class ApiKeyService {
         return apiKey.getFloraeUser().getUsername();
     }
 
-    public void revokeApiKey(String apiKeyValue) throws IllegalArgumentException{
+    public void revokeApiKey(String apiKeyValue) throws ApiKeyAssociationException{
         cacheService.revokeApiKey(apiKeyValue);
     }
 
@@ -121,12 +121,12 @@ public class ApiKeyService {
     }
 
     @Transactional
-    public void connectApi(Authentication authentication) {
+    public void connectApi(Authentication authentication) throws ApiKeyAssociationException {
         ApiKey apiKey = apiKeyCacheService.getApiKeyByHash(((ApiKey) authentication.getCredentials()).getKeyValue());
 
         if (apiKey.getLinkedFloraLink() != null)
         {
-            throw new IllegalStateException("This API key is already linked to a FloraLink");
+            throw new ApiKeyAssociationException("This API key is already linked to a FloraLink");
         }
 
         FloraeUser floraeUser = floraeUserCacheService.getFloraeUserById(((FloraeUser) authentication.getPrincipal()).getId());

@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
 import pl.Dayfit.Florae.DTOs.FloraLinkSetNameDTO;
 import pl.Dayfit.Florae.DTOs.Sensors.DailySensorDataDTO;
-import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 import pl.Dayfit.Florae.Services.FloraLinkCacheService;
 import pl.Dayfit.Florae.Services.FloraLinkService;
@@ -28,20 +26,8 @@ import pl.Dayfit.Florae.Services.FloraLinkService;
 @RequiredArgsConstructor
 public class FloraLinkController {
     private final FloraLinkService floraLinkService;
-    private final ApiKeyService apiKeyService;
     private final FloraLinkCacheService floraLinkCacheService;
     private final FloraeUserCacheService floraeUserCacheService;
-
-    @PostMapping("/api/v1/floralink/connect-api")
-    public ResponseEntity<?> connectApi(Authentication authentication)
-    {
-        try {
-            apiKeyService.connectApi(authentication);
-        } catch (IllegalStateException exception) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", exception.getMessage()));
-        }
-        return ResponseEntity.ok(Map.of("message", "API connected successfully."));
-    }
 
     @PostMapping("/api/v1/floralink/upload-daily-report")
     public ResponseEntity<?> uploadReport(@RequestBody @Valid List<DailySensorDataDTO> uploadedData, Authentication authentication)
