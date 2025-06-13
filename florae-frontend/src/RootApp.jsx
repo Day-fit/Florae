@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import axios from "./util/axiosClient.js";
-import { useRefreshToken } from './util/refresh-function.jsx';
+import axios from 'axios';
+import { refreshToken } from './util/refresh-function.js';
 import { UserContext } from './store/user-context.jsx';
 import App from './App.jsx';
 
 export default function RootApp() {
-  const refreshToken = useRefreshToken();
 
   const [user, setUser] = useState({
     isLogged: false,

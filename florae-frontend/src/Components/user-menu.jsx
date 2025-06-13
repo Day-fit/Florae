@@ -4,6 +4,7 @@ import Button from './button.jsx';
 import { FiSettings } from 'react-icons/fi';
 import axios from 'axios';
 import { UserContext } from '../store/user-context.jsx';
+import getCsrfToken from '../util/getCsrfToken.js';
 
 export default function UserMenu({ onClose, open = true }) {
   const { logOut } = use(UserContext);
@@ -11,13 +12,18 @@ export default function UserMenu({ onClose, open = true }) {
 
   async function handleLogout() {
     try {
-      const response = await axios.post(
-        `/auth/logout`,
-        {},
-        {
-          withCredentials: true,
-        }
-      );
+      const csrfToken = await getCsrfToken();
+
+      console.log('CSRF Token:', csrfToken);
+
+      const config = {
+        headers: {
+          'X-XSRF-TOKEN': csrfToken,
+        },
+        withCredentials: true
+      };
+      console.log('Logging out with config:', config);
+      const response = await axios.post(`/auth/logout`, {}, config );
 
       logOut();
       console.log(response.data);

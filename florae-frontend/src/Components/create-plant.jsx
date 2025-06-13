@@ -12,11 +12,10 @@
  */
 
 import React, { useRef, useState } from 'react';
-import {useCsrfToken} from "../util/useCsrfToken.jsx";
 import axios from 'axios';
+import getCsrfToken from '../util/getCsrfToken.js';
 
 export default function CreatePlant({ onClose }) {
-  const csrfToken = useCsrfToken();
   const nameRef = useRef('');
   const fileRef = useRef('');
 
@@ -44,26 +43,36 @@ export default function CreatePlant({ onClose }) {
     });
 
     try {
-      // 1. Create the plant and get its ID from the response
-      const response = await axios.post('/api/v1/add-plant', formData, {
+      const csrfToken = await getCsrfToken();
+
+      console.log('CSRF Token:', csrfToken);
+
+      const config = {
         headers: {
           'Content-Type': 'multipart/form-data',
           'X-XSRF-TOKEN': csrfToken,
         },
-        withCredentials: true,
-      });
+        withCredentials: true
+      };
+      const response = await axios.post('/api/v1/add-plant', formData, config);
 
-      // Let's assume response.data contains the created plant, including its ID
       const plantId = response.data?.id;
 
-      // 2. Fetch the custom name using the plantId
       let customName = '';
       if (plantId) {
         try {
+          const csrfToken = await getCsrfToken();
+
+          const config = {
+            headers: {
+              'X-XSRF-TOKEN': csrfToken,
+            },
+            withCredentials: true
+          };
           const nameRes = await axios.post(
             '/api/v1/plant-set-name',
             { plantId: plantId, name: nameRef.current.value },
-            { withCredentials: true }
+            config
           );
           customName = nameRes.data?.customName || '';
           console.log(customName);

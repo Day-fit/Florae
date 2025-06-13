@@ -1,11 +1,9 @@
-import { useState, use } from 'react';
-import axios from './axiosClient.js';
-import {UserContext} from "../store/user-context.jsx";
+import { useState } from 'react';
+import axios from 'axios';
+import getCsrfToken from './getCsrfToken.js';
 import validateForm, { isEmail } from './form-validiation.js';
 
 export default function useAuthHandlers({ logIn, onClose, setModal }) {
-  const { csrfToken } = use(UserContext)
-
   const [errors, setErrors] = useState({
     email: '',
     username: '',
@@ -39,20 +37,26 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
     const userProp = !isEmail(input) ? { username: input } : { email: input };
 
     try {
+      const csrfToken = await getCsrfToken();
+
+      console.log('CSRF Token:', csrfToken);
+
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-XSRF-TOKEN': csrfToken,
+        },
+      };
+
       await axios.post(
         `/auth/login`,
         {
           ...userProp,
           password: formData.password,
           generateRefreshToken: true,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-XSRF-TOKEN': csrfToken,
-          },
-        }
-      );
+        },config);
+
+
       console.log('User logged in successfully');
       const userRes = await axios.get('/api/v1/get-user-data', { withCredentials: true });
       logIn(userRes.data);
@@ -87,20 +91,25 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
     setIsSubmitting(true);
 
     try {
+      const csrfToken = await getCsrfToken();
+
+      console.log('CSRF Token:', csrfToken);
+
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-XSRF-TOKEN': csrfToken,
+        }
+      };
+
       await axios.post(
         `/auth/register`,
         {
           username: formData.username,
           email: formData.email,
           password: formData.password,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-XSRF-TOKEN': csrfToken,
-          },
-        }
-      );
+        },config);
+
       console.log('User registered successfully');
       await handleSignIn(e);
 
