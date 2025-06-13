@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import pl.Dayfit.Florae.Entities.ApiKey;
 
-import java.time.Instant;
 import java.util.List;
 
 /**
@@ -27,14 +26,13 @@ import java.util.List;
 @Repository
 public interface ApiKeyRepository extends JpaRepository<ApiKey, Integer> {
     ApiKey findByKeyValue(String keyValue);
-
     List<ApiKey> findByShortKey(String shortKey);
 
     @Query("SELECT a FROM ApiKey a" +
-            " WHERE a.createdDate <= :date" +
+            " WHERE a.id = :id" +
             " AND a.isRevoked = FALSE" +
             " AND a.linkedFloraLink IS NULL")
-    List<ApiKey> findUnusedApiKeysBeforeDate(Instant date);
+    List<ApiKey> findUnusedApiKey(Integer id);
 
     @Modifying
     @Query("DELETE FROM ApiKey a WHERE a.isRevoked = TRUE")

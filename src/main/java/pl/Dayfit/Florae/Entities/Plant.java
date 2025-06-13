@@ -40,6 +40,9 @@ public class Plant {
     @OneToOne(mappedBy = "linkedPlant", cascade = CascadeType.ALL)
     private FloraLink linkedFloraLink;
 
+    @OneToOne(mappedBy = "linkedPlant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ApiKey linkedApiKey;
+
     @ManyToOne
     @JoinColumn(nullable = false)
     private FloraeUser linkedUser;
