@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import pl.Dayfit.Florae.Auth.FloraeAuthenticationEntryPoint;
 import pl.Dayfit.Florae.Services.Auth.JWT.JWTService;
 
 import java.io.IOException;
@@ -49,20 +50,25 @@ import java.util.Arrays;
 public class JWTFilter extends OncePerRequestFilter {
     private final JWTService jwtService;
     private final UserDetailsService userDetailsService;
+    private final FloraeAuthenticationEntryPoint floraeAuthenticationEntryPoint;
 
     @Value("${security.protected-paths}")
     private String PROTECTED_PATHS;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException, BadCredentialsException {
-        if (hasValidAccessTokenCookie(request))
-        {
-            handleCookieAccess(request);
-            filterChain.doFilter(request, response);
-            return;
-        }
+        try {
+            if (hasValidAccessTokenCookie(request))
+            {
+                handleCookieAccess(request);
+                filterChain.doFilter(request, response);
+                return;
+            }
 
-        throw new BadCredentialsException("Access token is invalid, or exprired");
+            throw new BadCredentialsException("Access token is invalid, or expired");
+        } catch (AuthenticationException exception) {
+            floraeAuthenticationEntryPoint.commence(request, response, exception);
+        }
     }
 
     private boolean hasValidAccessTokenCookie(HttpServletRequest request) throws AuthenticationException

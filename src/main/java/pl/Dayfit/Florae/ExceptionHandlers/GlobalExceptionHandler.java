@@ -1,6 +1,7 @@
 package pl.Dayfit.Florae.ExceptionHandlers;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,10 +26,11 @@ public class GlobalExceptionHandler {
         return Map.of("error", exception.getMessage());
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleIllegalStateException(IllegalStateException exception) {
-        return Map.of("error", exception.getMessage());
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleHttpMessageNotReadableException()
+    {
+        return Map.of("error", "Invalid request body");
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -40,6 +42,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ApiKeyAssociationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public Map<String, String> handleApiKeyAssociationException(ApiKeyAssociationException exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleOtherExceptions(Exception exception) {
         return Map.of("error", exception.getMessage());
     }
 }
