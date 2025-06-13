@@ -68,7 +68,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
             return;
         }
 
-        if(!apiKeyService.isLinked(apiKey) && !request.getRequestURI().contains("/api/v1/floralink/connect-api"))
+        if(!apiKeyService.isLinked(apiKey) && !request.getRequestURI().contains("/api/v1/connect-api"))
         {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
