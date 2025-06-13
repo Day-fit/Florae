@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
 import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
+import pl.Dayfit.Florae.ExceptionHandlers.GlobalExceptionHandler;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserService;
 
@@ -31,6 +32,7 @@ class FloraeUserControllerTest {
     private MockMvc mockMvc;
     private MockHttpSession session;
     private final ObjectMapper mapper = new ObjectMapper();
+    private final GlobalExceptionHandler exceptionHandler = new GlobalExceptionHandler();
 
     @Mock
     private FloraeUserCacheService cacheService;
@@ -44,7 +46,10 @@ class FloraeUserControllerTest {
     @BeforeEach
     void setUp() {
         session = new MockHttpSession();
-        mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(userController)
+                .setControllerAdvice(exceptionHandler)
+                .build();
     }
 
     private FloraeUserRegisterDTO buildRegisterDto(String u, String e, String p) {
