@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
-import getCsrfToken from './getCsrfToken.js';
-import validateForm, { isEmail } from './form-validiation.js';
+import getCsrfToken from '../util/getCsrfToken.js';
+import validateForm, { isEmail } from '../util/form-validiation.js';
 
 export default function useAuthHandlers({ logIn, onClose, setModal }) {
   const [errors, setErrors] = useState({

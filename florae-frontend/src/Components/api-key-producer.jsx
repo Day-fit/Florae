@@ -1,28 +1,33 @@
-/**
- * ApiKeyProducer is a React component for generating or managing API keys.
- * It provides a form interface for users to create new keys and view them securely.
- *
- * Props:
- * - None (unless component is extended).
- *
- * Behavior:
- * - Presents a form for API key creation and displays new or existing keys to the user.
- *
- * Usage:
- * ```
- * <ApiKeyProducer />
- * ```
- *
- * Note:
- * - Security best practices are encouraged when displaying sensitive keys.
- * - This component does not handle device connectivity logic.
- */
-
 import { useState, useEffect } from 'react';
 import Button from './button.jsx';
-import { useTimer, formatTime } from '../util/timer.jsx';
+import { useTimer, formatTime } from './timer.jsx';
 import { FiCopy, FiCheck } from 'react-icons/fi';
 import axios from 'axios';
+
+/**
+ * ApiKeyProducer is a secure UI component that allows a user to:
+ * - Select a plant from a fetched list
+ * - Generate an API key for that plant
+ * - View the key for a limited time (with auto-hide timer)
+ * - Copy the key to clipboard
+ *
+ * This component is intended for guest users and shows contextual content via props.
+ *
+ * @component
+ * @example
+ * return (
+ *   <ApiKeyProducer
+ *     guestContent={{
+ *       title: 'Welcome Guest!',
+ *       paragraph: 'You can use this key to interact with our API for testing purposes.',
+ *     }}
+ *   />
+ * )
+ *
+ * @param {Object} props - Component props
+ * @param {{ title: string, paragraph: string }} props.guestContent - Contains a title and a paragraph shown above and below the key display area
+ * @returns {JSX.Element} Rendered component
+ */
 
 export default function ApiKeyProducer({ guestContent }) {
   const [showed, setShowed] = useState(false);

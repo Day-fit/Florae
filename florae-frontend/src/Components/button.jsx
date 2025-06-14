@@ -1,16 +1,22 @@
 /**
- * Button is a reusable React component for rendering customizable buttons.
- * Supports styling, click handling, and optional states (like loading or disabled).
+ * Button is a reusable component that renders a styled button element.
+ * It supports optional icons and all standard button props via rest parameters.
  *
- * Props:
- * - children (React.Node): Content to show inside the button.
- * - onClick (function): Handler for button click events.
- * - ...otherProps: Any additional HTML button attributes.
+ * @component
+ * @example
+ * // Simple usage
+ * <Button buttonText="Submit" onClick={handleSubmit} />
  *
- * Usage:
- * ```
- * <Button onClick={handleSubmit}>Submit</Button>
- * ```
+ * // With an icon
+ * <Button buttonText="Copy" icon={<FiCopy />} onClick={handleCopy} />
+ *
+ * @param {Object} props - Component props
+ * @param {string} props.buttonText - Text to display inside the button
+ * @param {JSX.Element} [props.icon] - Optional icon element displayed before the text
+ * @param {Object} [props.className] - Additional class names for styling
+ * @param {React.ButtonHTMLAttributes<HTMLButtonElement>} props - Inherits all native button attributes (e.g. onClick, type)
+ *
+ * @returns {JSX.Element} A customizable button with optional icon
  */
 
 export default function Button({ buttonText, icon, ...props }) {

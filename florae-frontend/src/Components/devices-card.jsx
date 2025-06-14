@@ -17,7 +17,6 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { reqUnits, reqMeta } from '../util/snippets-values.jsx';
 
-// Your getRequirementRows function
 function getRequirementRows(requirements) {
   if (!requirements) return [];
 
@@ -205,4 +204,3 @@ export default function DevicesCard({ id }) {
     </div>
   );
 }
-/*missclick*/

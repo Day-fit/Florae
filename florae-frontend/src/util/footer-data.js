@@ -1,4 +1,4 @@
-export const footer = [
+export const footerData = [
   {
     name: 'Home',
     subpoints: [
