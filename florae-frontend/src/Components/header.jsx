@@ -1,13 +1,3 @@
-/**
- * Header is a layout component for rendering the application’s main
- * navigation bar, often including branding, navigation links, and user info.
- *
- * Usage:
- * ```
- * <Header />
- * ```
- */
-
 import { use, useState } from 'react';
 import Button from './button.jsx';
 import AuthModal from './auth-modal.jsx';
@@ -18,6 +8,7 @@ import { navButtons } from '../util/data.js';
 import { GiHamburgerMenu } from 'react-icons/gi';
 import smallerLogo from '../assets/smaller-logo.png';
 import { RxCross1 } from 'react-icons/rx';
+import { UiContext } from '../store/ui-context.jsx';
 
 /**
  * Header Component
@@ -47,10 +38,11 @@ import { RxCross1 } from 'react-icons/rx';
  *  - Ensure responsive and keyboard-friendly navigation.
  */
 
-export default function Header({ setModal, modal, changePage }) {
+export default function Header() {
+  const { setModal, modal, setView } = use(UiContext);
   const { isLogged } = use(UserContext);
   const [menuOpen, setMenuOpen] = useState(false);
-  
+
   function handleAuth(action) {
     setModal(action);
     setMenuOpen(false);
@@ -68,34 +60,31 @@ export default function Header({ setModal, modal, changePage }) {
   return (
     <header className="flex flex-row border-b-stone-200 border-b-2 font-bold">
       <div className="flex flex-row md:items-center w-full ml-5 ">
-        {/* Left: Logo/brand image */}
         <img
           src={smallerLogo}
           alt=""
           className="mt-5 mb-5 h-10 w-10"
-          onClick={() => changePage('home')}
+          onClick={() => setView('home')}
         />
       </div>
       <div className="hidden md:flex flex flex-row items-center justify-center w-full gap-6">
-        {/* Center: Main navigation/actions on PC */}
         {navButtons.map(({ name, buttonText }) => (
           <Button
             key={name}
             buttonText={buttonText}
-            onClick={() => changePage(name)}
+            onClick={() => setView(name)}
             className="mt-5 mb-5  text-green-700 hover:text-green-900 active:text-green-900 rounded transition-colors duration-150"
           />
         ))}
       </div>
       {menuOpen && (
         <div className="flex flex-col items-center gap-4 pb-4 md:hidden">
-          {/* Center: Main navigation/actions and utility/profile buttons on mobile */}
           {navButtons.map(({ name, buttonText }) => (
             <Button
               key={name}
               buttonText={buttonText}
               onClick={() => {
-                changePage(name);
+                setView(name);
                 setMenuOpen(false);
               }}
               className="text-green-700 hover:text-green-900"
@@ -119,12 +108,12 @@ export default function Header({ setModal, modal, changePage }) {
             <>
               <Button
                 buttonText="Settings"
-                onClick={() => changePage('settings')}
+                onClick={() => setView('settings')}
                 className="text-green-700 hover:text-green-900"
               />
               <Button
                 buttonText="Log out"
-                onClick={() => changePage('logout')}
+                onClick={() => setView('logout')}
                 className="text-green-700 hover:text-green-900"
               />
             </>
@@ -132,7 +121,6 @@ export default function Header({ setModal, modal, changePage }) {
         </div>
       )}
       <div className="hidden md:flex flex-row items-center w-full justify-end mr-5">
-        {/* Right: Utility/profile buttons on PC */}
         {isLogged ? (
           <Button
             icon={<GiHamburgerMenu className="w-6 h-6 mt-5 mb-5" onClick={handleUserMenu} />}
@@ -153,7 +141,7 @@ export default function Header({ setModal, modal, changePage }) {
         )}
         {modal && !isLogged && (
           <PortalComponent element="#auth-modal">
-            <AuthModal register={modal === 'register'} setModal={setModal} onClose={handleClose} />
+            <AuthModal register={modal === 'register'} onClose={handleClose} />
           </PortalComponent>
         )}
         {modal && isLogged && (
@@ -163,7 +151,6 @@ export default function Header({ setModal, modal, changePage }) {
         )}
       </div>
       <div className="flex w-full justify-end items-start mt-5 mr-5 md:hidden">
-        {/* Right: Button to open and close navigational menu on mobile */}
         <button onClick={() => setMenuOpen(!menuOpen)}>
           {menuOpen ? <RxCross1 className="w-6 h-6" /> : <GiHamburgerMenu className="w-6 h-6" />}
         </button>
@@ -171,13 +158,3 @@ export default function Header({ setModal, modal, changePage }) {
     </header>
   );
 }
-
-/*
-Next Steps / ToDos:
-- Implement responsive header with hamburger 'menu' for mobile.
-- Add a logo or relevant image to the left section.
-- Integrate login/register forms as modals (potentially with React portals).
-- Decide between useState (local) or useContext (global) for authentication state management, adapting as app grows.
-- Add appropriate labels/props for all Button components.
-- Prioritize accessibility improvements.
-*/

@@ -1,100 +1,28 @@
 /**
- * CreatePlant is a React component for adding a new plant.
- * It presents a form for users to input plant details and handles the submit logic.
+ * CreatePlant component renders a modal form to create a new plant entry with a name and photos.
  *
- * Props:
- * - onCreate (function): Callback for when plant creation succeeds.
+ * @component
  *
- * Usage:
+ * @param {Object} props
+ * @param {Function} props.onClose - Callback function called to close the modal.
  *
- * <CreatePlant onCreate={refreshPlantsList} />
- * ```
+ * @returns {JSX.Element} The CreatePlant modal form component.
+ *
+ * @example
+ * <CreatePlant onClose={() => setShowCreatePlant(false)} />
+ *
+ * @description
+ * - Allows user to input a plant name and select 1 to 5 photos.
+ * - Validates photo count before submission.
+ * - Sends photos and name to server endpoints with CSRF protection.
+ * - Shows errors if validation or submission fails.
+ * - Disables submit button while submitting.
  */
 
-import React, { useRef, useState } from 'react';
-import axios from 'axios';
-import getCsrfToken from '../util/getCsrfToken.js';
+import useCreatePlant from "./useCreatePlant.jsx";
 
 export default function CreatePlant({ onClose }) {
-  const nameRef = useRef('');
-  const fileRef = useRef('');
-
-  const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const files = fileRef.current.files;
-
-    setErrors({});
-    if (files.length < 1 || files.length > 5) {
-      setErrors((prev) => ({
-        ...prev,
-        file: 'You must select between 1 and 5 photos.',
-      }));
-      return;
-    }
-
-    setSubmitting(true);
-    const formData = new FormData();
-    Array.from(files).forEach((file) => {
-      formData.append('photos', file);
-    });
-
-    try {
-      const csrfToken = await getCsrfToken();
-
-      console.log('CSRF Token:', csrfToken);
-
-      const response = await axios.post('/api/v1/add-plant', formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'X-XSRF-TOKEN': csrfToken,
-          },
-          withCredentials: true
-        });
-
-      const plantId = response.data?.id;
-
-      let customName = '';
-      if (plantId) {
-        try {
-          const csrfToken = await getCsrfToken();
-
-          const config = {
-            headers: {
-              'X-XSRF-TOKEN': csrfToken,
-            },
-            withCredentials: true
-          };
-          const nameRes = await axios.post(
-            '/api/v1/plant-set-name',
-            { plantId: plantId, name: nameRef.current.value },
-            config
-          );
-          customName = nameRes.data?.customName || '';
-          console.log(customName);
-        } catch (e) {
-          console.log(e);
-          customName = '';
-          console.log(customName);
-        }
-      }
-      onClose();
-
-    } catch (error) {
-      setErrors((prev) => ({
-        ...prev,
-        submit: 'Failed to create plant. Try again later.',
-      }));
-      console.error(error);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
+  const { nameRef, fileRef, errors, submitting, handleSubmit } = useCreatePlant({ onClose });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">

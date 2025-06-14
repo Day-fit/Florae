@@ -30,7 +30,7 @@ export default function DevicesPage({ setModal }) {
     const fetchDevices = async () => {
       try {
         const response = await axios.get('/api/v1/get-floralinks', { withCredentials: true });
-        console.log(response.data)
+        console.log(response.data);
         setDevices(response.data);
       } catch (error) {
         console.error('Failed to fetch devices:', error);
@@ -49,12 +49,8 @@ export default function DevicesPage({ setModal }) {
             <ApiKeyProducer guestContent={devicesGuestContent} />
           </div>
           <div className="flex flex-wrap justify-center gap-8 mt-4 mb-4">
-            {devices.map(device => (
-              <DevicesCard
-                key={device.floraLinkId}
-                name={device.name}
-                id={device.floraLinkId}
-              />
+            {devices.map((device) => (
+              <DevicesCard key={device.floraLinkId} name={device.name} id={device.floraLinkId} />
             ))}
           </div>
           <div className="h-8"></div>

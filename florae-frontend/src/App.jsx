@@ -2,6 +2,7 @@ import Header from './Components/header.jsx';
 import MainSection from './Components/main-section.jsx';
 import { useState } from 'react';
 import Footer from './Components/footer.jsx';
+import { UiContext } from './store/ui-context.jsx';
 
 function App() {
   const [modal, setModal] = useState(null);
@@ -12,16 +13,23 @@ function App() {
     if (modal) setModal(null);
   }
 
+  const UIContextValue = {
+    modal,
+    setModal,
+    viewMode,
+    setView: (action) => handleChangePage(action),
+  };
+
   return (
-    <>
+    <UiContext value={UIContextValue}>
       <div className="sticky bg-white top-0 z-50">
-        <Header modal={modal} setModal={setModal} changePage={handleChangePage} />
+        <Header />
       </div>
-      <MainSection viewMode={viewMode} setModal={setModal} />
+      <MainSection />
       <div className="sticky bg-white z-49">
-        <Footer/>
+        <Footer />
       </div>
-    </>
+    </UiContext>
   );
 }
 
