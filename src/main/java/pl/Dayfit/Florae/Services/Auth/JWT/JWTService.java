@@ -4,17 +4,16 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import pl.Dayfit.Florae.Auth.FloraeKeyLocator;
 import pl.Dayfit.Florae.Entities.BlacklistJwtToken;
 import pl.Dayfit.Florae.Repositories.JPA.BlacklistJwtTokenRepository;
 
-import javax.crypto.SecretKey;
-import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -38,9 +37,8 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class JWTService {
     private final BlacklistJwtTokenRepository blackListTokenRepository;
-
-    @Value("${jwt.secret}")
-    private String secretKey;
+    private final FloraeKeyLocator floraeKeyLocator;
+    private final SecretKeysService secretKeysService;
 
     /**
      * Generates a JWT token for the given username.
@@ -51,19 +49,25 @@ public class JWTService {
      * @return A JWT token for the given username.
      */
     public String generateAccessToken(String username, int duration){
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("keyId", secretKeysService.getCurrentSecretKeyIndex());
+
         return Jwts.builder()
+                .header()
+                .add(headers)
+                .and()
                 .claims()
                 .subject(username)
-                .issuedAt(new Date(System.currentTimeMillis()))
+                .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000L * 60 * duration))
                 .and()
-                .signWith(getSecretKey())
+                .signWith(secretKeysService.getCurrentSecretKey())
                 .compact();
     }
 
     /**
      * Generates a JWT refresh token for the given username and saves it to the database.
-     * The token is signed with a secret key.
+     * The token is signed with a current secret key.
      *
      * @param username The username to be included in the token claims.
      * @param duration The duration of the token validity in days.
@@ -71,21 +75,20 @@ public class JWTService {
     public String generateRefreshToken(String username, int duration)
     {
         Date expirationDate = new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * duration);
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("keyId", secretKeysService.getCurrentSecretKeyIndex());
 
         return Jwts.builder()
+                .header()
+                .add(headers)
+                .and()
                 .claims()
                 .subject(username)
-                .issuedAt(new Date(System.currentTimeMillis()))
+                .issuedAt(new Date())
                 .expiration(expirationDate)
                 .and()
-                .signWith(getSecretKey())
+                .signWith(secretKeysService.getCurrentSecretKey())
                 .compact();
-    }
-
-    private SecretKey getSecretKey()
-    {
-        byte[] keyBytes = Base64.getDecoder().decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public void revokeToken(String token)
@@ -127,13 +130,14 @@ public class JWTService {
     }
 
     private Claims extractAllClaims(String token) throws ExpiredJwtException {
-        try{
+        try {
             return Jwts.parser()
-                    .verifyWith(getSecretKey())
+                    .keyLocator(floraeKeyLocator)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-        } catch (JwtException exception) {
+
+        } catch (JwtException e) {
             return null;
         }
     }
@@ -144,7 +148,7 @@ public class JWTService {
      * @param token The JWT access token to be validated.
      * @param username The username associated with the token.
      *
-     * @return {@code true} if the token is valid, owner is correct and not expired or blacklisted, {@code false} otherwise.
+     * @return {@code true} if the token is valid, an owner is correct and not expired or blacklisted, {@code false} otherwise.
      */
     public boolean validateAccessToken(String token, String username) {
         String extractUsername = extractUsername(token);
