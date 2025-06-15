@@ -33,7 +33,7 @@ public class SecretKeysService {
             currentSecretKeyIndex.set(index);
         } catch (NoSuchAlgorithmException exception) {
             log.error("A runtime error occurred while generating a secret key for index {}: {}", index, exception.getMessage());
-            System.exit(1);
+            throw new RuntimeException("Failed to generate secret key for index " + index, exception);
         }
     }
 
