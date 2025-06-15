@@ -12,7 +12,7 @@ import pl.Dayfit.Florae.Events.JWTRotationEvent;
 @RequiredArgsConstructor
 public class JWTRotationService {
     private final ApplicationEventPublisher eventPublisher;
-    private static final int SECRET_KEY_ROTATION_INTERVAL = 1000 * 60 * 60 * 24; //One day
+    private static final long SECRET_KEY_ROTATION_INTERVAL = TimeUnit.DAYS.toMillis(1); //One day
 
     @Scheduled(fixedRate = SECRET_KEY_ROTATION_INTERVAL)
     private void handleJwtSecretKeyRotation()
