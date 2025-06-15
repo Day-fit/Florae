@@ -2,7 +2,12 @@ import rainyNature from '../assets/rainyNature.mp4';
 import HomePage from './home-page.jsx';
 import PlantsPage from './plants-page.jsx';
 import DevicesPage from './devices-page.jsx';
-export default function MainSection({ setModal, viewMode }) {
+import { use } from 'react';
+import { UiContext } from '../store/ui-context.jsx';
+
+export default function MainSection() {
+  const { setModal, viewMode, setView } = use(UiContext);
+
   return (
     <div className="relative min-h-screen w-full">
       {/* Video Background */}
@@ -26,7 +31,7 @@ export default function MainSection({ setModal, viewMode }) {
       <div className="fixed inset-0 bg-black/40 z-10 pointer-events-none"></div>
       {/* Content Overlay */}
       <div className="relative z-20">
-        {viewMode === 'home' && <HomePage setModal={setModal} />}
+        {viewMode === 'home' && <HomePage setModal={setModal} viewMode={setView} />}
         {viewMode === 'plants' && <PlantsPage setModal={setModal} />}
         {viewMode === 'devices' && <DevicesPage setModal={setModal} />}
       </div>

@@ -16,13 +16,16 @@ export default function UserMenu({ onClose, open = true }) {
 
       console.log('CSRF Token:', csrfToken);
 
-      const response = await axios.post(`/auth/logout`, {},
+      const response = await axios.post(
+        `/auth/logout`,
+        {},
         {
           headers: {
             'X-XSRF-TOKEN': csrfToken,
           },
-          withCredentials: true
-        });
+          withCredentials: true,
+        }
+      );
 
       logOut();
       console.log(response.data);

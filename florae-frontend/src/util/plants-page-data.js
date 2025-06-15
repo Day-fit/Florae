@@ -6,5 +6,6 @@ export const plantsVisitorContent = {
 };
 export const plantsGuestContent = {
   title: 'Plants',
-  paragraph: 'Place to hold data about your owned plants here you can check minimal, maximal and optimal requiremnts for each plant. Also you can check name of your plant here',
+  paragraph:
+    'Place to hold data about your owned plants here you can check minimal, maximal and optimal requiremnts for each plant. Also you can check name of your plant here',
 };
