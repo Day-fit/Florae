@@ -1,6 +1,7 @@
 package pl.Dayfit.Florae.Services.Auth.JWT;
 
 import io.jsonwebtoken.security.Keys;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -14,12 +15,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Service responsible for managing the SecretKeys
+ */
 @Slf4j
 @Service
 public class SecretKeysService {
     private final AtomicInteger currentSecretKeyIndex = new AtomicInteger(-1);
-    private final ConcurrentMap<Integer, String> secretKeys = new ConcurrentHashMap<>();
+    private @Setter ConcurrentMap<Integer, String> secretKeys = new ConcurrentHashMap<>();
 
+    /**
+     * Generates a new SecretKey when the `JWTRotationEvent` is being published
+     * @param event the `JWTRotationEvent` event instance
+     */
     @EventListener
     @SuppressWarnings("unused")
     private void handleSecretKeyGeneration(JWTRotationEvent event)
@@ -56,5 +64,10 @@ public class SecretKeysService {
     public SecretKey getCurrentSecret(Integer index) {
         byte[] keyBytes = Base64.getDecoder().decode(secretKeys.get(index));
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public void setCurrentSecretKeyIndex(int index)
+    {
+        currentSecretKeyIndex.set(index);
     }
 }

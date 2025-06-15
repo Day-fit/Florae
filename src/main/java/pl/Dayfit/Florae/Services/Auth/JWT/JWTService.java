@@ -24,6 +24,7 @@ import java.util.function.Function;
 
  * <p>Annotations:
  * <ul>
+ *     <li>{@code @Slf4j}: Enables logging in class</li>
  *     <li>{@code @Service}: Indicates that this class is a Spring service component.</li>
  * </ul>
 

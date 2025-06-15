@@ -11,13 +11,11 @@ import org.junit.jupiter.api.Test;
 import pl.Dayfit.Florae.Services.Auth.JWT.JWTService;
 import pl.Dayfit.Florae.Services.Auth.JWT.SecretKeysService;
 
-import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -27,22 +25,15 @@ class JWTServiceTest {
     private final SecretKeysService secretKeysService = new SecretKeysService();
 
     @BeforeEach
-    void setUp() throws Exception{
+    void setUp() {
         BlacklistJwtTokenRepository mockRepository = mock(BlacklistJwtTokenRepository.class);
         FloraeKeyLocator floraeKeyLocator = mock(FloraeKeyLocator.class);
-
-        Field secretKeys = secretKeysService.getClass().getDeclaredField("secretKeys");
 
         //Test usage only
         String validBase64Secret = "R6c5DHhqgLHzaeePvpMVxG8NlayobaFrZXc03LSwXAw=";
         ConcurrentMap<Integer, String> newSecretKeys = new ConcurrentHashMap<>(Map.of(0, validBase64Secret));
-        secretKeys.setAccessible(true);
-        secretKeys.set(secretKeysService, newSecretKeys);
-
-        Field currentSecretKeyIndex = secretKeysService.getClass().getDeclaredField("currentSecretKeyIndex");
-        currentSecretKeyIndex.setAccessible(true);
-        AtomicInteger index = new AtomicInteger(0);
-        currentSecretKeyIndex.set(secretKeysService, index);
+        secretKeysService.setSecretKeys(newSecretKeys);
+        secretKeysService.setCurrentSecretKeyIndex(0);
 
         Mockito.when(floraeKeyLocator.locate(Mockito.any(Header.class)))
                 .thenAnswer(invocation -> secretKeysService.getCurrentSecretKey());
