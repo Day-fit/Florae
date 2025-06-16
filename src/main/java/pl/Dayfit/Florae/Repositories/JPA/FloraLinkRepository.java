@@ -7,6 +7,7 @@ import pl.Dayfit.Florae.Entities.FloraLink;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository interface for managing {@code FloraLink} entities.
@@ -26,7 +27,8 @@ import java.util.List;
  */
 @Repository
 public interface FloraLinkRepository extends JpaRepository<FloraLink, Integer> {
-    List<FloraLink> findByOwner(FloraeUser owner);
-    @Query("SELECT f.linkedFloraLink FROM ApiKey f WHERE f.keyValue = :apiKey")
-    FloraLink findByApiKey(String apiKey);
+    @Query("SELECT a.linkedFloraLink FROM ApiKey a WHERE a.floraeUser.id = :ownerId")
+    Optional<List<FloraLink>> findByOwnerId(Integer ownerId);
+    @Query("SELECT a.floraeUser FROM ApiKey a WHERE a.linkedFloraLink = :floraLink")
+    Optional<FloraeUser> findOwnerByFloraLink(FloraLink floraLink);
 }

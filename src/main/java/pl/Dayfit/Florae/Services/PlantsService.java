@@ -127,7 +127,7 @@ public class PlantsService {
             return null;
         }
 
-        FloraLink floraLink = plant.getLinkedFloraLink();
+        FloraLink floraLink = plant.getLinkedApiKey().getLinkedFloraLink();
         FloraLinkResponseDTO floraLinkResponseDTO = null;
 
         if(floraLink != null)

@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationCandidate;
 import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Entities.FloraLink;
-import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.Exceptions.ApiKeyAssociationException;
 import pl.Dayfit.Florae.Helpers.SpEL.ApiKeysHelper;
@@ -57,27 +56,37 @@ public class ApiKeyService {
     public String generateApiKey(String username, Plant plant) throws ApiKeyAssociationException {
         String generatedUUID = UUID.randomUUID().toString();
         String encryptedUUID = DigestUtils.sha256Hex(generatedUUID);
+        ApiKey linkedApiKey = plant.getLinkedApiKey();
 
-        if (plant.getLinkedFloraLink() != null)
+        if (linkedApiKey == null)
+        {
+            linkedApiKey = new ApiKey();
+            linkedApiKey.setKeyValue(encryptedUUID);
+            linkedApiKey.setLinkedPlant(plant);
+            linkedApiKey.setShortKey(apiKeyHelper.generateShortKey(generatedUUID));
+            linkedApiKey.setFloraeUser(floraeUserCacheService.getFloraeUser(username));
+            linkedApiKey.setCreatedDate(Instant.now());
+
+            cacheService.save(linkedApiKey);
+        }
+
+        else if (linkedApiKey.getLinkedFloraLink() != null)
         {
             throw new ApiKeyAssociationException("Plant is already linked to a FloraLink");
         }
 
-        ApiKey linkedApiKey = plant.getLinkedApiKey();
-
-        if (linkedApiKey != null)
+        else
         {
-            cacheService.delete(linkedApiKey);
+            linkedApiKey.setCreatedDate(Instant.now());
+            linkedApiKey.setKeyValue(encryptedUUID);
+            linkedApiKey.setShortKey(apiKeyHelper.generateShortKey(generatedUUID));
+            linkedApiKey.setIsRevoked(false);
+            cacheService.saveAndFlush(linkedApiKey);
+
+            return generatedUUID;
         }
 
-        ApiKey apiKey = new ApiKey();
-        apiKey.setKeyValue(encryptedUUID);
-        apiKey.setLinkedPlant(plant);
-        apiKey.setShortKey(apiKeyHelper.generateShortKey(generatedUUID));
-        apiKey.setFloraeUser(floraeUserCacheService.getFloraeUser(username));
-        apiKey.setCreatedDate(Instant.now());
-        cacheService.save(apiKey);
-
+        final ApiKey apiKey = linkedApiKey;
         scheduler.schedule(() -> cacheService.revokeUnusedApiKeys(apiKey.getId()), 5, TimeUnit.MINUTES);
 
         return generatedUUID;
@@ -129,13 +138,9 @@ public class ApiKeyService {
             throw new ApiKeyAssociationException("This API key is already linked to a FloraLink");
         }
 
-        FloraeUser floraeUser = floraeUserCacheService.getFloraeUserById(((FloraeUser) authentication.getPrincipal()).getId());
-
         FloraLink floraLink = new FloraLink();
         floraLink.setId(null);
-        floraLink.setLinkedPlant(apiKey.getLinkedPlant());
         floraLink.setName("FloraLink");
-        floraLink.setOwner(floraeUser);
 
         apiKey.setLinkedFloraLink(floraLinkCacheService.saveFloraLink(floraLink));
 

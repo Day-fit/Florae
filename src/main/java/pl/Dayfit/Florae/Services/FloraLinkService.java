@@ -49,7 +49,7 @@ public class FloraLinkService {
             report = new DailyReportData();
             report.setSensorDataList(new ArrayList<>());
             report.setFloraLink(cacheService.getFloraLink(floraLinkId));
-            report.setFloraeUser(floraeUserCacheService.getFloraeUser(((ApiKey) auth.getCredentials()).getLinkedFloraLink().getOwner().getUsername()));
+            report.setFloraeUser(floraeUserCacheService.getFloraeUser(((FloraeUser) auth.getPrincipal()).getUsername()));
         }
 
         report.getSensorDataList().clear();
@@ -111,7 +111,7 @@ public class FloraLinkService {
         FloraeUser floraeUser = floraeUserCacheService.getFloraeUser(username);
         FloraLink floraLink = cacheService.getFloraLink(dto.getId());
 
-        if (!floraLink.getOwner().equals(floraeUser))
+        if (!cacheService.getOwner(floraLink).equals(floraeUser))
         {
             throw new AccessDeniedException("User is not the owner of this FloraLink! Cannot change name!");
         }

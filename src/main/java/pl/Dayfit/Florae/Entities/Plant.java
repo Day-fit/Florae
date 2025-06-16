@@ -37,9 +37,6 @@ public class Plant {
     @Column(nullable = false, length = 50)
     private String pid;
 
-    @OneToOne(mappedBy = "linkedPlant", cascade = CascadeType.ALL)
-    private FloraLink linkedFloraLink;
-
     @OneToOne(mappedBy = "linkedPlant", cascade = CascadeType.ALL, orphanRemoval = true)
     private ApiKey linkedApiKey;
 
