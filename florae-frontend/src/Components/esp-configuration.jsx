@@ -9,18 +9,13 @@ export default function EspConfiguration({ onClose }) {
 
   const connectToEsp = async (ssid, password) => {
     try {
-      console.log(1)
       const device = await navigator.bluetooth.requestDevice({
         filters: [{ namePrefix: 'ESP32' }],
       });
-      console.log(1)
 
-      // Brakuje definicji ESP_SERVICE_UUID i sendWiFiCredentials, dodaj je jeśli są potrzebne
       const server = await device.gatt.connect(ESP_SERVICE_UUID);
-      console.log(1)
 
       await sendWiFiCredentials(service, ssid, password);
-      console.log(1)
 
     } catch (error) {
       console.error("Error connecting to ESP:", error);
@@ -42,9 +37,9 @@ export default function EspConfiguration({ onClose }) {
         <div className="mb-4">
           <Input
             ref={ssidRef}
-            label="Sieć Wi-Fi"
+            label="WiFi SSID"
             type="text"
-            placeholder="Wpisz nazwę sieci Wi-Fi"
+            placeholder="Type your WiFi name..."
             required
             className={`${baseInputClass} ${noErrorClass}`}
           />
@@ -52,9 +47,9 @@ export default function EspConfiguration({ onClose }) {
         <div className="mb-4">
           <Input
             ref={passwordRef}
-            label="Hasło do Wi-Fi"
+            label="WiFi Password"
             type="password"
-            placeholder="Wpisz hasło do Wi-Fi"
+            placeholder="Type your WiFi Password..."
             required
             className={`${baseInputClass} ${noErrorClass}`}
             autoComplete="current-password"
