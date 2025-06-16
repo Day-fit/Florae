@@ -11,6 +11,9 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: Deploy frontend
+      url: florae.dayfit.pl
 
     defaults:
       run:

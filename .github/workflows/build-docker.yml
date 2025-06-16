@@ -11,9 +11,11 @@ on:
       - 'pom.xml'
       - 'dockerfiles/spring/Dockerfile'
 jobs:
-  build:
+  deploy-backend:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment:
+      name: Deploy backend
     steps:
       - name: Login To GHCR
         uses: docker/login-action@v3
