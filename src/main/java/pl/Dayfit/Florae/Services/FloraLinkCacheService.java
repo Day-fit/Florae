@@ -68,7 +68,7 @@ public class FloraLinkCacheService {
     }
 
     @Transactional(readOnly = true)
-    @CacheEvict(value = "owner", key = "#floraLink.id")
+    @Cacheable(value = "owner", key = "#floraLink.id")
     public FloraeUser getOwner(FloraLink floraLink) {
         return floraLinkRepository.findOwnerByFloraLink(floraLink).orElse(null);
     }

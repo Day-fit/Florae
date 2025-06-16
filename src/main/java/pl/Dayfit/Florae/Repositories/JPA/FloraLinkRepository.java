@@ -29,6 +29,6 @@ import java.util.Optional;
 public interface FloraLinkRepository extends JpaRepository<FloraLink, Integer> {
     @Query("SELECT a.linkedFloraLink FROM ApiKey a WHERE a.floraeUser.id = :ownerId")
     Optional<List<FloraLink>> findByOwnerId(Integer ownerId);
-    @Query("SELECT a FROM ApiKey a WHERE a.linkedFloraLink = :floraLink")
+    @Query("SELECT a.floraeUser FROM ApiKey a WHERE a.linkedFloraLink = :floraLink")
     Optional<FloraeUser> findOwnerByFloraLink(FloraLink floraLink);
 }
