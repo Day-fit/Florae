@@ -11,8 +11,9 @@ services:
       - 'ALLOWED_ORIGINS_PATTERNS=${ALLOWED_ORIGINS_PATTERNS}'
       - 'PLANT_BOOK_API=${PLANT_BOOK_API}'
       - 'PLANT_NET_API=${PLANT_NET_API}'
-      - 'JWT_SECRET_KEY=${JWT_SECRET_KEY}'
       - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
+      - 'MQTT_USERNAME=${MQTT_USERNAME}'
+      - 'MQTT_PASSWORD=${MQTT_PASSWORD}'
     profiles:
       - prod
 
@@ -83,5 +84,24 @@ services:
       - '127.0.0.1:6379:6379'
     environment:
       - 'REDIS_PASSWORD=secret'
+    profiles:
+      - dev
+
+  mqtt-broker:
+    image: 'ghcr.io/day-fit/florae-mqtt-broker:latest'
+    environment:
+      - 'USER=${MQTT_USERNAME}'
+      - 'PASS=${MQTT_PASSWORD}'
+    volumes:
+      - './mosquitto/config:/mosquitto/config'
+    ports:
+      - '1883:1883'
+    profiles:
+      - prod
+
+  mqtt-broker-dev:
+    image: 'ghcr.io/day-fit/florae-mqtt-broker:latest'
+    ports:
+      - '1883:1883'
     profiles:
       - dev
