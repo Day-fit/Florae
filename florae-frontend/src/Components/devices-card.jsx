@@ -17,7 +17,6 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { reqUnits, reqMeta } from '../util/snippets-values.jsx';
 
-// Your getRequirementRows function
 function getRequirementRows(requirements) {
   if (!requirements) return [];
 
@@ -75,7 +74,6 @@ export default function DevicesCard({ id }) {
 
     const fetchData = async () => {
       try {
-        console.log('y');
         const response = await axios.get('/api/v1/floralink/get-all-current-data');
         if (isMounted) setSensorData(response.data);
       } catch (error) {
@@ -205,4 +203,3 @@ export default function DevicesCard({ id }) {
     </div>
   );
 }
-/*missclick*/

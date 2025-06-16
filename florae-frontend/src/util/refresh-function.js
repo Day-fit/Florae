@@ -27,10 +27,10 @@ export async function refreshToken() {
       }
     );
     console.log('Token refresh successful');
-    console.log(response.data);
     return response.data;
+  // eslint-disable-next-line no-unused-vars
   } catch (error) {
-    console.log('Token refresh failed:', error);
+    console.log('Token refresh failed:');
     return null;
   }
 }

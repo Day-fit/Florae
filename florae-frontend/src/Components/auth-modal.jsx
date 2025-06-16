@@ -1,30 +1,9 @@
-/**
- * AuthModal is a React component that presents authentication forms
- * (login and registration) within a modal dialog.
- *
- * Props:
- * - onClose (function): Callback when modal is dismissed.
- * - logIn (function): Callback after successful login.
- *
- * Behavior:
- * - Provides forms with validation and feedback.
- * - Communicates user authentication state to the parent.
- *
- * Usage:
- * ```
- * <AuthModal onClose={handleClose} logIn={handleLogin} />
- * ```
- *
- * Note:
- * - Focuses on frontend authentication workflow only.
- * - Does not manage device connections or external integrations.
- */
 
 import Input from './input.jsx';
 import Button from './button.jsx';
 import { UserContext } from '../store/user-context.jsx';
 import AnimatedModal from './animated-modal.jsx';
-import useAuthHandlers from '../util/logging-functions.jsx';
+import useAuthHandlers from './logging-functions.jsx';
 import { registerFields, loginFields } from '../util/data.js';
 import rainyNature from '../assets/rainyNature.mp4';
 import { use } from 'react';
@@ -36,6 +15,25 @@ import { UiContext } from '../store/ui-context.jsx';
  *
  * - [ ] Optional: Add remember-me and forgot-password functionality
  *
+ */
+
+/**
+ * AuthModal provides an authentication interface for users to log in or register.
+ * It includes animated transitions, field validation, and contextual switching between login and registration forms.
+ *
+ * @component
+ * @example
+ * return (
+ *   <AuthModal
+ *     register={true}
+ *     onClose={() => console.log('Modal closed')}
+ *   />
+ * )
+ *
+ * @param {Object} props - Component props
+ * @param {boolean} props.register - Determines whether to show the registration or login form
+ * @param {Function} props.onClose - Callback to close the modal
+ * @returns {JSX.Element} A modal for user authentication (sign-in or sign-up)
  */
 
 export default function AuthModal({ register, onClose }) {
