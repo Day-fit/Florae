@@ -32,7 +32,6 @@ export default function useCreatePlant({ onClose }) {
         try {
             const csrfToken = await getCsrfToken();
 
-            console.log('CSRF Token:', csrfToken);
 
             const response = await axios.post('/api/v1/add-plant', formData, {
                 headers: {
@@ -44,11 +43,11 @@ export default function useCreatePlant({ onClose }) {
 
             const plantId = response.data?.id;
 
-            let customName = '';
             if (plantId) {
                 try {
                     const csrfToken = await getCsrfToken();
-                    const nameRes = await axios.post(
+
+                    axios.post(
                         '/api/v1/plant-set-name',
                         { plantId: plantId, name: nameRef.current.value },
                         {
@@ -58,21 +57,18 @@ export default function useCreatePlant({ onClose }) {
                             withCredentials: true,
                         }
                     );
-                    customName = nameRes.data?.customName || '';
-                    console.log(customName);
+                // eslint-disable-next-line no-unused-vars
                 } catch (e) {
-                    console.log(e);
-                    customName = '';
-                    console.log(customName);
+                    console.error('Failed to set plant name:');
                 }
             }
             onClose();
-        } catch (error) {
+        // eslint-disable-next-line no-unused-vars
+        } catch (err) {
             setErrors((prev) => ({
                 ...prev,
                 submit: 'Failed to create plant. Try again later.',
             }));
-            console.error(error);
         } finally {
             setSubmitting(false);
         }

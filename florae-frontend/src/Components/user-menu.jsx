@@ -14,9 +14,8 @@ export default function UserMenu({ onClose, open = true }) {
     try {
       const csrfToken = await getCsrfToken();
 
-      console.log('CSRF Token:', csrfToken);
 
-      const response = await axios.post(
+      await axios.post(
         `/auth/logout`,
         {},
         {
@@ -28,7 +27,6 @@ export default function UserMenu({ onClose, open = true }) {
       );
 
       logOut();
-      console.log(response.data);
       onClose();
     } catch (err) {
       console.error('Logout failed', err);

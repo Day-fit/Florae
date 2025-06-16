@@ -58,7 +58,6 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
         config
       );
 
-      console.log('User logged in successfully');
       const userRes = await axios.get('/api/v1/get-user-data', { withCredentials: true });
       logIn(userRes.data);
 
@@ -67,9 +66,8 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
       setModal(null);
       setIsSubmitting(false);
       onClose();
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
-      console.log(err);
-
       setErrors((prev) => ({
         ...prev,
         email: 'Wrong email or username',
@@ -112,14 +110,12 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
         config
       );
 
-      console.log('User registered successfully');
       await handleSignIn(e);
 
       setIsSubmitting(false);
       onClose();
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
-      console.log(err);
-
       setErrors((prev) => ({
         ...prev,
         email: 'Wrong email or username',

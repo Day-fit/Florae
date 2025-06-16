@@ -30,7 +30,6 @@ export default function DevicesPage({ setModal }) {
     const fetchDevices = async () => {
       try {
         const response = await axios.get('/api/v1/get-floralinks', { withCredentials: true });
-        console.log(response.data);
         setDevices(response.data);
       } catch (error) {
         console.error('Failed to fetch devices:', error);

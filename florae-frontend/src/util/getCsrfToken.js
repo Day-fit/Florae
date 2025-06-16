@@ -7,10 +7,9 @@ export default async function getCsrfToken() {
       headers: { 'Content-Type': 'application/json' },
       withCredentials: true,
     });
-    console.log(response.data.token);
     return response.data.token;
+  // eslint-disable-next-line no-unused-vars
   } catch (e) {
-    console.log(e);
     return null;
   }
 }

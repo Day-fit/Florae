@@ -74,7 +74,6 @@ export default function DevicesCard({ id }) {
 
     const fetchData = async () => {
       try {
-        console.log('y');
         const response = await axios.get('/api/v1/floralink/get-all-current-data');
         if (isMounted) setSensorData(response.data);
       } catch (error) {
