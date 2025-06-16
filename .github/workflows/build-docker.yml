@@ -8,40 +8,31 @@ on:
   push:
     branches:
       - main
+
 jobs:
-  login-ghcr:
+  deploy-spring:
     runs-on: ubuntu-latest
+    environment:
+      name: production
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
       - name: Login To GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
           driver: docker-container
 
-  deploy-spring:
-    runs-on: ubuntu-latest
-    needs: login-ghcr
-    environment:
-      name: production
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-  
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-  
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver: docker-container
-  
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
@@ -50,24 +41,30 @@ jobs:
           platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: ghcr.io/day-fit/florae:latest
-  
+
   deploy-mqtt-broker:
     runs-on: ubuntu-latest
-    needs: login-ghcr
     environment:
       name: production
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
-  
+
+      - name: Login To GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-  
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
           driver: docker-container
-  
+
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
