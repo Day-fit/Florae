@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build and Push Docker Images
 
 permissions:
   contents: read
@@ -6,13 +6,10 @@ permissions:
 
 on:
   push:
-    paths:
-      - 'src/**'
-      - 'pom.xml'
-      - 'dockerfiles/spring/Dockerfile'
+    branches:
+      - main
 jobs:
-  build:
-    if: github.ref == 'refs/heads/main'
+  login-ghcr:
     runs-on: ubuntu-latest
     steps:
       - name: Login To GHCR
@@ -25,6 +22,13 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+  deploy-spring:
+    runs-on: ubuntu-latest
+    needs: login-ghcr
+    environment:
+      name: production
+    steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
       - name: Build and push
@@ -35,3 +39,20 @@ jobs:
           platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: 'ghcr.io/day-fit/florae:latest'
+
+  deploy-mqtt-broker:
+    runs-on: ubuntu-latest
+    needs: login-ghcr
+    environment:
+      name: production
+    steps:
+      - name: Chechout Repository
+        uses: actions/checkout@v3
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./dockerfiles/mosquitto/Dockerfile
+          platforms: linux/amd64,linux/arm64/v8
+          push: true
+          tags: 'ghcr.io/day-fit/florae-mqtt-broker:latest'
