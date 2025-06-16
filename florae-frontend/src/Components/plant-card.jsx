@@ -94,10 +94,10 @@ export default function PlantCard({ primaryPhoto, speciesName, requirements, gue
                       {reqMeta[realIdx].icon}
                     </div>
                     <div className="flex items-center justify-center">
-                  <span className="text-3xl font-bold">
-                    {req.value}
-                    {reqUnits[realIdx]}
-                  </span>
+                      <span className="text-3xl font-bold">
+                        {req.value}
+                        {reqUnits[realIdx]}
+                      </span>
                     </div>
                     <div className={`pb-3 pt-2 text-xs font-medium ${reqMeta[realIdx].labelColor}`}>
                       {req.label}
@@ -110,6 +110,5 @@ export default function PlantCard({ primaryPhoto, speciesName, requirements, gue
         })()}
       </div>
     </div>
-
   );
 }

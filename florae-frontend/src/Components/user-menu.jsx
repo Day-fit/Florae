@@ -14,18 +14,19 @@ export default function UserMenu({ onClose, open = true }) {
     try {
       const csrfToken = await getCsrfToken();
 
-      console.log('CSRF Token:', csrfToken);
 
-      const response = await axios.post(`/auth/logout`, {},
+      await axios.post(
+        `/auth/logout`,
+        {},
         {
           headers: {
             'X-XSRF-TOKEN': csrfToken,
           },
-          withCredentials: true
-        });
+          withCredentials: true,
+        }
+      );
 
       logOut();
-      console.log(response.data);
       onClose();
     } catch (err) {
       console.error('Logout failed', err);

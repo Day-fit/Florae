@@ -5,7 +5,6 @@ import { UserContext } from './store/user-context.jsx';
 import App from './App.jsx';
 
 export default function RootApp() {
-
   const [user, setUser] = useState({
     isLogged: false,
     userData: {},
@@ -16,7 +15,6 @@ export default function RootApp() {
       isLogged: true,
       userData: userData || {},
     });
-
   }
 
   function handleLogout() {
@@ -36,7 +34,6 @@ export default function RootApp() {
         }
         const userRes = await axios.get('/api/v1/get-user-data', { withCredentials: true });
         handleLogIn(userRes.data);
-
       } catch (error) {
         console.error('Auth initialization failed:', error);
         handleLogout();
@@ -49,23 +46,26 @@ export default function RootApp() {
   useEffect(() => {
     if (!user.isLogged) return;
 
-    const interval = setInterval(async () => {
-      try {
-        const data = await refreshToken();
-        if (data) {
-          console.log('Token refreshed');
-        } else {
-          console.warn('Token refresh: No data, may be session expired.');
+    const interval = setInterval(
+      async () => {
+        try {
+          const data = await refreshToken();
+          if (data) {
+            console.log('Token refreshed');
+          } else {
+            console.warn('Token refresh: No data, may be session expired.');
+          }
+        } catch (error) {
+          console.error('Token refresh failed:', error);
         }
-      } catch (error) {
-        console.error('Token refresh failed:', error);
-      }
-    }, 1000 * 60 * 13.5);
+      },
+      1000 * 60 * 13.5
+    );
 
     return () => clearInterval(interval);
   }, [user.isLogged]);
 
-  const contextValue = {
+  const UserContextValue = {
     isLogged: user.isLogged,
     userData: user.userData,
     logIn: handleLogIn,
@@ -73,8 +73,8 @@ export default function RootApp() {
   };
 
   return (
-      <UserContext.Provider value={contextValue}>
-        <App />
-      </UserContext.Provider>
+    <UserContext value={UserContextValue}>
+      <App />
+    </UserContext>
   );
 }

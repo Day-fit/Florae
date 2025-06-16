@@ -1,32 +1,24 @@
-/**
- * AnimatedModal is a React component that provides a simple modal
- * container with an entrance animation. When the component mounts,
- * it smoothly transitions from a slightly scaled-down, transparent
- * state to its full size and opacity.
- *
- * Props:
- * - children (React.Node): Elements to render inside the modal.
- *
- * Behavior:
- * - On mount, the modal animates from scale-95 and opacity-0 to
- *   scale-100 and opacity-100 using Tailwind CSS utility classes.
- * - The "transition-all" and "duration-300" classes control the
- *   smoothness and speed of the animation.
- *
- * Usage:
- * ```
-  * <AnimatedModal>
-    *   <div>Your modal content here.</div>
-    * </AnimatedModal>
-  * ```
- *
- * Note:
- * - This modal does not include logic for closing or backdrop
- *   management. It is intended for use as a wrapper for animated
- *   modal presentations.
- */
-
 import { useState, useEffect } from 'react';
+
+/**
+ * AnimatedModal is a simple wrapper component that fades and scales
+ * its children in when the component mounts. It uses Tailwind CSS transitions.
+ *
+ * @component
+ * @example
+ * return (
+ *   <AnimatedModal>
+ *     <div className="bg-white p-4 rounded-lg shadow-md">
+ *       <h2>Hello!</h2>
+ *       <p>This modal animates in on mount.</p>
+ *     </div>
+ *   </AnimatedModal>
+ * )
+ *
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - The content to display inside the modal
+ * @returns {JSX.Element} Animated modal wrapper
+ */
 
 export default function AnimatedModal({ children }) {
   const [show, setShow] = useState(false);

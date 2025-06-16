@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
-import getCsrfToken from './getCsrfToken.js';
-import validateForm, { isEmail } from './form-validiation.js';
+import getCsrfToken from '../util/getCsrfToken.js';
+import validateForm, { isEmail } from '../util/form-validiation.js';
 
 export default function useAuthHandlers({ logIn, onClose, setModal }) {
   const [errors, setErrors] = useState({
@@ -12,7 +12,7 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
   const [formData, setFormData] = useState({
     email: '',
     username: '',
-    password: ''
+    password: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,10 +54,10 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
           ...userProp,
           password: formData.password,
           generateRefreshToken: true,
-        },config);
+        },
+        config
+      );
 
-
-      console.log('User logged in successfully');
       const userRes = await axios.get('/api/v1/get-user-data', { withCredentials: true });
       logIn(userRes.data);
 
@@ -66,10 +66,8 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
       setModal(null);
       setIsSubmitting(false);
       onClose();
-
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
-      console.log(err)
-
       setErrors((prev) => ({
         ...prev,
         email: 'Wrong email or username',
@@ -99,7 +97,7 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
         headers: {
           'Content-Type': 'application/json',
           'X-XSRF-TOKEN': csrfToken,
-        }
+        },
       };
 
       await axios.post(
@@ -108,17 +106,16 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
           username: formData.username,
           email: formData.email,
           password: formData.password,
-        },config);
+        },
+        config
+      );
 
-      console.log('User registered successfully');
       await handleSignIn(e);
 
       setIsSubmitting(false);
       onClose();
-
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
-      console.log(err)
-
       setErrors((prev) => ({
         ...prev,
         email: 'Wrong email or username',
