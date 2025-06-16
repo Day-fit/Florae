@@ -55,7 +55,6 @@ public class ApiKeyFilter extends OncePerRequestFilter {
     private final AuthenticationManager authenticationManager;
 
     @Override
-    @SuppressWarnings("NullableProblems")
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         String apiKey = request.getHeader(API_KEY_HEADER).trim();
@@ -69,7 +68,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
             return;
         }
 
-        if(!apiKeyService.isLinked(apiKey) && !request.getRequestURI().contains("/api/v1/floralink/connect-api"))
+        if(!apiKeyService.isLinked(apiKey) && !request.getRequestURI().contains("/api/v1/connect-api"))
         {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
@@ -86,8 +85,12 @@ public class ApiKeyFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected boolean shouldNotFilter(@NonNull HttpServletRequest request)
-    {
-        return request.getHeader(API_KEY_HEADER) == null || (!request.getRequestURI().contains("/api/v1/floralink/upload") && !request.getRequestURI().contains("/api/v1/floralink/connect-api"));
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+        String apiKey = request.getHeader(API_KEY_HEADER);
+        boolean isApiKeyPresent = apiKey != null;
+        boolean isMatchingPath = request.getRequestURI().contains("/api/v1/floralink/upload")
+                || request.getRequestURI().contains("/api/v1/connect-api");
+
+        return !(isApiKeyPresent && isMatchingPath);
     }
 }
