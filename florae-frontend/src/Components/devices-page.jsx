@@ -17,51 +17,72 @@ import { use, useState, useEffect } from 'react';
 import { UserContext } from '../store/user-context.jsx';
 import InformationComponent from './information-component.jsx';
 import { devicesGuestContent, devicesVisitorContent } from '../util/devices-page-data.js';
-import ApiKeyProducer from './api-key-producer.jsx';
 import axios from 'axios';
 import DevicesCard from './devices-card.jsx';
+import EspConfiguration from './esp-configuration.jsx';
+import Button from './button.jsx';
 
 export default function DevicesPage({ setModal }) {
   const { isLogged } = use(UserContext);
   const [devices, setDevices] = useState([]);
+  const [showEspModal, setShowEspModal] = useState(false);
 
   useEffect(() => {
-    console.log('useEffect ran');
+    if (showEspModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showEspModal]);
+
+  useEffect(() => {
     const fetchDevices = async () => {
       try {
         const response = await axios.get('/api/v1/get-floralinks', { withCredentials: true });
         setDevices(response.data);
+      // eslint-disable-next-line no-unused-vars
       } catch (error) {
-        console.error('Failed to fetch devices:', error);
-        setDevices([]);
+        console.error('Failed to fetch devices');
       }
     };
 
     fetchDevices();
   }, [isLogged]);
 
+  function handleEspConfig() {
+    setShowEspModal(true);
+  }
+
+  function closeEspModal() {
+    setShowEspModal(false);
+  }
   return (
     <>
-      {isLogged && (
-        <div className="bg-gray-50 m-[4vw] rounded-lg shadow-lg min-h-250">
-          <div>
-            <ApiKeyProducer guestContent={devicesGuestContent} />
-          </div>
-          <div className="flex flex-wrap justify-center gap-8 mt-4 mb-4">
-            {devices.map((device) => (
-              <DevicesCard key={device.floraLinkId} name={device.name} id={device.floraLinkId} />
-            ))}
-          </div>
-          <div className="h-8"></div>
-        </div>
-      )}
-      {!isLogged && (
-        <div>
-          <InformationComponent
-            setModal={setModal}
-            showFor="not-logged-in"
-            visitorContent={devicesVisitorContent}
-          />
+      <div className="bg-gray-50 m-[4vw] rounded-lg shadow-lg min-h-250">
+        <InformationComponent
+          setModal={setModal}
+          handleTask={ handleEspConfig }
+          guestContent={ devicesGuestContent }
+          visitorContent={ devicesVisitorContent }
+          showFor="both"
+        />
+        {isLogged && (
+          <>
+            <div className="flex flex-wrap justify-center gap-8 mt-4 mb-4">
+              {devices.map((device) => (
+                <DevicesCard key={device.floraLinkId} name={device.name} id={device.floraLinkId} />
+              ))}
+            </div>
+            <div className="h-8"></div>
+          </>
+        )}
+      </div>
+      {showEspModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30">
+          <EspConfiguration onClose={closeEspModal} />
         </div>
       )}
     </>

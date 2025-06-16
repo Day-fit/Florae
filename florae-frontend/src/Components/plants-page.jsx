@@ -40,17 +40,16 @@ export default function PlantsPage({ setModal }) {
   }, [isLogged]);
 
   return (
-    <>
+    <div className="bg-gray-50 m-[4vw] rounded-lg shadow-lg min-h-250">
+      <InformationComponent
+        setModal={setModal}
+        withOutButton={isLogged}
+        showFor={isLogged ? "logged-in" : "not-logged-in"}
+        guestContent={isLogged ? plantsGuestContent : undefined}
+        visitorContent={!isLogged ? plantsVisitorContent : undefined}
+      />
       {isLogged && (
-        <div className="bg-gray-50 m-[4vw] rounded-lg shadow-lg min-h-250">
-          {/*if I have some time, I will add a search bar*/}
-          <div>
-            <InformationComponent
-              withOutButton
-              showFor="logged-in"
-              guestContent={plantsGuestContent}
-            />
-          </div>
+        <>
           <div className="flex justify-end mr-10 mb-5">
             <Button
               buttonText="Add plant"
@@ -75,17 +74,8 @@ export default function PlantsPage({ setModal }) {
             <div className="flex justify-center font-bold text-xl">No plants found.</div>
           )}
           <div className="h-2 mt-15" />
-        </div>
+        </>
       )}
-      {!isLogged && (
-        <div>
-          <InformationComponent
-            setModal={setModal}
-            showFor="not-logged-in"
-            visitorContent={plantsVisitorContent}
-          />
-        </div>
-      )}
-    </>
+    </div>
   );
 }

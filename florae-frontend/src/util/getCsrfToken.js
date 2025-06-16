@@ -1,7 +1,6 @@
 import axios from './axios-client.js';
 
 export default async function getCsrfToken() {
-  console.log('Getting token...');
   try {
     const response = await axios.get('/csrf', {
       headers: { 'Content-Type': 'application/json' },
