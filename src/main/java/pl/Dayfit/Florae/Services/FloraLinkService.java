@@ -36,6 +36,7 @@ public class FloraLinkService {
     private final FloraLinkCacheService cacheService;
     private final DailyReportDataCacheService dailyReportDataCacheService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final FloraLinkCacheService floraLinkCacheService;
 
     @Transactional
     public void handleReportUpload(List<DailySensorDataDTO> uploadedData, Authentication auth) {
@@ -49,7 +50,7 @@ public class FloraLinkService {
             report = new DailyReportData();
             report.setSensorDataList(new ArrayList<>());
             report.setFloraLink(cacheService.getFloraLink(floraLinkId));
-            report.setFloraeUser(floraeUserCacheService.getFloraeUser(((ApiKey) auth.getCredentials()).getLinkedFloraLink().getOwner().getUsername()));
+            report.setFloraeUser(floraeUserCacheService.getFloraeUser(((FloraeUser) auth.getPrincipal()).getUsername()));
         }
 
         report.getSensorDataList().clear();
@@ -111,7 +112,7 @@ public class FloraLinkService {
         FloraeUser floraeUser = floraeUserCacheService.getFloraeUser(username);
         FloraLink floraLink = cacheService.getFloraLink(dto.getId());
 
-        if (!floraLink.getOwner().equals(floraeUser))
+        if (!floraLinkCacheService.getOwner(floraLink).equals(floraeUser))
         {
             throw new AccessDeniedException("User is not the owner of this FloraLink! Cannot change name!");
         }

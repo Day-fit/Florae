@@ -6,10 +6,12 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.Dayfit.Florae.Entities.ApiKey;
+import pl.Dayfit.Florae.Events.ApiKeyRevokedEvent;
 import pl.Dayfit.Florae.Exceptions.ApiKeyAssociationException;
 import pl.Dayfit.Florae.Helpers.SpEL.ApiKeysHelper;
 import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
@@ -32,6 +34,7 @@ import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
 @Service
 @RequiredArgsConstructor
 public class ApiKeyCacheService {
+    private final ApplicationEventPublisher eventPublisher;
     private final ApiKeyRepository apiKeyRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ApiKeysHelper helper;
@@ -61,7 +64,11 @@ public class ApiKeyCacheService {
         }
 
         apiKey.setIsRevoked(true);
+        apiKey.setLinkedFloraLink(null);
+
         apiKeyRepository.save(apiKey);
+
+        eventPublisher.publishEvent(new ApiKeyRevokedEvent(apiKey));
     }
 
     @Transactional(readOnly = true)
@@ -87,6 +94,13 @@ public class ApiKeyCacheService {
             redisTemplate.delete(apiKey.getShortKey());
             apiKeyRepository.save(apiKey);
         });
+    }
+
+    @Transactional
+    @CachePut(value = "api-keys", key = "#apiKey.shortKey")
+    public void saveAndFlush(ApiKey apiKey)
+    {
+        apiKeyRepository.saveAndFlush(apiKey);
     }
 
     @Transactional
