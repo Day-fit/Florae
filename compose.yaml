@@ -102,6 +102,11 @@ services:
       - '1883:1883'
     profiles:
       - prod
+    healthcheck:
+      test: [ "CMD-SHELL", "mosquitto_sub -h localhost -p 1883 -u {MQTT_USERNAME} -P {MQTT_PASSWORD} -t 'healthcheck' -C 1 -W 5 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mqtt-broker-dev:
     image: 'ghcr.io/day-fit/florae-mqtt-broker:latest'
@@ -109,3 +114,8 @@ services:
       - '1883:1883'
     profiles:
       - dev
+    healthcheck:
+      test: [ "CMD-SHELL", "mosquitto_sub -h localhost -p 1883 -u mqttuser -P mqttpass -t 'healthcheck' -C 1 -W 5 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
