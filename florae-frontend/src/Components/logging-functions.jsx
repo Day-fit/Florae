@@ -39,8 +39,6 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
     try {
       const csrfToken = await getCsrfToken();
 
-      console.log('CSRF Token:', csrfToken);
-
       const config = {
         headers: {
           'Content-Type': 'application/json',
@@ -90,8 +88,6 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
 
     try {
       const csrfToken = await getCsrfToken();
-
-      console.log('CSRF Token:', csrfToken);
 
       const config = {
         headers: {

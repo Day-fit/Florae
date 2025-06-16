@@ -6,8 +6,9 @@ import AnimatedModal from './animated-modal.jsx';
 import useAuthHandlers from './logging-functions.jsx';
 import { registerFields, loginFields } from '../util/data.js';
 import rainyNature from '../assets/rainyNature.mp4';
-import { use } from 'react';
+import { use, useEffect } from 'react';
 import { UiContext } from '../store/ui-context.jsx';
+import CloseButton, { errorClass, noErrorClass, baseInputClass } from './close-button.jsx';
 /**
  * =====================================
  *        TODOs FOR AUTH COMPONENTS
@@ -36,8 +37,9 @@ import { UiContext } from '../store/ui-context.jsx';
  * @returns {JSX.Element} A modal for user authentication (sign-in or sign-up)
  */
 
+
 export default function AuthModal({ register, onClose }) {
-  const { setModal } = use(UiContext);
+  const { setModal, modal } = use(UiContext);
   const { logIn } = use(UserContext);
 
   const {
@@ -50,19 +52,16 @@ export default function AuthModal({ register, onClose }) {
     clearFormData,
   } = useAuthHandlers({ logIn, onClose, setModal });
 
-  const errorClass =
-    'border-red-500 bg-red-50 text-red-700 placeholder-red-400 focus:border-red-600';
-  const noErrorClass =
-    'bg-white border-stone-200 text-stone-700 placeholder-stone-400 focus:border-green-600';
-  const baseInputClass = 'block w-full border rounded-lg px-4 py-2 focus:outline-none  transition';
-
-  const closeButton = (
-    <Button
-      buttonText="Cancel"
-      className="w-full text-green-700 bg-gray-200 text-center max-w-md rounded-lg pt-3 pb-3 px-15"
-      onClick={onClose}
-    />
-  );
+  useEffect(() => {
+    if (modal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [modal]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
@@ -111,11 +110,6 @@ export default function AuthModal({ register, onClose }) {
                   buttonText="Already have an account? Sign in"
                 />
               </div>
-              <div className="w-full flex flex-col items-center mb-4 mt-4">
-                {errors.form && (
-                  <p className="text-red-600 text-lg font-bold text-center">{errors.form}</p>
-                )}
-              </div>
               <div className="flex flex-row justify-between mt-4 w-full">
                 <div className="flex justify-start">
                   <Button
@@ -124,7 +118,9 @@ export default function AuthModal({ register, onClose }) {
                     className="max-w-lg text-white bg-green-700 text-center rounded-lg pt-2 pb-2 px-20"
                   />
                 </div>
-                <div className="flex justify-end">{closeButton}</div>
+                <div className="flex justify-end">
+                  <CloseButton onClick={onClose}/>
+                </div>
               </div>
             </form>
           ) : (
@@ -160,11 +156,6 @@ export default function AuthModal({ register, onClose }) {
                   buttonText="Don't have an account? Sign up"
                 />
               </div>
-              <div className="w-full flex flex-col items-center mb-4 mt-4">
-                {errors.form && (
-                  <p className="text-red-600 text-lg font-bold text-center">{errors.form}</p>
-                )}
-              </div>
               <div className="flex flex-row justify-between mt-4 w-full">
                 <div className="flex justify-start">
                   <Button
@@ -173,7 +164,9 @@ export default function AuthModal({ register, onClose }) {
                     className="max-w-lg text-white bg-green-700 text-center rounded-lg pt-2 pb-2 px-20"
                   />
                 </div>
-                <div className="flex justify-end">{closeButton}</div>
+                <div className="flex justify-end">
+                  <CloseButton onClick={onClose}/>
+                </div>
               </div>
             </form>
           )}

@@ -60,7 +60,6 @@ export default async function validateForm(values, mode = 'signIn') {
         .required('Password is required'),
     });
   } else {
-    console.log({ ...values, password: '***' }); // Sanitize sensitive data
     schema = Yup.object().shape({
       username: Yup.string().test(
         'email-or-username',
