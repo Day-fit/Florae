@@ -4,6 +4,7 @@ services:
     container_name: spring
     depends_on:
       - postgres
+      - mqtt-broker
     environment:
       - 'DB_NAME=${DB_NAME}'
       - 'POSTGRES_PASSWORD=${POSTGRES_PASSWORD}'
@@ -41,7 +42,9 @@ services:
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
     restart: 'always'
-    command: '--interval 30 spring'
+    command:
+      - '--interval 30 spring'
+      - '--interval 30 mqtt-broker'
     profiles:
       - prod
 
@@ -89,6 +92,7 @@ services:
 
   mqtt-broker:
     image: 'ghcr.io/day-fit/florae-mqtt-broker:latest'
+    container_name: mqtt-broker
     environment:
       - 'USER=${MQTT_USERNAME}'
       - 'PASS=${MQTT_PASSWORD}'
