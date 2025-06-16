@@ -4,7 +4,6 @@ services:
     container_name: spring
     depends_on:
       - postgres
-      - mqtt-broker
     environment:
       - 'DB_NAME=${DB_NAME}'
       - 'POSTGRES_PASSWORD=${POSTGRES_PASSWORD}'
@@ -12,9 +11,8 @@ services:
       - 'ALLOWED_ORIGINS_PATTERNS=${ALLOWED_ORIGINS_PATTERNS}'
       - 'PLANT_BOOK_API=${PLANT_BOOK_API}'
       - 'PLANT_NET_API=${PLANT_NET_API}'
+      - 'JWT_SECRET_KEY=${JWT_SECRET_KEY}'
       - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
-      - 'MQTT_USERNAME=${MQTT_USERNAME}'
-      - 'MQTT_PASSWORD=${MQTT_PASSWORD}'
     profiles:
       - prod
 
@@ -42,9 +40,7 @@ services:
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
     restart: 'always'
-    command:
-      - '--interval 30 spring'
-      - '--interval 30 mqtt-broker'
+    command: '--interval 30 spring'
     profiles:
       - prod
 
@@ -87,25 +83,5 @@ services:
       - '127.0.0.1:6379:6379'
     environment:
       - 'REDIS_PASSWORD=secret'
-    profiles:
-      - dev
-
-  mqtt-broker:
-    image: 'ghcr.io/day-fit/florae-mqtt-broker:latest'
-    container_name: mqtt-broker
-    environment:
-      - 'USER=${MQTT_USERNAME}'
-      - 'PASS=${MQTT_PASSWORD}'
-    volumes:
-      - './mosquitto/config:/mosquitto/config'
-    ports:
-      - '1883:1883'
-    profiles:
-      - prod
-
-  mqtt-broker-dev:
-    image: 'ghcr.io/day-fit/florae-mqtt-broker:latest'
-    ports:
-      - '1883:1883'
     profiles:
       - dev
