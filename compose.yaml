@@ -11,7 +11,6 @@ services:
       - 'ALLOWED_ORIGINS_PATTERNS=${ALLOWED_ORIGINS_PATTERNS}'
       - 'PLANT_BOOK_API=${PLANT_BOOK_API}'
       - 'PLANT_NET_API=${PLANT_NET_API}'
-      - 'JWT_SECRET_KEY=${JWT_SECRET_KEY}'
       - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
     profiles:
       - prod
