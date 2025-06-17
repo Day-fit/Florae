@@ -106,9 +106,9 @@ export default function EspConfiguration({ onClose }) {
         <div className="mb-4">
           <Input
             ref={ssidRef}
-            label="Sieć Wi-Fi"
+            label="WIFI_SSID"
             type="text"
-            placeholder="Wpisz nazwę sieci Wi-Fi"
+            placeholder="Type your WiFi name..."
             required
             className={`${baseInputClass} ${noErrorClass}`}
             autoComplete="off"
@@ -117,9 +117,9 @@ export default function EspConfiguration({ onClose }) {
         <div className="mb-4">
           <Input
             ref={passwordRef}
-            label="Hasło do Wi-Fi"
+            label="WIFI_PASS"
             type="password"
-            placeholder="Wpisz hasło do Wi-Fi"
+            placeholder="Type your WiFi password..."
             required
             className={`${baseInputClass} ${noErrorClass}`}
             autoComplete="off"          />
