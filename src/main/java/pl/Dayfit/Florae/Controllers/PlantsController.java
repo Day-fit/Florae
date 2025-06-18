@@ -8,6 +8,7 @@ import java.util.concurrent.Callable;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
 import pl.Dayfit.Florae.DTOs.PlantResponseDTO;
 import pl.Dayfit.Florae.DTOs.PlantSetNameDTO;
+import pl.Dayfit.Florae.DTOs.PlantSetVolumeDTO;
 import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.Services.PlantCacheService;
 import pl.Dayfit.Florae.Services.PlantsService;
@@ -55,7 +57,35 @@ class PlantsController {
         };
     }
 
-    @PostMapping("/api/v1/plant-set-name")
+    /**
+     * Set the plant's pot volume
+     * @param plantSetVolumeDTO DTO that contains plant id and new volume in liters
+     * @param user User's authentication principal
+     * @return Response entity with adequate response code
+     */
+    @PostMapping("/api/v1/set-pot-volume")
+    public ResponseEntity<Map<String, String>> setPotVolume(@RequestBody PlantSetVolumeDTO plantSetVolumeDTO, @AuthenticationPrincipal UserPrincipal user)
+    {
+        if (plantSetVolumeDTO == null)
+        {
+            throw new IllegalArgumentException("Incorrect request body");
+        }
+
+        if (plantSetVolumeDTO.getPlantId() == null || plantSetVolumeDTO.getVolume() == null)
+        {
+            throw new IllegalArgumentException("Id or volume is missing");
+        }
+
+        if (plantsService.isNotOwner(plantSetVolumeDTO.getPlantId(), user.getUsername()))
+        {
+            throw new AccessDeniedException("You are not owner of this plant");
+        }
+
+        plantsService.setPlantVolume(plantSetVolumeDTO);
+        return ResponseEntity.ok(Map.of("message", "Volume set successfully"));
+    }
+
+    @PutMapping("/api/v1/plant-set-name")
     public ResponseEntity<?> setPlantName(@RequestBody PlantSetNameDTO plantSetNameDTO, @AuthenticationPrincipal UserPrincipal user)
     {
         if (plantSetNameDTO == null)

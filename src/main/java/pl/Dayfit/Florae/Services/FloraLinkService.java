@@ -8,15 +8,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.Dayfit.Florae.DTOs.FloraLinkSetNameDTO;
-import pl.Dayfit.Florae.DTOs.Sensors.CurrentSensorDataDTO;
-import pl.Dayfit.Florae.DTOs.Sensors.CurrentSensorResponseDataDTO;
-import pl.Dayfit.Florae.DTOs.Sensors.DailySensorDataDTO;
-import pl.Dayfit.Florae.DTOs.Sensors.DailySensorResponseDataDTO;
+import pl.Dayfit.Florae.DTOs.Sensors.*;
 import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Entities.FloraLink;
 import pl.Dayfit.Florae.Entities.FloraeUser;
+import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.Entities.Sensors.DailySensorData;
 import pl.Dayfit.Florae.Entities.Sensors.DailyReportData;
+import pl.Dayfit.Florae.Enums.CommandType;
 import pl.Dayfit.Florae.Events.CurrentDataUploadedEvent;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 
@@ -36,6 +35,8 @@ public class FloraLinkService {
     private final FloraLinkCacheService cacheService;
     private final DailyReportDataCacheService dailyReportDataCacheService;
     private final RedisTemplate<String, Object> redisTemplate;
+
+    private static final String SOIL_MOISTURE_TYPE_NAME = "soil_moisture";
 
     @Transactional
     public void handleReportUpload(List<DailySensorDataDTO> uploadedData, Authentication auth) {
@@ -75,7 +76,9 @@ public class FloraLinkService {
     public void handleCurrentDataUpload(CurrentDataUploadedEvent event)
     {
         Authentication authentication = event.authentication();
+        Plant linkedPlant = event.plant();
         List<CurrentSensorDataDTO> uploadedData = event.data();
+        CurrentSensorDataDTO soilMoistureData = uploadedData.stream().filter(data -> data.getType().equals(SOIL_MOISTURE_TYPE_NAME)).findFirst().orElse(null);
 
         String ownerUsername = ((FloraeUser) authentication
                 .getPrincipal())
@@ -86,6 +89,19 @@ public class FloraLinkService {
                 .getLinkedFloraLink()
                 .getId()
                 .toString();
+
+        if (soilMoistureData != null && linkedPlant.getRequirements().getMinSoilMoist() > soilMoistureData.getValue())
+        {
+            redisTemplate.convertAndSend("floralink." + floraLinkId, new CommandMessage(
+                    CommandType.WATERING,
+                    calculateWaterToAdd(
+                            linkedPlant.getPotVolume(),
+                            ((double) linkedPlant.getRequirements().getMinSoilMoist() + linkedPlant.getRequirements().getMaxSoilMoist()) / 2,
+                            soilMoistureData.getValue()
+                    )
+                )
+            );
+        }
 
         CurrentSensorResponseDataDTO mappedDTO = new CurrentSensorResponseDataDTO(Integer.valueOf(floraLinkId), uploadedData);
         redisTemplate.convertAndSend("user." + ownerUsername, mappedDTO);
@@ -119,5 +135,18 @@ public class FloraLinkService {
         floraLink.setName(dto.getName());
 
         cacheService.saveFloraLink(floraLink);
+    }
+
+    /**
+     * Calculates how much water needs to be added to achieve the recommended moisture value
+     * @param capacityLiters the pot capacity in liters
+     * @param recommendedMoisture the recommended soil moisture value in percents
+     * @param currentMoisture the current soil moisture value in percents
+     * @return the water volume that needs to be added (in milliliters)
+     */
+    private double calculateWaterToAdd(double capacityLiters, double recommendedMoisture, double currentMoisture) {
+        if (recommendedMoisture <= currentMoisture) return 0;
+        double neededHumidity = recommendedMoisture - currentMoisture;
+        return capacityLiters * neededHumidity * 10; //(neededHumidity / 100.0) * 1000.0 = 10 * neededHumidity
     }
 }

@@ -42,7 +42,7 @@ public class FloraLinkController {
         return ResponseEntity.ok(floraLinkService.getDailyDataReport((userPrincipal).getUsername()));
     }
 
-    @PostMapping("/api/v1/floralink/set-name")
+    @PutMapping("/api/v1/floralink/set-name")
     public ResponseEntity<?> setFloraLinkName(@RequestBody FloraLinkSetNameDTO floraLinkSetNameDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) throws AccessDeniedException
     {
         if (floraLinkSetNameDTO == null || floraLinkSetNameDTO.getId() == null || floraLinkSetNameDTO.getName() == null || floraLinkSetNameDTO.getName().isBlank())
