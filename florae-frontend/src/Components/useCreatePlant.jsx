@@ -9,6 +9,21 @@ export default function useCreatePlant({ onClose }) {
     const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
 
+    const setPlantName = async (plantId, name) => {
+      console.log('Setting plant name:', plantId, name);
+      const csrfToken = await getCsrfToken();
+      await axios.put(
+        '/api/v1/plant-set-name',
+        { plantId, name },
+        {
+          headers: {
+            'X-XSRF-TOKEN': csrfToken,
+          },
+          withCredentials: true,
+        }
+      );
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -40,38 +55,24 @@ export default function useCreatePlant({ onClose }) {
                 },
                 withCredentials: true,
             });
-
-            const plantId = response.data?.id;
-
-            if (plantId) {
-                try {
-                    const csrfToken = await getCsrfToken();
-
-                    axios.post(
-                        '/api/v1/plant-set-name',
-                        { plantId: plantId, name: nameRef.current.value },
-                        {
-                            headers: {
-                                'X-XSRF-TOKEN': csrfToken,
-                            },
-                            withCredentials: true,
-                        }
-                    );
-                // eslint-disable-next-line no-unused-vars
-                } catch (e) {
-                    console.error('Failed to set plant name:');
-                }
+            console.log('e')
+            try {
+                await setPlantName(response.data.id, nameRef.current.value)
+            // eslint-disable-next-line no-unused-vars
+            } catch (e) {
+                console.error('Failed to set plant name:');
             }
+
             onClose();
         // eslint-disable-next-line no-unused-vars
         } catch (err) {
             setErrors((prev) => ({
                 ...prev,
-                submit: 'Failed to create plant. Try again later.',
+                submit: 'Failed to create plant. Try again later. ' + err.message,
             }));
         } finally {
             setSubmitting(false);
         }
     };
-    return({nameRef, fileRef, errors, submitting, handleSubmit})
+    return({nameRef, fileRef, errors, submitting, handleSubmit, setPlantName})
 }

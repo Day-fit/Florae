@@ -20,7 +20,6 @@ import { devicesGuestContent, devicesVisitorContent } from '../util/devices-page
 import axios from 'axios';
 import DevicesCard from './devices-card.jsx';
 import EspConfiguration from './esp-configuration.jsx';
-import Button from './button.jsx';
 
 export default function DevicesPage({ setModal }) {
   const { isLogged } = use(UserContext);
@@ -64,9 +63,9 @@ export default function DevicesPage({ setModal }) {
       <div className="bg-gray-50 m-[4vw] rounded-lg shadow-lg min-h-250">
         <InformationComponent
           setModal={setModal}
-          handleTask={ handleEspConfig }
-          guestContent={ devicesGuestContent }
-          visitorContent={ devicesVisitorContent }
+          handleTask={handleEspConfig}
+          guestContent={devicesGuestContent}
+          visitorContent={devicesVisitorContent}
           showFor="both"
         />
         {isLogged && (
