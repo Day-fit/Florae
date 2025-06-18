@@ -63,7 +63,7 @@ class PlantsController {
      * @param user User's authentication principal
      * @return Response entity with adequate response code
      */
-    @PostMapping("/api/v1/set-pot-volume")
+    @PutMapping("/api/v1/set-pot-volume")
     public ResponseEntity<Map<String, String>> setPotVolume(@RequestBody PlantSetVolumeDTO plantSetVolumeDTO, @AuthenticationPrincipal UserPrincipal user)
     {
         if (plantSetVolumeDTO == null)
