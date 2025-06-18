@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import pl.Dayfit.Florae.Exceptions.ApiKeyAssociationException;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -31,6 +32,13 @@ public class GlobalExceptionHandler {
     public Map<String, String> handleHttpMessageNotReadableException()
     {
         return Map.of("error", "Invalid request body");
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleNoSuchElementException(NoSuchElementException exception)
+    {
+        return Map.of("error", exception.getMessage());
     }
 
     @ExceptionHandler(AccessDeniedException.class)

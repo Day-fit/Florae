@@ -47,15 +47,15 @@ public class PlantRequirements {
     @Column(unique=true, nullable=false)
     private String pid;
 
-    private Integer maxLightLux;
-    private Integer minLightLux;
+    private Double maxLightLux;
+    private Double minLightLux;
 
-    private Integer maxTemp;
-    private Integer minTemp;
+    private Double maxTemp;
+    private Double minTemp;
 
-    private Integer maxEnvHumid;
-    private Integer minEnvHumid;
+    private Double maxEnvHumid;
+    private Double minEnvHumid;
 
-    private Integer maxSoilMoist;
-    private Integer minSoilMoist;
+    private Double maxSoilMoist;
+    private Double minSoilMoist;
 }

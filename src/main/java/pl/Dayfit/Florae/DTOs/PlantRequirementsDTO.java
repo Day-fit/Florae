@@ -17,15 +17,15 @@ import java.util.List;
 public class PlantRequirementsDTO {
     private List<?> errors;
 
-    private Integer maxLightLux;
-    private Integer minLightLux;
+    private Double maxLightLux;
+    private Double minLightLux;
 
-    private Integer maxTemp;
-    private Integer minTemp;
+    private Double maxTemp;
+    private Double minTemp;
 
-    private Integer maxEnvHumid;
-    private Integer minEnvHumid;
+    private Double maxEnvHumid;
+    private Double minEnvHumid;
 
-    private Integer maxSoilMoist;
-    private Integer minSoilMoist;
+    private Double maxSoilMoist;
+    private Double minSoilMoist;
 }

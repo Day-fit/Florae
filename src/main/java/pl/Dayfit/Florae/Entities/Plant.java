@@ -31,6 +31,8 @@ public class Plant {
 
     private String name;
 
+    private Double potVolume;
+
     @Column(nullable = false, length = 50)
     private String speciesName;
 

@@ -6,8 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.web.socket.config.annotation.*;
 import pl.Dayfit.Florae.Handlers.Handshake.UserDetailsHandshakeHandler;
-import pl.Dayfit.Florae.Handlers.InputStreamHandler;
-import pl.Dayfit.Florae.Handlers.OutputStreamHandler;
+import pl.Dayfit.Florae.Handlers.FloraLinkStreamHandler;
+import pl.Dayfit.Florae.Handlers.FanoutStreamHandler;
 import pl.Dayfit.Florae.Handlers.Handshake.ApiHandshakeHandler;
 import pl.Dayfit.Florae.Interceptors.ApiHandshakeInterceptor;
 import pl.Dayfit.Florae.Interceptors.UserDetailsHandshakeInterceptor;
@@ -16,8 +16,8 @@ import pl.Dayfit.Florae.Interceptors.UserDetailsHandshakeInterceptor;
 @EnableWebSocket
 @RequiredArgsConstructor
 public class WebSocketConfiguration implements WebSocketConfigurer {
-    private final InputStreamHandler inputStreamHandler;
-    private final OutputStreamHandler outputStreamHandler;
+    private final FloraLinkStreamHandler floraLinkStreamHandler;
+    private final FanoutStreamHandler fanoutStreamHandler;
     private final ApiHandshakeHandler apiHandshakeHandler;
     private final ApiHandshakeInterceptor apiHandshakeInterceptor;
     private final UserDetailsHandshakeHandler userDetailsHandshakeHandler;
@@ -29,13 +29,13 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
         registry
-                .addHandler(inputStreamHandler, "/ws/input-stream")
+                .addHandler(floraLinkStreamHandler, "/ws/floralink")
                 .addInterceptors(apiHandshakeInterceptor)
                 .setHandshakeHandler(apiHandshakeHandler)
-                .setAllowedOriginPatterns("*"); //FloraLink can be any origin pattern
+                .setAllowedOriginPatterns("*"); //FloraLink connection can be at any origin pattern
 
         registry
-                .addHandler(outputStreamHandler, "/ws/output-stream")
+                .addHandler(fanoutStreamHandler, "/ws/fanout")
                 .addInterceptors(userDetailsHandshakeInterceptor)
                 .setHandshakeHandler(userDetailsHandshakeHandler)
                 .setAllowedOriginPatterns(allowedOriginsPatterns.split(","));

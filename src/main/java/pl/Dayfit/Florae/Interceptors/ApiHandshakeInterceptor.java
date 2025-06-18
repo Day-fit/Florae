@@ -54,6 +54,7 @@ public class ApiHandshakeInterceptor implements HandshakeInterceptor {
 
         attributes.put("auth", new ApiKeyAuthenticationToken(apiKey));
         attributes.put("owner", apiKey.getFloraeUser().getUsername());
+        attributes.put("linkedPlantId", apiKey.getLinkedPlant().getId());
 
         return true;
     }

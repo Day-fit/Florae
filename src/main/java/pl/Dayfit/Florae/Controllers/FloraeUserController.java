@@ -77,7 +77,7 @@ public class FloraeUserController {
         }
     }
 
-    @PostMapping("/auth/register")
+   @PostMapping("/auth/register")
     public ResponseEntity<Map<String, String>> registerUser(@RequestBody FloraeUserRegisterDTO floraeUserRegisterDTO)
     {
         if (floraeUserRegisterDTO.getUsername() == null || floraeUserRegisterDTO.getUsername().isBlank() || !floraeUserRegisterDTO.getUsername().matches(USERNAME_REGEX) || floraeUserRegisterDTO.getUsername().length() > FloraeUser.MAX_USERNAME_LENGTH)

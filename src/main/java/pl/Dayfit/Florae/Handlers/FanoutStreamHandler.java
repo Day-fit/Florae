@@ -9,19 +9,20 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
-import pl.Dayfit.Florae.Events.UserConnectionClosed;
-import pl.Dayfit.Florae.Events.UserConnectionEstablished;
+import pl.Dayfit.Florae.Enums.ConnectionType;
+import pl.Dayfit.Florae.Events.WebSocketConnectionClosedEvent;
+import pl.Dayfit.Florae.Events.WebSocketConnectionEstablishedEvent;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OutputStreamHandler implements WebSocketHandler {
+public class FanoutStreamHandler implements WebSocketHandler {
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public void afterConnectionEstablished(@NonNull WebSocketSession session) {
         log.trace("New connection established at {}, publishing event...", session.getLocalAddress());
-        eventPublisher.publishEvent(new UserConnectionEstablished(session));
+        eventPublisher.publishEvent(new WebSocketConnectionEstablishedEvent(session, ConnectionType.USER));
     }
 
     @Override
@@ -37,7 +38,7 @@ public class OutputStreamHandler implements WebSocketHandler {
     @Override
     public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus closeStatus) {
         log.trace("Connection closed at {}, publishing event...", session.getLocalAddress());
-        eventPublisher.publishEvent(new UserConnectionClosed(session));
+        eventPublisher.publishEvent(new WebSocketConnectionClosedEvent(session, ConnectionType.USER));
     }
 
     @Override
