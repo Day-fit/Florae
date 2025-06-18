@@ -68,7 +68,7 @@ export default function useCreatePlant({ onClose }) {
         } catch (err) {
             setErrors((prev) => ({
                 ...prev,
-                submit: 'Failed to create plant. Try again later. ' + err.message,
+                submit: 'Failed to create plant. Try again later. ',
             }));
         } finally {
             setSubmitting(false);
