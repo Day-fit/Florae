@@ -1,4 +1,4 @@
-package pl.Dayfit.Florae.DTOs;
+package pl.Dayfit.Florae.DTOs.FloraeUsers;
 
 import lombok.Data;
 

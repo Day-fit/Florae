@@ -1,4 +1,4 @@
-package pl.Dayfit.Florae.DTOs;
+package pl.Dayfit.Florae.DTOs.Plants;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

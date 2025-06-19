@@ -1,7 +1,8 @@
 package pl.Dayfit.Florae.Enums;
 
 public enum CommandType {
-    WATERING("ADD_WATER");
+    WATERING("ADD_WATER"),
+    ENABLE_BLE("ENABLE_BLE");
 
     private final String commandName;
 

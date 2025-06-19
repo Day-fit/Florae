@@ -1,6 +1,7 @@
-package pl.Dayfit.Florae.DTOs;
+package pl.Dayfit.Florae.DTOs.Plants;
 
 import lombok.Data;
+import pl.Dayfit.Florae.DTOs.FloraLinkResponseDTO;
 
 @Data
 public class PlantResponseDTO

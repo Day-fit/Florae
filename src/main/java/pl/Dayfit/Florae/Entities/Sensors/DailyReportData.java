@@ -27,7 +27,7 @@ import java.util.List;
  * - {@code @Id}: Specifies the primary key of the entity.
  * - {@code @GeneratedValue}: Indicates that the primary key value is automatically generated.
  * - {@code @OneToOne}: Denotes a one-to-one relationship with {@code FloraLink}, with cascading operations enabled.
- * - {@code @ManyToOne}: Denotes a many-to-one relationship with {@code FloraeUser}.
+ * - {@code @ManyToOne}: Denotes a many-to-one relationship with {@code FloraeUsers}.
  * - {@code @OneToMany}: Denotes a one-to-many relationship with {@code DailySensorData}, with cascading and orphan removal enabled.
  */
 @Entity

@@ -16,7 +16,7 @@ import java.util.Optional;
 
  * Methods:
  * - {@code findByOwner}: Retrieves a list of {@code FloraLink} entities
- *   associated with a specific {@code FloraeUser}.
+ *   associated with a specific {@code FloraeUsers}.
  * - {@code findByApiKey}: Retrieves a {@code FloraLink} entity associated
  *   with a specific API key.
 

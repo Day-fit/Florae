@@ -32,7 +32,7 @@ public class RedisMessageService {
         boolean isFloralink = event.connectionType() == ConnectionType.FLORALINK;
 
         WebSocketSession session = event.session();
-        String identifier = session.getAttributes().get(isFloralink ? "linkedPlantId" : "username").toString();
+        String identifier = session.getAttributes().get(isFloralink ? "id" : "username").toString();
 
         ChannelTopic topic = new ChannelTopic((isFloralink ? "floralink." : "user.") + identifier);
 
