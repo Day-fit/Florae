@@ -11,7 +11,7 @@ import java.util.Collections;
 
 /**
  * Implementation of Spring Security's UserDetails interface, representing the principal
- * (currently authenticated user) in the security context. This class adapts a FloraeUser
+ * (currently authenticated user) in the security context. This class adapts a FloraeUsers
  * entity to be used with Spring Security.
 
  * This class holds the details of a specific authenticated user and provides the required
@@ -22,7 +22,7 @@ import java.util.Collections;
  * - Retrieving the password of the authenticated user.
  * - Providing the authorities (roles) associated with the authenticated user.
 
- * The constructor requires a FloraeUser instance, allowing this principal to wrap the
+ * The constructor requires a FloraeUsers instance, allowing this principal to wrap the
  * corresponding entity for use in authentication and authorization mechanisms.
  */
 @RequiredArgsConstructor

@@ -5,12 +5,12 @@ import org.springframework.stereotype.Repository;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 
 /**
- * Repository interface for managing {@code FloraeUser} entities.
+ * Repository interface for managing {@code FloraeUsers} entities.
  * Extends {@code JpaRepository} to provide CRUD operations and additional
- * custom-defined database query methods for {@code FloraeUser}.
+ * custom-defined database query methods for {@code FloraeUsers}.
 
  * Methods:
- * - {@code findByUsername}: Retrieves a {@code FloraeUser} by their username.
+ * - {@code findByUsername}: Retrieves a {@code FloraeUsers} by their username.
  * - {@code existsByEmailOrUsername}: Checks if a user exists with the given email or username.
 
  * Annotations:

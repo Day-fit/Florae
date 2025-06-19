@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.Dayfit.Florae.DTOs.FloraLinkSetNameDTO;
 import pl.Dayfit.Florae.DTOs.Sensors.*;
+import pl.Dayfit.Florae.DTOs.Sensors.Commands.Command;
+import pl.Dayfit.Florae.DTOs.Sensors.Commands.CommandMessage;
 import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Entities.FloraLink;
 import pl.Dayfit.Florae.Entities.FloraeUser;
@@ -21,6 +23,7 @@ import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Service class responsible for handling operations related to FloraLink data,
@@ -84,11 +87,10 @@ public class FloraLinkService {
                 .getPrincipal())
                 .getUsername();
 
-        String floraLinkId = ((ApiKey) authentication
+        Integer floraLinkId = ((ApiKey) authentication
                 .getCredentials())
                 .getLinkedFloraLink()
-                .getId()
-                .toString();
+                .getId();
 
         if (soilMoistureData != null && linkedPlant.getRequirements().getMinSoilMoist() > soilMoistureData.getValue())
         {
@@ -103,7 +105,7 @@ public class FloraLinkService {
             );
         }
 
-        CurrentSensorResponseDataDTO mappedDTO = new CurrentSensorResponseDataDTO(Integer.valueOf(floraLinkId), uploadedData);
+        CurrentSensorResponseDataDTO mappedDTO = new CurrentSensorResponseDataDTO(floraLinkId, uploadedData);
         redisTemplate.convertAndSend("user." + ownerUsername, mappedDTO);
     }
 
@@ -145,8 +147,23 @@ public class FloraLinkService {
      * @return the water volume that needs to be added (in milliliters)
      */
     private double calculateWaterToAdd(double capacityLiters, double recommendedMoisture, double currentMoisture) {
-        if (recommendedMoisture <= currentMoisture) return 0;
         double neededHumidity = recommendedMoisture - currentMoisture;
-        return capacityLiters * neededHumidity * 10; //(neededHumidity / 100.0) * 1000.0 = 10 * neededHumidity
+        return capacityLiters * neededHumidity * 10; // (neededHumidity / 100.0) * 1000.0 = 10 * neededHumidity
+    }
+
+    public void handleEnablingBle(Integer floralinkId, String owner) {
+        FloraLink floraLink = cacheService.getFloraLink(floralinkId);
+
+        if(floraLink == null)
+        {
+            throw new NoSuchElementException("FloraLink with ID " + floralinkId + " not found ");
+        }
+
+        if(!cacheService.getOwner(floraLink).getUsername().equals(owner))
+        {
+            throw new AccessDeniedException("User is not the owner of this device! Cannot enable BLE!");
+        }
+
+        redisTemplate.convertAndSend("floralink." + floralinkId, new Command(CommandType.ENABLE_BLE));
     }
 }

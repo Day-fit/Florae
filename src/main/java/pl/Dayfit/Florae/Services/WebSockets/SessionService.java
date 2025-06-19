@@ -33,17 +33,17 @@ public class SessionService {
 
         if (connectionType == ConnectionType.FLORALINK)
         {
-            Object potentialIdentifier = session.getAttributes().get("linkedPlantId");
+            Object potentialIdentifier = session.getAttributes().get("id");
 
             if (potentialIdentifier == null) {
                 log.warn("Session {} does not have a linked plant id", session.getId());
-                throw new IllegalStateException("Session does not have a linked plant id");
+                throw new IllegalStateException("Session does not have a id attribute");
             }
 
             if (!(potentialIdentifier instanceof Integer identifier))
             {
                 log.warn("Session {} linked plant id is not an integer", session.getId());
-                throw new IllegalStateException("Session linked plant id is not an integer");
+                throw new IllegalStateException("Session attribute id is not an integer");
             }
 
             floralinkSessions.put(identifier.toString(), session);

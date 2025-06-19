@@ -52,7 +52,7 @@ public class FloraLinkStreamHandler implements WebSocketHandler {
         try {
             List<CurrentSensorDataDTO> sensorData = mapper.readValue(textMessage.getPayload(), new TypeReference<>() {});
             Authentication auth = (Authentication) session.getPrincipal();
-            Plant plant = plantCacheService.getPlantById((Integer) session.getAttributes().get("linkedPlantId"));
+            Plant plant = plantCacheService.getPlantById((Integer) session.getAttributes().get("id"));
 
             if (auth == null)
             {

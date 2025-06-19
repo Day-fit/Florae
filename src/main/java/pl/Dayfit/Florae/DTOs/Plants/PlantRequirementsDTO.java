@@ -1,4 +1,4 @@
-package pl.Dayfit.Florae.DTOs;
+package pl.Dayfit.Florae.DTOs.Plants;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;

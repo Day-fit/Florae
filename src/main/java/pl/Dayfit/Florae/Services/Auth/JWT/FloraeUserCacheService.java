@@ -11,7 +11,7 @@ import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
 
 /**
- * Service class responsible for caching and retrieving {@code FloraeUser} information.
+ * Service class responsible for caching and retrieving {@code FloraeUsers} information.
  * This service provides methods to fetch user data from the database and caches the results
  * for improved performance and reduced database load.
 
@@ -24,11 +24,11 @@ import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
  * - Uses method arguments (e.g., {@code username}, {@code id}, {@code email}) as cache keys.
 
  * Methods:
- * - {@code getFloraeUser(String username)}: Retrieves a {@code FloraeUser} by the provided username.
+ * - {@code getFloraeUser(String username)}: Retrieves a {@code FloraeUsers} by the provided username.
  *   The result is cached using the username as the key.
- * - {@code getFloraeUserById(int id)}: Retrieves a {@code FloraeUser} by the provided user ID.
+ * - {@code getFloraeUserById(int id)}: Retrieves a {@code FloraeUsers} by the provided user ID.
  *   The result is cached using the user ID as the key.
- * - {@code getFloraeUserByEmail(String email)}: Retrieves a {@code FloraeUser} by the provided email.
+ * - {@code getFloraeUserByEmail(String email)}: Retrieves a {@code FloraeUsers} by the provided email.
  *   The result is cached using the email as the key.
  */
 @Service
@@ -41,13 +41,6 @@ public class FloraeUserCacheService {
     public FloraeUser getFloraeUser(String username)
     {
         return userRepository.findByUsername(username);
-    }
-
-    @Transactional(readOnly = true)
-    @Cacheable(value = "florae-users", key = "#id")
-    public FloraeUser getFloraeUserById(int id)
-    {
-        return userRepository.findById(id).orElse(null);
     }
 
     @Transactional(readOnly = true)
