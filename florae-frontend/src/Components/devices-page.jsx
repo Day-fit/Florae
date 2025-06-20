@@ -12,8 +12,7 @@
  * Note:
  * - This is a high-level page component, typically routed in your app.
  */
-
-import { use, useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { UserContext } from '../store/user-context.jsx';
 import InformationComponent from './information-component.jsx';
 import { devicesGuestContent, devicesVisitorContent } from '../util/devices-page-data.js';
@@ -21,29 +20,26 @@ import axios from 'axios';
 import DevicesCard from './devices-card.jsx';
 import EspConfiguration from './esp-configuration.jsx';
 import Button from './button.jsx';
+import { useFloraWebSocket } from '../hooks/useFloraWebSocket.js'; // your hook location
 
 export default function DevicesPage({ setModal }) {
-  const { isLogged } = use(UserContext);
+  const { isLogged } = useContext(UserContext);
   const [devices, setDevices] = useState([]);
   const [showEspModal, setShowEspModal] = useState(false);
 
-  useEffect(() => {
-    if (showEspModal) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [showEspModal]);
+  // Set up WebSocket
+  const { sendMessage } = useFloraWebSocket({
+    onMessage: (data) => {
+      console.log("Received from floralink WS:", data);
+      // Handle real-time updates if needed
+    },
+  });
 
   useEffect(() => {
     const fetchDevices = async () => {
       try {
         const response = await axios.get('/api/v1/get-floralinks', { withCredentials: true });
         setDevices(response.data);
-      // eslint-disable-next-line no-unused-vars
       } catch (error) {
         console.error('Failed to fetch devices');
       }
@@ -58,6 +54,12 @@ export default function DevicesPage({ setModal }) {
 
   function closeEspModal() {
     setShowEspModal(false);
+  }
+
+  // Example: send humidity data via WebSocket
+  function sendHumidityData() {
+    const payload = JSON.stringify({ type: 'humid', value: '20.0' });
+    sendMessage(payload);
   }
   return (
     <>
