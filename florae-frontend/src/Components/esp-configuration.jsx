@@ -13,7 +13,7 @@ export default function EspConfiguration({ onClose }) {
 
 
   const ESP_SERVICE_UUID = '53020f00-319c-4d97-a2b1-9e706baba77a';
-  const WIFI_CREDENTIALS_CHAR_UUID = '53020f00-319c-4d97-a2b1-9e706baba77a';
+  const WIFI_CREDENTIALS_CHAR_UUID = 'f87709b3-63a7-4605-9bb5-73c383462296';
 
   async function sendWiFiCredentials(service, ssid, password) {
     const characteristic = await service.getCharacteristic(WIFI_CREDENTIALS_CHAR_UUID);
