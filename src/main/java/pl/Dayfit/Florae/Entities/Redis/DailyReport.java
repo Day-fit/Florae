@@ -28,6 +28,8 @@ public class DailyReport {
         private Instant minTimestamp;
         private Instant maxTimestamp;
 
+        private Instant avgInitialTimestamp;
+
         private Integer count;
     }
 

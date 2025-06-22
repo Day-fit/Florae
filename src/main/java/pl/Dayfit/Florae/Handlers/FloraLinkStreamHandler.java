@@ -23,6 +23,7 @@ import pl.Dayfit.Florae.Services.PlantCacheService;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -110,28 +111,36 @@ public class FloraLinkStreamHandler implements WebSocketHandler {
             SensorDataType type = SensorDataType.valueOf(dto.getType());
             DailyReport.DailyReadings reading = finalReadings.get(type);
 
-             if (reading == null)
-             {
-                 reading = new DailyReport.DailyReadings();
+            if (reading == null)
+            {
+             reading = new DailyReport.DailyReadings();
 
-                 reading.setType(type);
-                 reading.setMaxTimestamp(Instant.now());
-                 reading.setMinTimestamp(Instant.now());
-                 reading.setAvgValue(dto.getValue());
-                 reading.setCount(1);
-                 reading.setMinValue(dto.getValue());
-                 reading.setMaxValue(dto.getValue());
+             reading.setType(type);
+             reading.setMaxTimestamp(Instant.now());
+             reading.setMinTimestamp(Instant.now());
+             reading.setAvgInitialTimestamp(Instant.now());
+             reading.setAvgValue(dto.getValue());
+             reading.setCount(1);
+             reading.setMinValue(dto.getValue());
+             reading.setMaxValue(dto.getValue());
 
-                 finalReadings.put(type, reading);
-                 return;
-             }
+             finalReadings.put(type, reading);
+             return;
+            }
 
-            if (reading.getMaxValue() == null || reading.getMaxValue() < dto.getValue())
+            if (Duration.between(reading.getAvgInitialTimestamp(), Instant.now()).toHours() >= 24)
+            {
+                reading.setAvgInitialTimestamp(Instant.now());
+                reading.setAvgValue(dto.getValue());
+                reading.setCount(1);
+            }
+
+            if (reading.getMaxValue() == null || reading.getMaxValue() < dto.getValue() || Duration.between(reading.getMaxTimestamp(), Instant.now()).toDays() >= 24)
             {
                 reading.setMaxValue(dto.getValue());
             }
 
-            if (reading.getMinValue() == null || reading.getMinValue() > dto.getValue())
+            if (reading.getMinValue() == null || reading.getMinValue() > dto.getValue() || Duration.between(reading.getMinTimestamp(), Instant.now()).toDays() >= 24)
             {
                 reading.setMinValue(dto.getValue());
             }
@@ -140,8 +149,8 @@ public class FloraLinkStreamHandler implements WebSocketHandler {
 
             if (count == 0)
             {
-                log.warn("Count number is 24h report was 0, at {}", session.getLocalAddress());
-                throw new IllegalStateException("Count number is 24h report was 0, at " + session.getLocalAddress());
+                log.warn("Count number in 24h report was 0, resetting to 1 to avoid division by zero. Session: {}", session.getLocalAddress());
+                count = 1;
             }
 
             reading.setAvgValue((reading.getAvgValue() * count + dto.getValue()) / (count + 1));

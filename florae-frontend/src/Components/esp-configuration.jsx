@@ -26,7 +26,7 @@ export default function EspConfiguration({ onClose }) {
     try {
       console.log("Wybieranie urządzenia...");
       const device = await navigator.bluetooth.requestDevice({
-        filters: [{ namePrefix: 'ESP32' }],
+        filters: [{ namePrefix: 'FloraLink' }],
         optionalServices: [ESP_SERVICE_UUID],
       });
 
@@ -42,7 +42,7 @@ export default function EspConfiguration({ onClose }) {
       setTimeout(() => {}, 10000); // Wait for ESP to process the credentials
 
       try {
-        const csrfToken = await getCsrfToken();
+        let csrfToken = await getCsrfToken();
 
         const response = await axios.post(
           '/api/v1/generate-key',
@@ -55,7 +55,7 @@ export default function EspConfiguration({ onClose }) {
           }
         );
 
-        const csrfToken2 = await getCsrfToken();
+        csrfToken = await getCsrfToken();
 
         await axios.post(
           '/api/v1/connect-api',
@@ -63,7 +63,7 @@ export default function EspConfiguration({ onClose }) {
           {
             withCredentials: true,
             headers: {
-              'X-XSRF-TOKEN': csrfToken2,
+              'X-XSRF-TOKEN': csrfToken,
               'X-API-KEY': response.data.apiKey,
             },
           }
@@ -71,7 +71,7 @@ export default function EspConfiguration({ onClose }) {
         return response.data.apiKey;
       // eslint-disable-next-line no-unused-vars
       } catch (e) {
-        console.log("Error generating API key");
+        console.error("Error generating API key");
       }
     // eslint-disable-next-line no-unused-vars
     } catch (error) {
@@ -100,7 +100,7 @@ export default function EspConfiguration({ onClose }) {
 
   return (
     <div className="z-10 bg-white/90 rounded-xl p-10 max-w-lg w-full flex flex-col items-center shadow-lg mx-2">
-      <h2 className="mb-6 text-2xl font-bold text-green-700">Konfiguracja ESP</h2>
+      <h2 className="mb-6 text-2xl font-bold text-green-700">FloraLink Configuration</h2>
 
       <form onSubmit={handleSubmit} className="w-full">
         <div className="mb-4">
@@ -129,7 +129,7 @@ export default function EspConfiguration({ onClose }) {
             htmlFor="plant-select"
             className="text-left mb-1 font-bold text-"
           >
-            Roślina
+            Plant
           </label>
           <select
             className={`${baseInputClass} ${noErrorClass}`}
