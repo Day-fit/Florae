@@ -10,7 +10,7 @@
 #include <Preferences.h>
 #include <nvs_flash.h>
 
-bool enableDevMode = true;
+bool enableDevMode = false;
 
 float readVWC(int pin);
 void handleWebSocketEvent(WStype_t type, uint8_t *payload, size_t lenght);
