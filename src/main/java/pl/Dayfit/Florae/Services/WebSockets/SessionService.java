@@ -71,9 +71,9 @@ public class SessionService {
         redisTemplate.delete((String) session.getAttributes().get(event.connectionType() == ConnectionType.FLORALINK ? "linkedPlantId" : "username"));
     }
 
-    public WebSocketSession getFloralinkSessionByLinkedPlantId(String linkedPlantId)
+    public WebSocketSession getFloralinkSessionById(String floraLinkId)
     {
-        return floralinkSessions.get(linkedPlantId);
+        return floralinkSessions.get(floraLinkId);
     }
 
     public WebSocketSession getSessionByUsername(String username)

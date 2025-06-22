@@ -1,13 +1,13 @@
 package pl.Dayfit.Florae.DTOs.Sensors;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.Instant;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class DailySensorDataDTO {
     private @NonNull String type;
 

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Events.ApiKeyRevokedEvent;
-import pl.Dayfit.Florae.Exceptions.ApiKeyAssociationException;
+import pl.Dayfit.Florae.Exceptions.AssociationException;
 import pl.Dayfit.Florae.Helpers.SpEL.ApiKeysHelper;
 import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
 
@@ -60,7 +60,7 @@ public class ApiKeyCacheService {
 
         if (apiKey == null)
         {
-            throw new ApiKeyAssociationException("API key does not exist or is already revoked");
+            throw new AssociationException("API key does not exist or is already revoked");
         }
 
         apiKey.setIsRevoked(true);

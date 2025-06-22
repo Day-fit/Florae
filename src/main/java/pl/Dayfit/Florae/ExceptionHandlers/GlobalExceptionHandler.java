@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import pl.Dayfit.Florae.Exceptions.ApiKeyAssociationException;
+import pl.Dayfit.Florae.Exceptions.AssociationException;
+import pl.Dayfit.Florae.Exceptions.DeviceOfflineException;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -19,6 +20,13 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public Map<String, String> handleAuthenticationException(AuthenticationException exception) {
         return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(DeviceOfflineException.class)
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public Map<String, String> handleDeviceOfflineException(DeviceOfflineException exception)
+    {
+        return Map.of("message", exception.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -47,9 +55,9 @@ public class GlobalExceptionHandler {
         return Map.of("error", exception.getMessage());
     }
 
-    @ExceptionHandler(ApiKeyAssociationException.class)
+    @ExceptionHandler(AssociationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public Map<String, String> handleApiKeyAssociationException(ApiKeyAssociationException exception) {
+    public Map<String, String> handleApiKeyAssociationException(AssociationException exception) {
         return Map.of("error", exception.getMessage());
     }
 

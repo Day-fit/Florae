@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 public class EnableBleDTO {
-    private Integer floralinkId;
+    private Integer floraLinkId;
 }

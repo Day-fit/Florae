@@ -132,11 +132,6 @@ class PlantsController {
         String username = userPrincipal.getUsername();
         List<PlantResponseDTO> plants = plantsService.getPlantsByUsername(username);
 
-        if (plants == null)
-        {
-            throw new NoSuchElementException("No plants found for this user");
-        }
-
         return ResponseEntity.ok(plants);
     }
 }
