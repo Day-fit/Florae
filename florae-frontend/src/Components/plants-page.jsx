@@ -6,18 +6,24 @@ import Button from './button.jsx';
 import CreatePlant from './create-plant.jsx';
 import axios from 'axios';
 import PlantCard from './plant-card.jsx';
+import EditPlant from './edit-plant.jsx';
 
 export default function PlantsPage({ setModal }) {
   const { isLogged } = use(UserContext);
 
   const [createPlant, setCreatePlant] = useState(false);
   const [ownedPlants, setOwnedPlants] = useState(null);
+  const [editingPlant, setEditingPlant] = useState(null);
 
   function handleCreatePlant() {
     setCreatePlant(true);
   }
   function handleClosePlant() {
     setCreatePlant(false);
+    fetchOwnedPlants();
+  }
+  function handleCloseEditPlant() {
+    setEditingPlant(null);
     fetchOwnedPlants();
   }
 
@@ -58,16 +64,32 @@ export default function PlantsPage({ setModal }) {
             />
           </div>
           {createPlant && <CreatePlant onClose={handleClosePlant} />}
+          {editingPlant && (
+            <EditPlant plant={editingPlant} onClose={handleCloseEditPlant} />
+          )}
           {Array.isArray(ownedPlants) && ownedPlants.length > 0 ? (
             <div className="flex flex-row flex-wrap gap-5  justify-center">
               {ownedPlants.map((plant) => (
-                <PlantCard
-                  guestName={plant.name}
-                  primaryPhoto={plant.primaryPhoto}
+                <div
                   key={plant.id}
-                  speciesName={plant.speciesName}
-                  requirements={plant.requirements}
-                />
+                  className="cursor-pointer hover:scale-105 transition-transform"
+                  role="button"
+                  tabIndex="0"
+                  onClick={() => setEditingPlant(plant)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setEditingPlant(plant);
+                    }
+                  }}
+                >
+                  <PlantCard
+                    guestName={plant.name}
+                    primaryPhoto={plant.primaryPhoto}
+                    speciesName={plant.speciesName}
+                    requirements={plant.requirements}
+                  />
+                </div>
               ))}
             </div>
           ) : (
@@ -79,3 +101,4 @@ export default function PlantsPage({ setModal }) {
     </div>
   );
 }
+

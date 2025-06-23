@@ -10,7 +10,6 @@ export default function useCreatePlant({ onClose }) {
   const [submitting, setSubmitting] = useState(false);
 
   const setPlantName = async (plantId, name) => {
-    console.log('Setting plant name:', plantId, name);
     const csrfToken = await getCsrfToken();
     await axios.put(
       '/api/v1/plant-set-name',
@@ -24,7 +23,20 @@ export default function useCreatePlant({ onClose }) {
     );
   };
 
-  const handleSubmit = async (e) => {
+  // Shortened reusable setPlantVolume function
+  const setPlantVolume = async (plantId, volume) => {
+    const csrfToken = await getCsrfToken();
+    await axios.put(
+      '/api/v1/set-pot-volume',
+      { plantId, volume: parseFloat(volume) },
+      {
+        headers: { 'X-XSRF-TOKEN': csrfToken },
+        withCredentials: true,
+      }
+    );
+  };
+
+  const handleSubmit = async (e, volumeValue) => {
     e.preventDefault();
 
     const files = fileRef.current.files;
@@ -37,6 +49,13 @@ export default function useCreatePlant({ onClose }) {
       }));
       return;
     }
+    if (!volumeValue || isNaN(parseFloat(volumeValue)) || parseFloat(volumeValue) <= 0) {
+      setErrors((prev) => ({
+        ...prev,
+        volume: 'Volume is required and must be a positive number.',
+      }));
+      return;
+    }
 
     setSubmitting(true);
     const formData = new FormData();
@@ -46,8 +65,6 @@ export default function useCreatePlant({ onClose }) {
 
     try {
       const csrfToken = await getCsrfToken();
-
-
       const response = await axios.post('/api/v1/add-plant', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -55,12 +72,12 @@ export default function useCreatePlant({ onClose }) {
         },
         withCredentials: true,
       });
-      console.log('e')
       try {
-        await setPlantName(response.data.id, nameRef.current.value)
-        // eslint-disable-next-line no-unused-vars
+        await setPlantName(response.data.id, nameRef.current.value);
+        await setPlantVolume(response.data.id, volumeValue);
+      // eslint-disable-next-line no-unused-vars
       } catch (e) {
-        console.error('Failed to set plant name:');
+        console.error('Failed to set plant name or volume:');
       }
 
       onClose();
@@ -74,5 +91,5 @@ export default function useCreatePlant({ onClose }) {
       setSubmitting(false);
     }
   };
-  return({nameRef, fileRef, errors, submitting, handleSubmit, setPlantName})
+  return({nameRef, fileRef, errors, submitting, handleSubmit, setPlantName, setPlantVolume})
 }

@@ -37,7 +37,7 @@ export default function EspConfiguration({ onClose }) {
         }
       );
       apiKey = response.data.apiKey;
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (e) {
       console.log('Error generating API key');
       return;
@@ -73,7 +73,7 @@ export default function EspConfiguration({ onClose }) {
         );
 
         csrfToken = await getCsrfToken();
-        
+
         await axios.post(
           '/api/v1/connect-api',
           {},
@@ -85,11 +85,11 @@ export default function EspConfiguration({ onClose }) {
             },
           }
         );
-      // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars
       } catch (e) {
         console.error("Error generating API key");
       }
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       console.error('Error connecting to FloraLink via BLE:');
     }
