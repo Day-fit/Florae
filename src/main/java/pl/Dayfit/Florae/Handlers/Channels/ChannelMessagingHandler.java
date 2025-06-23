@@ -34,7 +34,7 @@ public class ChannelMessagingHandler implements MessageListener {
         else if (channel.startsWith("floralink."))
         {
             identifier = channel.replace("floralink.", "");
-            session = sessionService.getFloralinkSessionByLinkedPlantId(identifier);
+            session = sessionService.getFloralinkSessionById(identifier);
         }
 
         if (identifier == null || session == null)

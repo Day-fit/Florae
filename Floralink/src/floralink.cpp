@@ -1,719 +1,379 @@
 #include <Arduino.h>
-#include <WiFi.h>
-#include <HTTPClient.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include <ArduinoJson.h>
-#include <LittleFS.h>
-#include <ESPDateTime.h>
 #include <DHT.h>
-#include <deque>
+#include <Wire.h>
+#include <BH1750.h>
+#include <WiFi.h>
+#include <WebSocketsClient.h>
 #include <Ticker.h>
+#include <ArduinoJson.h>
+#include <NimBLEDevice.h>
+#include <Preferences.h>
+#include <nvs_flash.h>
 
-#define MAX_MOISTURE_VALUE 2800
-#define MIN_MOISTURE_VALUE 800
+bool enableDevMode = false;
 
-bool isInDevMode = true;
-const String BASE_URL = isInDevMode ? "http://192.168.252.192:8080" : "https://florae.dayfit.pl";
+float readVWC(int pin);
+void handleWebSocketEvent(WStype_t type, uint8_t *payload, size_t lenght);
+String handleSensorSampling();
+void handleSendingReadings();
+void handleAddingWater(double amouth);
+void handleEnablingBLE();
+const char* getWifiSsid();
+const char* getWifiPassword();
+const char* getValueFromConfig(const char* value);
+void handleWifiEvents(WiFiEvent_t event);
+bool connectToWiFi(const char* &ssid, const char* &password, unsigned long timeoutMs = 10000);
+void handleCredentialsUpdate(const String &json);
 
-struct Config {
-    String ssid;
-    String password;
-    String floraeKey;
-    int wifiTimeout = 30;
-};
+constexpr const char* BLE_SERVICE_UUID = "53020f00-319c-4d97-a2b1-9e706baba77a";
+constexpr const char* BLE_CHARACTERISTIC_UUID = "f87709b3-63a7-4605-9bb5-73c383462296";
 
-static Config config;
-static bool isConnected = false;
-static bool isConnecting = false;
-static bool isTimeSet = false;
-static bool modApiKey = false;
+constexpr const char* PROD_BASE_URL = "florae.dayfit.pl";
+constexpr const char* DEV_BASE_URL = "192.168.238.192";
+constexpr const char* API_KEY_HEADER = "X-API-KEY";
 
-const char* DEFAULT_PASSWORD = "password";
-const unsigned int DEFAULT_TIMEOUT = 30;
-unsigned long lastSampleMillis = 0;
+constexpr uint16_t PUMP_EFFICIENCY = 120; //Liters per hour
 
-bool isDev = false;
-const String FLORAE_URL = isDev ? "http://192.168.241.192:8080" : "https://florae.dayfit.pl";
+constexpr uint8_t DHT22_PIN = 4;
+constexpr uint8_t SOIL_MOISTURE_PIN = 34;
+constexpr uint8_t PUMP_PIN = 18; //Actually, it's the MOSFET "Gate" pin
 
-AsyncWebServer server(80);
+DHT dht(DHT22_PIN, DHT22);
+BH1750 luxMeter(0x23);
+WebSocketsClient wsClient;
+
 Ticker ticker;
+Ticker BleTicker;
 
-enum SensorType {
-    DHT11_TYPE,
-    DHT22_TYPE,
-    SOIL_MOISTURE_TYPE,
-    LUX_SENSOR_TYPE,
+struct SensorFunction 
+{
+  const char* type;
+  std::function<float()> read;
 };
 
-struct ValueTimestamp {
-    double value;
-    time_t timestamp;
-};
+constexpr const char* WIFI_SSID = "wifi_ssid";
+constexpr const char* WIFI_PASSWORD = "wifi_password";
+constexpr const char* API_KEY = "api_key";
 
-struct SensorData {
-    String type;
-    String unit;
-
-    double currentValue;
-    double lowest24hValue;
-    double highest24hValue;
-
-    double lastSecondAverage = 0.0;
-    int lastSample = 0;
-
-    double avg24h = 0.0;
-
-    std::deque<ValueTimestamp> samplesLastSecond;
-    std::deque<ValueTimestamp> samples24h;
-
-    time_t lowest24hTimestamp = 0;
-    time_t highest24hTimestamp = 0;
-};
-
-struct Sensor {
-    SensorType sensorType;
-    uint8_t pin;
-    std::vector<SensorData> sensorReadings;
-};
-
-std::vector<Sensor> possibleSensors = {
-    {DHT11_TYPE, 16},
-    {DHT22_TYPE, 17},
-    {SOIL_MOISTURE_TYPE, 34},
-    {LUX_SENSOR_TYPE, 32},
-};
-
-std::vector<Sensor> sensors;
-
-double calculateMoisture(int rawReading)
+class BLECallback : public NimBLECharacteristicCallbacks
 {
-    rawReading = constrain(rawReading, MIN_MOISTURE_VALUE, MAX_MOISTURE_VALUE);
-    return 100 * (MAX_MOISTURE_VALUE - rawReading) / (MAX_MOISTURE_VALUE - MIN_MOISTURE_VALUE);
-}
-
-double calculateLux(int rawReading)
-{
-    return (rawReading / 4095.0) * 100;
-}
-
-String formatTimestampISO8601(time_t t) {
-    if (t == 0) return "";
-    struct tm tmstruct;
-    gmtime_r(&t, &tmstruct);
-    char buf[40];
-    snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02dZ",
-        tmstruct.tm_year + 1900,
-        tmstruct.tm_mon + 1,
-        tmstruct.tm_mday,
-        tmstruct.tm_hour,
-        tmstruct.tm_min,
-        tmstruct.tm_sec
-    );
-    return String(buf);
-}
-
-// void claimApiKey()
-// {
-//     if (!isConnected)
-//     {
-//         Serial.println('skipping');
-//         return;
-//     }
-    
-//     HTTPClient http;
-//     http.setTimeout(3000); // 3s timeout
-//     http.begin(BASE_URL + "/api/v1/floralink/connect-api");
-//     http.addHeader("X-API-KEY", config.floraeKey);
-//     int httpCode = http.POST("");
-//     yield(); // prevent watchdog reset
-//     http.end();
-//     yield();
-// }
-
-void sendCurrentData()
-{
-    DynamicJsonDocument doc(512);
-    JsonArray arr = doc.to<JsonArray>();
-
-    for (const auto& sensor : sensors) {
-        for (const auto& reading : sensor.sensorReadings) {
-            JsonObject obj = arr.createNestedObject();
-            obj["type"] = reading.type;
-            obj["value"] = String(reading.currentValue, 2);
-        }
-    }
-
-    String payload;
-    serializeJson(arr, payload);
-
-    if (!WiFi.isConnected()) return;
-    HTTPClient http;
-    http.setTimeout(3000);
-    http.begin(BASE_URL + "/api/v1/sensor-data");
-    http.addHeader("Content-Type", "application/json");
-    http.addHeader("X-API-KEY", config.floraeKey);
-
-    int httpCode = http.POST(payload);
-    yield();
-    http.end();
-    yield();
-}
-
-// bool isValidApiKey(String apiKey)
-// {
-//     if (!isConnected)
-//     {
-//         return true;
-//     }
-    
-
-//     HTTPClient http;
-//     http.setTimeout(3000);
-//     String url = BASE_URL + "/api/v1/check-key?apiKey=" + apiKey;
-//     http.begin(url);
-//     int httpCode = http.GET();
-//     yield();
-
-//     bool isValid = false;
-
-//     if (httpCode == 200) {
-//         String payload = http.getString();
-//         DynamicJsonDocument doc(256);
-//         if (deserializeJson(doc, payload) == DeserializationError::Ok && doc["result"].is<bool>()) {
-//             isValid = doc["result"];
-//         } else {
-//             isValid = false;
-//         }
-//     }
-//     http.end();
-//     yield();
-
-//     return isValid;
-// }
-
-void sendDailyReport()
-{
-    DynamicJsonDocument doc(1024);
-    JsonArray arr = doc.to<JsonArray>();
-
-    for (const auto& sensor : sensors) {
-        for (const auto& reading : sensor.sensorReadings) {
-            JsonObject obj = arr.createNestedObject();
-            obj["type"] = reading.type;
-            obj["minValue"] = reading.lowest24hValue;
-            obj["minValueTimestamp"] = formatTimestampISO8601(reading.lowest24hTimestamp);
-            obj["maxValue"] = reading.highest24hValue;
-            obj["maxValueTimestamp"] = formatTimestampISO8601(reading.highest24hTimestamp);
-            obj["averageValue"] = reading.avg24h;
-        }
-    }
-
-    String payload;
-    serializeJson(arr, payload);
-
-    if (!WiFi.isConnected()) return;
-    HTTPClient http;
-    http.setTimeout(3000);
-    http.begin(BASE_URL + "/api/v1/sensor-daily-report");
-    http.addHeader("Content-Type", "application/json");
-    http.addHeader("X-API-KEY", config.floraeKey);
-
-    int httpCode = http.POST(payload);
-    yield();
-    http.end();
-    yield();
-}
-
-void loadConfig() {
-    File file = LittleFS.open("/config.json", "r");
-    if (!file) return;
-
-    JsonDocument json;
-
-    if (deserializeJson(json, file) == DeserializationError::Ok) {
-        config.ssid = json["targetSsid"] | "";
-        config.password = json["targetPassword"] | "";
-        config.floraeKey = json["floraeAccessKey"] | "";
-        config.wifiTimeout = json["wifiTimeout"] | DEFAULT_TIMEOUT;
-    }
-
-    file.close();
-}
-
-void saveConfig() {
-    JsonDocument json;
-
-    json["targetSsid"] = config.ssid;
-    json["targetPassword"] = config.password;
-    json["floraeAccessKey"] = config.floraeKey;
-    json["wifiTimeout"] = config.wifiTimeout;
-
-    File file = LittleFS.open("/config.json", "w");
-    if (!file) return;
-    serializeJson(json, file);
-    file.close();
-}
-
-void checkWiFiConnection() {
-    static int timeoutCounter = 0;
-    isConnecting = true;
-
-    if (WiFi.isConnected()) {
-        isConnected = true;
-        isConnecting = false;
-        timeoutCounter = 0;
-        DateTime.setTimeZone("CET-1CEST,M3.5.0/2,M10.5.0/3");
-        isTimeSet = true;
-        ticker.detach();
-
-        if (modApiKey)
-        {
-            // claimApiKey();
-        }
-
-        return;
-    }
-
-    timeoutCounter++;
-
-    if (timeoutCounter >= config.wifiTimeout) {
-        WiFi.disconnect(false);
-        timeoutCounter = 0;
-        isConnecting = false;
-    }
-}
-
-void loadSensors() {
-    for (auto const& sCfg : possibleSensors) {
-        Sensor s;
-        s.sensorType = sCfg.sensorType;
-        s.pin = sCfg.pin;
-        switch (sCfg.sensorType)
-        {
-            case DHT22_TYPE:
-            case DHT11_TYPE:
-            {
-                DHT dht(s.pin, s.sensorType == DHT11_TYPE? DHT11 : DHT22);
-                pinMode(s.pin, INPUT);
-                dht.begin();
-
-                double h = dht.readHumidity();
-                double t = dht.readTemperature();
-
-                if (!isnan(h) && !isnan(t)) {
-                    SensorData tempData;
-                    tempData.type = "temperature";
-                    tempData.currentValue = 0;
-                    tempData.lowest24hValue = std::numeric_limits<double>::infinity();
-                    tempData.highest24hValue = -std::numeric_limits<double>::infinity();
-                    tempData.lastSecondAverage = 0;
-                    tempData.avg24h = 0;
-                    tempData.lowest24hTimestamp = 0;
-                    tempData.highest24hTimestamp = 0;
-                    tempData.unit = "&deg; C";
-
-                    SensorData humData;
-                    humData.type = "humidity";
-                    humData.currentValue = 0;
-                    humData.lowest24hValue = std::numeric_limits<double>::infinity();
-                    humData.highest24hValue = -std::numeric_limits<double>::infinity();
-                    humData.lastSecondAverage = 0;
-                    humData.avg24h = 0;
-                    humData.lowest24hTimestamp = 0;
-                    humData.highest24hTimestamp = 0;
-                    humData.unit = "% RH";
-
-                    s.sensorReadings.push_back(tempData);
-                    s.sensorReadings.push_back(humData);
-
-                    sensors.push_back(std::move(s));
-                }
-                break;
-            }
-
-            case SOIL_MOISTURE_TYPE:
-            {
-                int raw = analogRead(sCfg.pin);
-
-                if (raw != 4095.0 && raw != 0)
-                {
-                    SensorData readings;
-
-                    readings.type = "soilMoisture";
-                    readings.currentValue = calculateMoisture(raw);
-                    readings.avg24h = 0;
-                    readings.lowest24hValue = std::numeric_limits<double>::infinity();
-                    readings.highest24hValue = - std::numeric_limits<double>::infinity();
-                    readings.lastSecondAverage = 0;
-                    readings.highest24hTimestamp = 0;
-                    readings.lowest24hTimestamp = 0;
-                    readings.unit = "%";
-
-                    s.sensorReadings.push_back(readings);
-
-                    sensors.push_back(std::move(s));
-                    break;
-                }
-
-                break;
-            }
-
-            case LUX_SENSOR_TYPE:
-            {
-                int raw = analogRead(sCfg.pin);
-
-                if (raw != 4095.0 && raw != 0)
-                {
-                    SensorData readings;
-
-                    readings.type = "light";
-                    readings.currentValue = calculateLux(raw);
-                    readings.avg24h = 0;
-                    readings.lowest24hValue = std::numeric_limits<double>::infinity();
-                    readings.highest24hValue = - std::numeric_limits<double>::infinity();
-                    readings.highest24hTimestamp = 0;
-                    readings.lowest24hTimestamp = 0;
-                    readings.unit = "LUX";
-
-                    s.sensorReadings.push_back(readings);
-
-                    sensors.push_back(std::move(s));
-                    break;
-                }
-
-                break;
-            }
-
-            default:
-                break;
-        }
-    }
-}
-
-void sampleSensors()
-{
-    if (!WiFi.isConnected() || !isTimeSet)
+    void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override
     {
-        return;
+        std::string data = pCharacteristic->getValue();
+
+        if (data.empty())
+            return;
+
+        handleCredentialsUpdate(String(data.c_str()));
     }
-    
-    time_t now = DateTime.now();
+};
 
-    for (auto& sensor : sensors)
-    {
-        switch (sensor.sensorType)
-        {
-            case DHT11_TYPE:
-            case DHT22_TYPE:
-            {
-                DHT dht(sensor.pin, sensor.sensorType == DHT11_TYPE? DHT11 : DHT22);
-                dht.begin();
+SensorFunction readers[] = 
+{
+  {"ENV_HUMIDITY", []() { return dht.readHumidity(); }},
+  {"ENV_TEMPERATURE", []() {return dht.readTemperature(); }},
+  {"SOIL_MOISTURE", []() {return readVWC(SOIL_MOISTURE_PIN); }},
+  {"LIGHT_LUX", []() {return luxMeter.readLightLevel(); }}
+};
 
-                double humidity = dht.readHumidity();
-                double temperature = dht.readTemperature();
-
-                for (auto& sensorData : sensor.sensorReadings)
-                {
-                    double value = sensorData.type == "humidity" ? humidity : sensorData.type == "temperature" ? temperature : NAN;
-                    if (isnan(value)) continue;
-
-                    sensorData.currentValue = value;
-
-                    if (value < sensorData.lowest24hValue) {
-                        sensorData.lowest24hValue = value;
-                        sensorData.lowest24hTimestamp = now;
-                    }
-
-                    if (value > sensorData.highest24hValue) {
-                        sensorData.highest24hValue = value;
-                        sensorData.highest24hTimestamp = now;
-                    }
-
-                    sensorData.samples24h.push_back({value, now});
-                    sensorData.samplesLastSecond.push_back({value, now});
-
-                    while (!sensorData.samples24h.empty() && now - sensorData.samples24h.front().timestamp > 86400) {
-                        sensorData.samples24h.pop_front();
-                    }
-
-                    while (!sensorData.samplesLastSecond.empty() && now - sensorData.samplesLastSecond.front().timestamp > 1) {
-                        sensorData.samplesLastSecond.pop_front();
-                    }
-
-                    double sumLastSecond = 0;
-                    for (const auto& sample : sensorData.samplesLastSecond) {
-                        sumLastSecond += sample.value;
-                    }
-                    sensorData.lastSecondAverage = sensorData.samplesLastSecond.empty() ? 0 : sumLastSecond / sensorData.samplesLastSecond.size();
-
-                    double sum24h = 0;
-                    for (const auto& sample : sensorData.samples24h) {
-                        sum24h += sample.value;
-                    }
-                    sensorData.avg24h = sensorData.samples24h.empty() ? 0 : sum24h / sensorData.samples24h.size();
-
-                    sensorData.lastSample = static_cast<int>(value);
-                }
-                
-                break;
-            }
-
-            case SOIL_MOISTURE_TYPE:
-            {
-                for (auto &sensorData : sensor.sensorReadings)
-                {
-                    int rawReading = analogRead(sensor.pin);
-                    double value = sensorData.type == "soilMoisture"? calculateMoisture(rawReading) : NAN;
-
-                    if (isnan(value)) continue;
-
-                    sensorData.currentValue = value;
-
-                    if (value < sensorData.lowest24hValue) {
-                        sensorData.lowest24hValue = value;
-                        sensorData.lowest24hTimestamp = now;
-                    }
-
-                    if (value > sensorData.highest24hValue) {
-                        sensorData.highest24hValue = value;
-                        sensorData.highest24hTimestamp = now;
-                    }
-
-                    sensorData.samples24h.push_back({value, now});
-                    sensorData.samplesLastSecond.push_back({value, now});
-
-                    while (!sensorData.samples24h.empty() && now - sensorData.samples24h.front().timestamp > 86400) {
-                        sensorData.samples24h.pop_front();
-                    }
-
-                    while (!sensorData.samplesLastSecond.empty() && now - sensorData.samplesLastSecond.front().timestamp > 1) {
-                        sensorData.samplesLastSecond.pop_front();
-                    }
-
-                    double sumLastSecond = 0;
-
-                    for (const auto& sample : sensorData.samplesLastSecond) {
-                        sumLastSecond += sample.value;
-                    }
-
-                    sensorData.lastSecondAverage = sensorData.samplesLastSecond.empty() ? 0 : sumLastSecond / sensorData.samplesLastSecond.size();
-
-                    double sum24h = 0;
-
-                    for (const auto& sample : sensorData.samples24h) {
-                        sum24h += sample.value;
-                    }
-
-                    sensorData.avg24h = sensorData.samples24h.empty() ? 0 : sum24h / sensorData.samples24h.size();
-                    sensorData.lastSample = static_cast<int>(value);
-                    break;
-                }
-
-                break;
-            }
-
-            case LUX_SENSOR_TYPE:
-            {
-                for (auto &sensorData : sensor.sensorReadings)
-                {
-                    int rawReading = analogRead(sensor.pin);
-                    double value = sensorData.type == "light"? calculateLux(rawReading) : NAN;
-
-                    if (isnan(value)) continue;
-
-                    sensorData.currentValue = value;
-
-                    if (value < sensorData.lowest24hValue) {
-                        sensorData.lowest24hValue = value;
-                        sensorData.lowest24hTimestamp = now;
-                    }
-
-                    if (value > sensorData.highest24hValue) {
-                        sensorData.highest24hValue = value;
-                        sensorData.highest24hTimestamp = now;
-                    }
-
-                    sensorData.samples24h.push_back({value, now});
-                    sensorData.samplesLastSecond.push_back({value, now});
-
-                    while (!sensorData.samples24h.empty() && now - sensorData.samples24h.front().timestamp > 86400) {
-                        sensorData.samples24h.pop_front();
-                    }
-
-                    while (!sensorData.samplesLastSecond.empty() && now - sensorData.samplesLastSecond.front().timestamp > 1) {
-                        sensorData.samplesLastSecond.pop_front();
-                    }
-
-                    double sumLastSecond = 0;
-
-                    for (const auto& sample : sensorData.samplesLastSecond) {
-                        sumLastSecond += sample.value;
-                    }
-
-                    sensorData.lastSecondAverage = sensorData.samplesLastSecond.empty() ? 0 : sumLastSecond / sensorData.samplesLastSecond.size();
-
-                    double sum24h = 0;
-
-                    for (const auto& sample : sensorData.samples24h) {
-                        sum24h += sample.value;
-                    }
-
-                    sensorData.avg24h = sensorData.samples24h.empty() ? 0 : sum24h / sensorData.samples24h.size();
-                    sensorData.lastSample = static_cast<int>(value);
-                    break;
-                }
-
-                break;
-            }
-
-            default:
-                break;
-        }
-    }
-}
-
-
-void setup() {
-    isTimeSet = false;
-    DateTime.begin();
+void setup()
+{
     Serial.begin(115200);
+    Wire.begin();
+    dht.begin();
 
-    Serial.println("Starting WiFi AP");
-    WiFi.mode(WIFI_AP_STA);
-    WiFi.softAP("FloraLink", DEFAULT_PASSWORD);
-
-    struct tm DEFAULT_TIME = {};
-    DEFAULT_TIME.tm_year = 2025 - 1900;
-    DEFAULT_TIME.tm_mon = 0;
-    DEFAULT_TIME.tm_mday = 1;
-    DEFAULT_TIME.tm_hour = 12;
-    DEFAULT_TIME.tm_min = 0;
-    DEFAULT_TIME.tm_sec = 0;
-
-    DateTime.setTime(mktime(&DEFAULT_TIME));
-    LittleFS.begin();
-    loadConfig();
-
-    if (config.ssid.length() && config.password.length()) {
-        WiFi.begin(config.ssid.c_str(), config.password.c_str());
-        ticker.attach(1, checkWiFiConnection);
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+      nvs_flash_erase();
+      ret = nvs_flash_init();
+    }
+    if (ret != ESP_OK) {
+      Serial.printf("NVS init failed: %d\n", ret);
+      ESP.restart();
     }
 
-    Serial.println("Loading Sensors");
-    loadSensors();
-
-    Serial.println("Starting web server");
-    server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
-
-    server.on("/validate-api-key", HTTP_GET, [](AsyncWebServerRequest *request)
+    if(!luxMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE_2))
     {
-        String response = String("{\"result\":") + ("true") + "}";
-        request->send(200, "application/json", response);
-    });
+        ESP.restart();
+    }; 
 
-    server.on("/connection-status", HTTP_GET, [](AsyncWebServerRequest *request){
-        JsonDocument json;
+    pinMode(SOIL_MOISTURE_PIN, INPUT);
+    pinMode(PUMP_PIN, OUTPUT);
+    
+    wsClient.onEvent(handleWebSocketEvent);
 
-        json["isConnected"] = isConnected;
-        json["isConnecting"] = isConnecting;
-        json["ip"] = WiFi.localIP().toString();
+    const char* wifiSsid = getWifiSsid();
+    const char* wifiPassword = getWifiPassword();
 
-        String out;
-        serializeJson(json, out);
-        request->send(200, "application/json", out);
-    });
-
-    server.on("/sensors-status", HTTP_GET, [](AsyncWebServerRequest *request) {
-        JsonDocument doc;
-        JsonArray arr = doc.to<JsonArray>();
-
-        for (const Sensor &sensor : sensors)
-        {
-            for (const auto& reading : sensor.sensorReadings) {
-                JsonObject object = arr.add<JsonObject>();
-
-                object["type"] = reading.type;
-                object["value"] = round(reading.lastSecondAverage * 100.0) / 100.0;
-                object["minValue"] = reading.lowest24hValue;
-                object["maxValue"] = reading.highest24hValue;
-                object["minValueTimestamp"] = formatTimestampISO8601(reading.lowest24hTimestamp);
-                object["maxValueTimestamp"] = formatTimestampISO8601(reading.highest24hTimestamp);
-                object["averageValue"] = round(reading.avg24h * 100.0) / 100.0;
-                object["unit"] = reading.unit;
-            }
-        }
-
-        String out;
-        serializeJson(doc, out);
-        request->send(200, "application/json", out);
-    });
-
-    server.on("/save", HTTP_POST, [](AsyncWebServerRequest *request){}, NULL,
-        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
-            JsonDocument json;
-
-            bool modifiesWifi = false;
-            bool modifiesApiKey = false;
-            bool configChanged = false;
-
-            if (deserializeJson(json, data, len) != DeserializationError::Ok) {
-                request->send(400, "application/json", "\"error\":\"Invalid JSON\"\"");
-                return;
-            }
-
-            if (json["targetSsid"].is<String>() && config.ssid != json["targetSsid"].as<String>()) {
-                config.ssid = json["targetSsid"].as<String>();
-                modifiesWifi = true;
-                configChanged = true;
-            }
-
-            if (json["targetPassword"].is<String>() && config.password != json["targetPassword"].as<String>()) {
-                config.password = json["targetPassword"].as<String>();
-                modifiesWifi = true;
-                configChanged = true;
-            }
-
-            if (json["floraeAccessKey"].is<String>() && config.floraeKey != json["floraeAccessKey"].as<String>()) {
-                config.floraeKey = json["floraeAccessKey"].as<String>();
-                modifiesApiKey = true;
-                configChanged = true;
-            }
-
-            if (json["wifiTimeout"].is<int>() && config.wifiTimeout != json["wifiTimeout"].as<int>()) {
-                config.wifiTimeout = json["wifiTimeout"].as<int>();
-                configChanged = true;
-            }
-
-            request->send(200, "text/plain", "Configuration saved");
-
-            if (configChanged) {
-                saveConfig();
-            }
-
-            modApiKey = modifiesApiKey;
-
-            if (modifiesWifi) {
-                WiFi.begin(config.ssid.c_str(), config.password.c_str());
-                ticker.attach(1, checkWiFiConnection);
-            }
-
-            if (modifiesApiKey && !modifiesWifi)
-            {
-                // claimApiKey();
-            }
-        }
-    );
-
-    server.begin();
+    if (wifiSsid == nullptr || wifiPassword == nullptr)
+    {
+      handleEnablingBLE();
+      Serial.print("starting");
+      return;
+    }
+    
+    connectToWiFi(wifiSsid, wifiPassword);
 }
 
-void loop() {
-    if (millis() - lastSampleMillis >= 1000) {
-        lastSampleMillis = millis();
-        sampleSensors();
-        //sendCurrentData();
-    }
+void loop()
+{
+    wsClient.loop();
+}
 
-    yield();
+float readVWC(int pin) {
+  int raw = analogRead(pin);
+  float volt = raw * (3.3 / 4095.0);
+  float VWC;
+
+  if (volt >= 2.5) {
+    VWC = 0.0;
+  }
+  else if (volt >= 2.0) {
+    VWC = (2.5 - volt) * 20;
+  }
+  else if (volt >= 1.5) {
+    VWC = (2.0 - volt) * 30 + 10;
+  }
+  else if (volt >= 1.0) {
+    VWC = (1.5 - volt) * 50 + 25;
+  }
+  else {
+    VWC = (1.0 - volt) * 40 + 50;
+  }
+
+  return constrain(VWC, 0.0, 100.0);
+}
+
+void handleWebSocketEvent(WStype_t type, uint8_t *payload, size_t length)
+{
+  switch (type)
+  {
+      case WStype_CONNECTED:
+        Serial.println("Connected!");
+        ticker.attach(1, handleSendingReadings);
+        break;
+      
+      case WStype_ERROR:
+      case WStype_DISCONNECTED:
+        Serial.println("Disconected!");
+        ticker.detach();
+        break;
+
+      case WStype_TEXT:
+      {
+        JsonDocument doc;
+        String jsonResponse(reinterpret_cast<const char*>(payload), length);
+        DeserializationError error = deserializeJson(doc, jsonResponse);
+      
+        String commandType = doc["type"];
+
+        Serial.println(commandType);
+
+        if (commandType.equalsIgnoreCase("ADD_WATER"))
+        {
+          handleAddingWater(doc["value"]);
+        }
+        
+        if (commandType.equalsIgnoreCase("ENABLE_BLE"))
+        {
+          handleEnablingBLE();
+          Serial.println("enabling");
+          BleTicker.attach(60 * 5, [](){ NimBLEDevice::deinit(); }); //disable after 5 minutes
+        }
+      }        
+      default:
+        break;
+  }    
+}
+
+String handleSensorSampling()
+{
+  String sensorJson = "[";
+  size_t readersSize = sizeof(readers) / sizeof(SensorFunction);
+
+  for (size_t i = 0; i < readersSize; ++i)
+  {
+      SensorFunction reader = readers[i];
+      String lastSign = (readersSize - 1 == i)? "" : ",";
+      sensorJson += "{\"type\": \"" + String(reader.type) + "\", \"value\": \"" + String(reader.read()) + "\"}" + lastSign;
+  }
+
+  sensorJson += "]";
+
+  return sensorJson;
+}
+
+void handleSendingReadings()
+{
+  if (WiFi.isConnected())
+  {
+      wsClient.sendTXT(handleSensorSampling().c_str());
+  }
+}
+
+void handleAddingWater(double amount)
+{
+  pinMode(PUMP_PIN, OUTPUT);
+
+  const double seconds = amount / PUMP_EFFICIENCY;
+  const unsigned long milliseconds = static_cast<unsigned long>(seconds * 1000);
+
+  digitalWrite(PUMP_PIN, HIGH);
+  delay(milliseconds);
+  digitalWrite(PUMP_PIN, LOW);
+}
+
+void handleEnablingBLE()
+{
+  NimBLEDevice::init("FloraLink");
+
+  NimBLEServer* server = NimBLEDevice::createServer();
+  NimBLEService* service = server->createService(BLE_SERVICE_UUID);
+  NimBLECharacteristic* characteristic = service->createCharacteristic(
+      BLE_CHARACTERISTIC_UUID,
+      NIMBLE_PROPERTY::WRITE
+  );
+
+  characteristic->setCallbacks(new BLECallback());
+  service->start();
+
+  NimBLEAdvertising* advertising = NimBLEDevice::getAdvertising();
+  advertising->enableScanResponse(true);
+  advertising->setName("FloraLink");
+  advertising->addServiceUUID(BLE_SERVICE_UUID);
+  advertising->start();
+
+  advertising->addServiceUUID(BLE_SERVICE_UUID);
+  advertising->start();
+}
+
+void handleCredentialsUpdate(const String &json)
+{
+  JsonDocument doc;
+  DeserializationError error = deserializeJson(doc, json);
+
+  if (error)
+  {
+    return;
+  }
+
+  const char* ssid = doc[WIFI_SSID];
+  const char* password = doc[WIFI_PASSWORD];
+  const char* apiKey = doc[API_KEY];
+
+  if (! apiKey || !connectToWiFi(ssid, password)) {
+    return;
+  }
+
+  Preferences prefs;
+  prefs.begin("cfg", false);
+
+  String ssidStr = String(ssid);
+  ssidStr.trim();
+
+  String passwordStr = String(password);
+  passwordStr.trim();
+
+  String apiKeyStr = String(apiKey);
+  apiKeyStr.trim();
+
+  prefs.putString(WIFI_SSID, ssidStr);
+  prefs.putString(WIFI_PASSWORD, passwordStr);
+  prefs.putString(API_KEY, apiKeyStr);
+
+  prefs.end();
+}
+
+bool connectToWiFi(const char* &ssid, const char* &password, unsigned long timeoutMs) {
+  if (ssid == nullptr || password == nullptr)
+  {
+    return false;
+  }
+
+  WiFi.hostname("FloraLink");
+  WiFi.onEvent(handleWifiEvents);
+  WiFi.begin(ssid, password);
+
+  unsigned long startAttemptTime = millis();
+
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < timeoutMs) {
+    delay(100);
+  }
+
+  if (!WiFi.isConnected())
+  {
+    WiFi.disconnect();
+    return false;
+  }
+
+  return true;
+}
+
+const char* getApiKey()
+{
+  return getValueFromConfig(API_KEY);
+}
+
+const char* getWifiSsid()
+{
+  return getValueFromConfig(WIFI_SSID);
+}
+
+const char* getWifiPassword()
+{
+  return getValueFromConfig(WIFI_PASSWORD);
+}
+
+const char* getValueFromConfig(const char* key)
+{
+  if (key != WIFI_SSID && key != WIFI_PASSWORD && key != API_KEY)
+    return nullptr;
+
+  Preferences prefs;
+  if (!prefs.begin("cfg", true)) {
+    prefs.end();
+    return nullptr;
+  }
+
+  String value = prefs.getString(key, "");
+  prefs.end();
+
+  return value.isEmpty() ? nullptr : strdup(value.c_str());
+}
+
+void handleWifiEvents(WiFiEvent_t event)
+{
+  switch (event)
+  {
+    case SYSTEM_EVENT_STA_GOT_IP:
+    {
+      NimBLEDevice::deinit();
+
+      const char* apiKey = getApiKey();
+
+      if (apiKey == nullptr) {
+          Serial.println("Missing API key");
+          return;
+      }
+
+      String headers = String(API_KEY_HEADER) + ": " + apiKey;
+      wsClient.setExtraHeaders(headers.c_str());
+
+      if (enableDevMode)
+      {
+        wsClient.begin(DEV_BASE_URL, 8080, "/ws/floralink");
+        break;
+      }
+      
+      wsClient.beginSSL(PROD_BASE_URL, 443, "/ws/floralink");
+      break;
+    }
+    
+    case SYSTEM_EVENT_STA_DISCONNECTED:
+      handleEnablingBLE();
+      break;
+    
+    default:
+      break;
+  }
 }

@@ -1,19 +1,15 @@
 package pl.Dayfit.Florae.Controllers;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
 import pl.Dayfit.Florae.DTOs.FloraLinkSetNameDTO;
-import pl.Dayfit.Florae.DTOs.Sensors.DailySensorDataDTO;
 import pl.Dayfit.Florae.DTOs.Sensors.EnableBleDTO;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 import pl.Dayfit.Florae.Services.FloraLinkCacheService;
@@ -33,7 +29,7 @@ public class FloraLinkController {
     @PostMapping("/api/v1/floralink/enable-ble")
     public ResponseEntity<Map<String, String>> sendRequestToEnableBle(@RequestBody EnableBleDTO dto, @AuthenticationPrincipal UserPrincipal userPrincipal)
     {
-        Integer floralinkId = dto.getFloralinkId();
+        Integer floralinkId = dto.getFloraLinkId();
 
         if (floralinkId == null)
         {
@@ -42,13 +38,6 @@ public class FloraLinkController {
 
         floraLinkService.handleEnablingBle(floralinkId, userPrincipal.getUsername());
         return ResponseEntity.ok(Map.of("message", "Request to enable BLE has been sent to the floralink device."));
-    }
-
-    @PostMapping("/api/v1/floralink/upload-daily-report")
-    public ResponseEntity<?> uploadReport(@RequestBody @Valid List<DailySensorDataDTO> uploadedData, Authentication authentication)
-    {
-        floraLinkService.handleReportUpload(uploadedData, authentication);
-        return ResponseEntity.ok(Map.of("message", "Report uploaded successfully."));
     }
 
     @GetMapping("/api/v1/floralink/get-all-daily-data")
