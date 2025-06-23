@@ -32,7 +32,6 @@ export default function CreatePlant({ onClose }) {
 
   // Wrap handleSubmit to include volume
   function handleSubmitWithVolume(e) {
-    e.preventDefault();
     // Attach volume to the ref for useCreatePlant
     if (volumeRef.current) {
       // Volume is passed directly to handleSubmit
