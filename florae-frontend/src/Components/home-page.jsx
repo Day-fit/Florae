@@ -9,7 +9,8 @@ import { UiContext } from '../store/ui-context.jsx';
 import { use } from 'react';
 import { HiOutlineInformationCircle } from 'react-icons/hi';
 import InformationComponent from './information-component.jsx';
-import temp from '../assets/temp.png';
+import plant1 from '../assets/home-img1.jpg';
+import plant2 from '../assets/home-img2.jpg';
 
 export default function HomePage() {
   const { setView, setModal } = use(UiContext);
@@ -27,8 +28,8 @@ export default function HomePage() {
       />
       <div className="flex flex-col md:flex-row pl-[2vw] pr-[2vw] justify-center gap-20 items-center">
         {/* Images */}
-        <img alt="temp1" src={temp} className="w-120 h-80 object-cover rounded-md" />
-        <img alt="temp2" src={temp} className="w-120 h-80 object-cover rounded-md" />
+        <img alt="plant1" src={plant1} className="w-120 h-80 object-cover rounded-md" />
+        <img alt="plant2" src={plant2} className="w-120 h-80 object-cover rounded-md" />
       </div>
       <div className="w-full py-8 bg-gray-50">
         <h1 className="text-3xl md:text-4xl font-bold text-green-800 mb-4 md:ml-22 text-center md:text-left">
