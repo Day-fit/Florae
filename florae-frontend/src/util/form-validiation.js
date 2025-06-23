@@ -28,20 +28,15 @@ export function isEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-// XSS Prevention - Remove HTML tags and special characters
+// XSS Prevention - Remove HTML tags and special characters using sanitize-html
+import sanitizeHtml from 'sanitize-html';
+
 const sanitizeString = (value) => {
   if (typeof value !== 'string') return value;
-  let sanitized = value;
-  let previous;
-  do {
-    previous = sanitized;
-    sanitized = sanitized
-      .replace(/<[^>]*>/g, '') // Remove HTML tags
-      .replace(/[<>]/g, '') // Remove < and > characters
-      .replace(/javascript:/gi, '') // Remove javascript: protocol
-      .replace(/on\w+=/gi, ''); // Remove event handlers
-  } while (sanitized !== previous);
-  return sanitized.trim();
+  return sanitizeHtml(value, {
+    allowedTags: [], // Disallow all HTML tags
+    allowedAttributes: {}, // Disallow all attributes
+  }).trim();
 };
 
 // Plant name validation - alphanumeric, spaces, hyphens, apostrophes only
