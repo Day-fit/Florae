@@ -64,6 +64,8 @@ class BLECallback : public NimBLECharacteristicCallbacks
         if (data.empty())
             return;
 
+        Serial.println(data.c_str());
+
         handleCredentialsUpdate(String(data.c_str()));
     }
 };
