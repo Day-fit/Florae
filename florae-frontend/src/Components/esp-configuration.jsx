@@ -4,12 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import CloseButton, { baseInputClass, noErrorClass } from './close-button.jsx';
 import axios from 'axios';
 import getCsrfToken from '../util/getCsrfToken.js';
+import { espConfigSchema } from '../util/form-validiation.js';
 
 export default function EspConfiguration({ onClose }) {
   const ssidRef = useRef(null);
   const passwordRef = useRef(null);
   const [plants, setPlants] = useState([]);
   const [selectedPlant, setSelectedPlant] = useState('');
+  const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
   const ESP_SERVICE_UUID = '53020f00-319c-4d97-a2b1-9e706baba77a';
   const WIFI_CREDENTIALS_CHAR_UUID = 'f87709b3-63a7-4605-9bb5-73c383462296';
@@ -95,11 +98,33 @@ export default function EspConfiguration({ onClose }) {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({});
+    setSubmitting(true);
+
     const wifi_ssid = ssidRef.current.value;
     const wifi_password = passwordRef.current.value;
-    connectToEsp(wifi_ssid, wifi_password);
+
+    // Validate using Yup schema
+    try {
+      await espConfigSchema.validate({
+        wifiSsid: wifi_ssid,
+        wifiPassword: wifi_password,
+        selectedPlant: selectedPlant
+      }, { abortEarly: false });
+    } catch (validationError) {
+      const newErrors = {};
+      validationError.inner.forEach((error) => {
+        newErrors[error.path] = error.message;
+      });
+      setErrors(newErrors);
+      setSubmitting(false);
+      return;
+    }
+
+    await connectToEsp(wifi_ssid, wifi_password);
+    setSubmitting(false);
   };
 
   useEffect(() => {
@@ -114,9 +139,8 @@ export default function EspConfiguration({ onClose }) {
     fetchPlants();
   }, []);
 
-
   return (
-    <div className="z-100 bg-white/90 rounded-xl p-10 max-w-lg w-full flex flex-col items-center shadow-lg mx-2">
+    <div className="z-10 bg-white/90 rounded-xl p-10 max-w-lg w-full flex flex-col items-center shadow-lg mx-2">
       <h2 className="mb-6 text-2xl font-bold text-green-700">FloraLink Configuration</h2>
       <form onSubmit={handleSubmit} className="w-full">
         <div className="mb-4">
@@ -126,8 +150,9 @@ export default function EspConfiguration({ onClose }) {
             type="text"
             placeholder="Type your WiFi name..."
             required
-            className={`${baseInputClass} ${noErrorClass}`}
+            className={`${baseInputClass} ${errors.wifiSsid ? 'border-red-500' : noErrorClass}`}
             autoComplete="off"
+            errorMsg={errors.wifiSsid}
           />
         </div>
         <div className="mb-4">
@@ -137,8 +162,9 @@ export default function EspConfiguration({ onClose }) {
             type="password"
             placeholder="Type your WiFi password..."
             required
-            className={`${baseInputClass} ${noErrorClass}`}
+            className={`${baseInputClass} ${errors.wifiPassword ? 'border-red-500' : noErrorClass}`}
             autoComplete="off"
+            errorMsg={errors.wifiPassword}
           />
         </div>
         <div className="mb-4">
@@ -149,7 +175,7 @@ export default function EspConfiguration({ onClose }) {
             Plant
           </label>
           <select
-            className={`${baseInputClass} ${noErrorClass}`}
+            className={`${baseInputClass} ${errors.selectedPlant ? 'border-red-500' : noErrorClass}`}
             value={selectedPlant}
             onChange={(e) => setSelectedPlant(e.target.value)}
           >
@@ -162,13 +188,17 @@ export default function EspConfiguration({ onClose }) {
               </option>
             ))}
           </select>
+          {errors.selectedPlant && (
+            <p className="text-red-800 text-sm mt-1">{errors.selectedPlant}</p>
+          )}
         </div>
         <div className="flex flex-row justify-between mt-4 w-full">
           <div className="flex justify-start">
             <Button
-              buttonText="Connect"
+              buttonText={submitting ? "Connecting..." : "Sign in"}
               type="submit"
               className="max-w-lg text-white bg-green-700 text-center rounded-lg pt-2 pb-2 px-20"
+              disabled={submitting}
             />
           </div>
           <div className="flex justify-end">

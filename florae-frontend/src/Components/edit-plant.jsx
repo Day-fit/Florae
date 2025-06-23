@@ -10,6 +10,7 @@ import { MdDelete } from 'react-icons/md';
 import useCreatePlant from './useCreatePlant.jsx';
 import axios from 'axios';
 import getCsrfToken from '../util/getCsrfToken.js';
+import { editPlantSchema } from '../util/form-validiation.js';
 
 export default function EditPlant({ plant, onClose, currentSelection = 'optimal', onSelectionChange }) {
   const [editingName, setEditingName] = useState(false);
@@ -41,9 +42,33 @@ export default function EditPlant({ plant, onClose, currentSelection = 'optimal'
     }
   }
 
+  async function validateName() {
+    try {
+      await editPlantSchema.validateAt('name', { name });
+      setNameError('');
+      return true;
+    } catch (error) {
+      setNameError(error.message);
+      return false;
+    }
+  }
+
+  async function validateVolume() {
+    try {
+      await editPlantSchema.validateAt('volume', { volume });
+      setVolumeError('');
+      return true;
+    } catch (error) {
+      setVolumeError(error.message);
+      return false;
+    }
+  }
+
   async function handleSaveName() {
+    const isValid = await validateName();
+    if (!isValid) return;
+
     setSavingName(true);
-    setNameError('');
     try {
       await setPlantName(plant.id, name);
       setEditingName(false);
@@ -56,8 +81,10 @@ export default function EditPlant({ plant, onClose, currentSelection = 'optimal'
   }
 
   async function handleSaveVolume() {
+    const isValid = await validateVolume();
+    if (!isValid) return;
+
     setSavingVolume(true);
-    setVolumeError('');
     try {
       await setPlantVolume(plant.id, volume);
       setEditingVolume(false);
@@ -136,7 +163,6 @@ export default function EditPlant({ plant, onClose, currentSelection = 'optimal'
                     disabled={savingName}
                   />
                 </div>
-                {nameError && <p className="text-red-700 text-sm mt-1">{nameError}</p>}
               </div>
               {/* Volume Edit */}
               <div>
@@ -164,7 +190,6 @@ export default function EditPlant({ plant, onClose, currentSelection = 'optimal'
                     disabled={savingVolume}
                   />
                 </div>
-                {volumeError && <p className="text-red-700 text-sm mt-1">{volumeError}</p>}
               </div>
               {/* Static details */}
               <div className="flex flex-col gap-2 mt-4">
