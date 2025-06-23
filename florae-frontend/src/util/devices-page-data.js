@@ -6,6 +6,6 @@ export const devicesVisitorContent = {
 };
 export const devicesGuestContent = {
   title: 'Title',
-  paragraph: 'restart if not renders (click f5) and u cant add api to a plant more than 1 time ',
+  paragraph: 'You can assign an API to each plant only once. Manage your device connections below.',
   btnText: 'Configure',
 };
