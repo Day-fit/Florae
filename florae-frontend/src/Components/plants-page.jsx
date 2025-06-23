@@ -73,7 +73,15 @@ export default function PlantsPage({ setModal }) {
                 <div
                   key={plant.id}
                   className="cursor-pointer hover:scale-105 transition-transform"
+                  role="button"
+                  tabIndex="0"
                   onClick={() => setEditingPlant(plant)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setEditingPlant(plant);
+                    }
+                  }}
                 >
                   <PlantCard
                     guestName={plant.name}
