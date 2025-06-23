@@ -138,11 +138,13 @@ public class FloraLinkStreamHandler implements WebSocketHandler {
             if (reading.getMaxValue() == null || reading.getMaxValue() < dto.getValue() || Duration.between(reading.getMaxTimestamp(), Instant.now()).toDays() >= 24)
             {
                 reading.setMaxValue(dto.getValue());
+                reading.setMaxTimestamp(Instant.now());
             }
 
             if (reading.getMinValue() == null || reading.getMinValue() > dto.getValue() || Duration.between(reading.getMinTimestamp(), Instant.now()).toDays() >= 24)
             {
                 reading.setMinValue(dto.getValue());
+                reading.setMinTimestamp(Instant.now());
             }
 
             Integer count = reading.getCount();
