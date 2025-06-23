@@ -16,6 +16,7 @@ import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
 
 import java.io.IOException;
+import java.util.Collections;
 
 /**
  * ApiKeyFilter is a custom implementation of {@link OncePerRequestFilter} that performs
@@ -56,8 +57,13 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+        String apiKey = getApiKeyHeader(request);
 
-        String apiKey = request.getHeader(API_KEY_HEADER).trim();
+        if (apiKey == null || apiKey.isBlank()) {
+            return;
+        }
+
+        apiKey = apiKey.trim();
 
         if (!apiKeyService.isValidApiKey(apiKey))
         {
@@ -86,11 +92,19 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
-        String apiKey = request.getHeader(API_KEY_HEADER);
+        String apiKey = getApiKeyHeader(request);
         boolean isApiKeyPresent = apiKey != null;
         boolean isMatchingPath = request.getRequestURI().contains("/api/v1/floralink/upload")
                 || request.getRequestURI().contains("/api/v1/connect-api");
 
         return !(isApiKeyPresent && isMatchingPath);
+    }
+
+    private String getApiKeyHeader(HttpServletRequest request) {
+        return Collections.list(request.getHeaderNames()).stream()
+                .filter(name -> name.equalsIgnoreCase(API_KEY_HEADER))
+                .findFirst()
+                .map(request::getHeader)
+                .orElse(null);
     }
 }

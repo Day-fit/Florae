@@ -111,7 +111,7 @@ void setup()
       Serial.print("starting");
       return;
     }
-    
+
     connectToWiFi(wifiSsid, wifiPassword);
 }
 
@@ -157,6 +157,8 @@ void handleWebSocketEvent(WStype_t type, uint8_t *payload, size_t length)
       case WStype_DISCONNECTED:
         Serial.println("Disconected!");
         ticker.detach();
+
+        handleEnablingBLE();
         break;
 
       case WStype_TEXT:
@@ -369,6 +371,7 @@ void handleWifiEvents(WiFiEvent_t event)
       break;
     }
     
+    case SYSTEM_EVENT_STA_LOST_IP:
     case SYSTEM_EVENT_STA_DISCONNECTED:
       handleEnablingBLE();
       break;
