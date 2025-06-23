@@ -3,7 +3,6 @@ package pl.Dayfit.Florae.Services.WebSockets;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.WebSocketSession;
 import pl.Dayfit.Florae.Enums.ConnectionType;
@@ -17,7 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @RequiredArgsConstructor
 public class SessionService {
-    private final RedisTemplate<String, Object> redisTemplate;
     private final ConcurrentHashMap<String, WebSocketSession> userSessions = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, WebSocketSession> floralinkSessions = new ConcurrentHashMap<>();
 
@@ -65,10 +63,31 @@ public class SessionService {
     public void unregisterSession(WebSocketConnectionClosedEvent event)
     {
         WebSocketSession session = event.session();
-
+        ConnectionType connectionType = event.connectionType();
         log.trace("Handling session unregister id: {}", session.getId());
 
-        redisTemplate.delete((String) session.getAttributes().get(event.connectionType() == ConnectionType.FLORALINK ? "linkedPlantId" : "username"));
+
+        if (connectionType == ConnectionType.FLORALINK)
+        {
+            if (!floralinkSessions.containsKey(session.getId()))
+            {
+                log.debug("FloraLink Session id was not in session map, at {}", session.getId());
+                return;
+            }
+
+            floralinkSessions.remove(session.getId());
+        }
+
+        if (connectionType == ConnectionType.USER)
+        {
+            if (!userSessions.containsKey(session.getId()))
+            {
+                log.debug("User Session id was not in session map, at {}", session.getId());
+                return;
+            }
+
+            userSessions.remove(session.getId());
+        }
     }
 
     public WebSocketSession getFloralinkSessionById(String floraLinkId)

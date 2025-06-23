@@ -33,6 +33,11 @@ public class ApiKeyController {
     @PostMapping("/api/v1/generate-key")
     public ResponseEntity<Map<String, String>> generateApiKey(@RequestBody GenerateApiKeyDTO apiKeyDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) throws AssociationException
     {
+        if (apiKeyDTO == null)
+        {
+            throw new IllegalArgumentException("Incorrect request body");
+        }
+
         Plant plant = plantCacheService.getPlantById(apiKeyDTO.getPlantId());
 
         if (plant == null)
