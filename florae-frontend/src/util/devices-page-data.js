@@ -5,7 +5,7 @@ export const devicesVisitorContent = {
   btnText: 'Get Started',
 };
 export const devicesGuestContent = {
-  title: 'Title',
+  title: 'Devices',
   paragraph: 'You can assign an API to each plant only once. Manage your device connections below.',
   btnText: 'Configure',
 };
