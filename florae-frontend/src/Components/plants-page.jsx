@@ -14,6 +14,7 @@ export default function PlantsPage({ setModal }) {
   const [createPlant, setCreatePlant] = useState(false);
   const [ownedPlants, setOwnedPlants] = useState(null);
   const [editingPlant, setEditingPlant] = useState(null);
+  const [plantSelections, setPlantSelections] = useState({});
 
   function handleCreatePlant() {
     setCreatePlant(true);
@@ -27,10 +28,25 @@ export default function PlantsPage({ setModal }) {
     fetchOwnedPlants();
   }
 
+  function handleSelectionChange(plantId, selection) {
+    setPlantSelections(prev => ({
+      ...prev,
+      [plantId]: selection
+    }));
+  }
+
   async function fetchOwnedPlants() {
     try {
       const response = await axios.get('/api/v1/plants');
       setOwnedPlants(response.data);
+      // Initialize selections for new plants
+      const newSelections = {};
+      response.data.forEach(plant => {
+        if (!plantSelections[plant.id]) {
+          newSelections[plant.id] = 'optimal';
+        }
+      });
+      setPlantSelections(prev => ({ ...prev, ...newSelections }));
     } catch (error) {
       console.log(error);
       setOwnedPlants([]);
@@ -42,6 +58,7 @@ export default function PlantsPage({ setModal }) {
       fetchOwnedPlants();
     } else {
       setOwnedPlants(null);
+      setPlantSelections({});
     }
   }, [isLogged]);
 
@@ -65,10 +82,15 @@ export default function PlantsPage({ setModal }) {
           </div>
           {createPlant && <CreatePlant onClose={handleClosePlant} />}
           {editingPlant && (
-            <EditPlant plant={editingPlant} onClose={handleCloseEditPlant} />
+            <EditPlant
+              plant={editingPlant}
+              onClose={handleCloseEditPlant}
+              currentSelection={plantSelections[editingPlant.id] || 'optimal'}
+              onSelectionChange={(selection) => handleSelectionChange(editingPlant.id, selection)}
+            />
           )}
           {Array.isArray(ownedPlants) && ownedPlants.length > 0 ? (
-            <div className="flex flex-row flex-wrap gap-5  justify-center">
+            <div className="flex flex-row flex-wrap gap-5 justify-center">
               {ownedPlants.map((plant) => (
                 <div
                   key={plant.id}
@@ -88,17 +110,20 @@ export default function PlantsPage({ setModal }) {
                     primaryPhoto={plant.primaryPhoto}
                     speciesName={plant.speciesName}
                     requirements={plant.requirements}
+                    selection={plantSelections[plant.id] || 'optimal'}
+                    onSelectionChange={(selection) => handleSelectionChange(plant.id, selection)}
                   />
+                  <div className="m-10"></div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="flex justify-center font-bold text-xl">No plants found.</div>
+            <div className="text-center py-10">
+              <p className="text-gray-500 text-lg">No plants found. Add your first plant!</p>
+            </div>
           )}
-          <div className="h-2 mt-15" />
         </>
       )}
     </div>
   );
 }
-
