@@ -20,7 +20,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -30,6 +29,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationCandidate;
 import pl.Dayfit.Florae.Auth.ApiKeyAuthenticationToken;
+import pl.Dayfit.Florae.Auth.FloraeAuthenticationEntryPoint;
 import pl.Dayfit.Florae.Entities.ApiKey;
 import pl.Dayfit.Florae.Filters.ApiKeyFilter;
 import pl.Dayfit.Florae.Filters.JWTFilter;
@@ -79,17 +79,14 @@ public class SecurityConfiguration {
     @Value("${allowed.origins.patterns:localhost*}")
     private String ALLOWED_ORIGINS_PATTERNS;
 
-    @Value("${security.protected-paths}")
-    private String PROTECTED_PATHS;
-
     private final ApiKeyService apiKeyService;
-    private final AuthenticationEntryPoint authenticationEntryPoint;
+    private final SecurityPropertiesConfiguration securityPropertiesConfiguration;
     private final UserDetailsService userDetailsService;
     private final JWTFilter jwtFilter;
     private final PasswordEncoder passwordEncoder;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authManager) throws Exception
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authManager, FloraeAuthenticationEntryPoint floraeAuthenticationEntryPoint) throws Exception
     {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -97,10 +94,10 @@ public class SecurityConfiguration {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .authorizeHttpRequests(request -> {
                     request.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll(); //To allow the async servlet to work properly
-                    request.requestMatchers(PROTECTED_PATHS.split(",")).authenticated();
+                    request.requestMatchers(securityPropertiesConfiguration.getProtectedPaths().toArray(new String[0])).authenticated();
                     request.anyRequest().permitAll();
                 })
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(floraeAuthenticationEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(apiKeyFilter(authManager), JWTFilter.class)

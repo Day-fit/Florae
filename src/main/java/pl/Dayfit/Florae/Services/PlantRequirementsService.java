@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import pl.Dayfit.Florae.DTOs.PlantRequirementsDTO;
+import pl.Dayfit.Florae.DTOs.Plants.PlantRequirementsDTO;
 import pl.Dayfit.Florae.Entities.PlantRequirements;
 import pl.Dayfit.Florae.Repositories.JPA.PlantRequirementsRepository;
 

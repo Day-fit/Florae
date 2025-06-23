@@ -2,7 +2,7 @@ package pl.Dayfit.Florae.Interceptors;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.websocket.AuthenticationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -27,7 +27,7 @@ public class ApiHandshakeInterceptor implements HandshakeInterceptor {
     private final ApiKeyCacheService apiKeyCacheService;
 
     @Override
-    public boolean beforeHandshake(@NonNull ServerHttpRequest request, @NonNull ServerHttpResponse response, @NonNull WebSocketHandler wsHandler, @NonNull Map<String, Object> attributes) throws Exception {
+    public boolean beforeHandshake(@NonNull ServerHttpRequest request, @NonNull ServerHttpResponse response, @NonNull WebSocketHandler wsHandler, @NonNull Map<String, Object> attributes) {
         if (!(request instanceof ServletServerHttpRequest serverRequest))
         {
             return false;
@@ -37,23 +37,27 @@ public class ApiHandshakeInterceptor implements HandshakeInterceptor {
 
         if(apiKeyRawValue == null || apiKeyRawValue.isBlank())
         {
-            throw new AuthenticationException("X-API-KEY header is missing or blank");
+            response.setStatusCode(HttpStatus.BAD_REQUEST);
+            return false;
         }
 
         ApiKey apiKey = apiKeyCacheService.getApiKey(apiKeyRawValue);
 
         if (apiKey == null)
         {
-            throw new AuthenticationException("Invalid API key");
+            response.setStatusCode(HttpStatus.UNAUTHORIZED);
+            return false;
         }
 
         if(apiKey.getLinkedFloraLink() == null)
         {
-            throw new AuthenticationException("API key is not linked to any FloraLink");
+            response.setStatusCode(HttpStatus.UNAUTHORIZED);
+            return false;
         }
 
         attributes.put("auth", new ApiKeyAuthenticationToken(apiKey));
         attributes.put("owner", apiKey.getFloraeUser().getUsername());
+        attributes.put("id", apiKey.getLinkedFloraLink().getId());
 
         return true;
     }

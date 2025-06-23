@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
-import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
-import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
-import pl.Dayfit.Florae.DTOs.FloraeUserResponseDTO;
+import pl.Dayfit.Florae.DTOs.FloraeUsers.FloraeUserLoginDTO;
+import pl.Dayfit.Florae.DTOs.FloraeUsers.FloraeUserRegisterDTO;
+import pl.Dayfit.Florae.DTOs.FloraeUsers.FloraeUserResponseDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserService;
@@ -77,7 +77,7 @@ public class FloraeUserController {
         }
     }
 
-    @PostMapping("/auth/register")
+   @PostMapping("/auth/register")
     public ResponseEntity<Map<String, String>> registerUser(@RequestBody FloraeUserRegisterDTO floraeUserRegisterDTO)
     {
         if (floraeUserRegisterDTO.getUsername() == null || floraeUserRegisterDTO.getUsername().isBlank() || !floraeUserRegisterDTO.getUsername().matches(USERNAME_REGEX) || floraeUserRegisterDTO.getUsername().length() > FloraeUser.MAX_USERNAME_LENGTH)

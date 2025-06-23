@@ -18,9 +18,9 @@ import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
  * it into a Spring Security {@code UserDetails} object.
 
  * Primary Responsibilities:
- * - Locating a {@code FloraeUser} entity by its username.
+ * - Locating a {@code FloraeUsers} entity by its username.
  * - Throwing an exception if the user cannot be found.
- * - Wrapping the found {@code FloraeUser} instance into a {@code UserPrincipal}
+ * - Wrapping the found {@code FloraeUsers} instance into a {@code UserPrincipal}
  *   for use by Spring Security.
 
  * Annotations:
@@ -35,7 +35,7 @@ import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
  *   for Spring Security.
 
  * Methods:
- * - {@code loadUserByUsername}: Retrieves a {@code FloraeUser} by username, wraps it
+ * - {@code loadUserByUsername}: Retrieves a {@code FloraeUsers} by username, wraps it
  *   into a {@code UserPrincipal}, or throws a {@code UsernameNotFoundException} if the
  *   user does not exist.
 
