@@ -79,7 +79,7 @@ SensorFunction readers[] =
 void setup()
 {
     Serial.begin(115200);
-    Wire.begin();
+    Wire.begin(22, 21);
     dht.begin();
 
     esp_err_t ret = nvs_flash_init();
