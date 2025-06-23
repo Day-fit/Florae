@@ -61,7 +61,7 @@ public class ApiKey {
     @OneToOne
     private FloraLink linkedFloraLink;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false)
     private Plant linkedPlant;
 }
