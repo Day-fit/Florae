@@ -65,30 +65,15 @@ function getRequirementRows(requirements) {
   });
 }
 
-export default function DevicesCard({ id }) {
+export default function DevicesCard({ id, humidity, lightLux, temperature, soilMoisture }) {
   const [plant, setPlant] = useState(null);
-  const [sensorData, setSensorData] = useState({});
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('/api/v1/floralink/get-all-current-data');
-        if (isMounted) setSensorData(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    fetchData(); // initial load
-    const intervalId = setInterval(fetchData, 1000);
-
-    return () => {
-      isMounted = false;
-      clearInterval(intervalId);
-    };
-  }, []);
+  const sensorData = {
+    humidity,
+    temperature,
+    light: lightLux,
+    moisture: soilMoisture,
+  };
 
   useEffect(() => {
     const fetchPlant = async () => {
@@ -96,28 +81,12 @@ export default function DevicesCard({ id }) {
         const response = await axios.get('/api/v1/plants');
         const connectedPlant = response.data.find((p) => p.linkedFloraLink.floraLinkId === id);
         setPlant(connectedPlant || null);
+      // eslint-disable-next-line no-unused-vars
       } catch (error) {
-        console.error('Failed to fetch plants:', error);
         setPlant(null);
       }
     };
     fetchPlant();
-  }, [id]);
-
-  useEffect(() => {
-    const fetchSensorData = async () => {
-      try {
-        const response = await axios.get(`/api/v1/floralink/get-all-daily-data`, {
-          withCredentials: true,
-        });
-        setSensorData(response.data);
-      } catch (error) {
-        console.error('Failed to fetch sensor data:', error);
-        setSensorData(null);
-      }
-    };
-
-    fetchSensorData();
   }, [id]);
 
   function getImgSrc(plant) {

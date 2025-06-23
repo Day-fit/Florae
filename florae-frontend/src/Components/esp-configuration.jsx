@@ -11,36 +11,53 @@ export default function EspConfiguration({ onClose }) {
   const [plants, setPlants] = useState([]);
   const [selectedPlant, setSelectedPlant] = useState('');
 
-
   const ESP_SERVICE_UUID = '53020f00-319c-4d97-a2b1-9e706baba77a';
   const WIFI_CREDENTIALS_CHAR_UUID = 'f87709b3-63a7-4605-9bb5-73c383462296';
 
-  async function sendWiFiCredentials(service, ssid, password) {
+  async function sendWiFiCredentials(service, wifi_ssid, wifi_password, api_key) {
     const characteristic = await service.getCharacteristic(WIFI_CREDENTIALS_CHAR_UUID);
-    const credentials = JSON.stringify({ ssid, password });
+    const payload = JSON.stringify({ wifi_ssid, wifi_password, api_key });
     const encoder = new TextEncoder();
-    await characteristic.writeValue(encoder.encode(credentials));
+    await characteristic.writeValue(encoder.encode(payload));
   }
 
-  const connectToEsp = async (ssid, password) => {
+  const connectToEsp = async (wifi_ssid, wifi_password) => {
+    let apiKey = null;
     try {
-      console.log("Wybieranie urządzenia...");
+      // Generate API key first
+      const csrfToken = await getCsrfToken();
+      const response = await axios.post(
+        '/api/v1/generate-key',
+        { plantId: selectedPlant },
+        {
+          withCredentials: true,
+          headers: {
+            'X-XSRF-TOKEN': csrfToken,
+          },
+        }
+      );
+      apiKey = response.data.apiKey;
+    // eslint-disable-next-line no-unused-vars
+    } catch (e) {
+      console.log('Error generating API key');
+      return;
+    }
+
+    try {
       const device = await navigator.bluetooth.requestDevice({
         filters: [{ namePrefix: 'FloraLink' }],
         optionalServices: [ESP_SERVICE_UUID],
       });
 
-      console.log("Łączenie z urządzeniem...");
       const server = await device.gatt.connect();
-
-      console.log("Pobieranie serwisu BLE...");
       const service = await server.getPrimaryService(ESP_SERVICE_UUID);
 
-      console.log("Wysyłanie danych WiFi...");
-      await sendWiFiCredentials(service, ssid, password);
+      await sendWiFiCredentials(service, wifi_ssid, wifi_password, apiKey);
 
-      setTimeout(() => {}, 10000); // Wait for ESP to process the credentials
+      // Optionally, you can add a delay here if the ESP needs time to process
+      setTimeout(() => {}, 10000);
 
+      // Optionally, connect API after BLE config
       try {
         let csrfToken = await getCsrfToken();
 
@@ -56,7 +73,7 @@ export default function EspConfiguration({ onClose }) {
         );
 
         csrfToken = await getCsrfToken();
-
+        
         await axios.post(
           '/api/v1/connect-api',
           {},
@@ -67,23 +84,22 @@ export default function EspConfiguration({ onClose }) {
               'X-API-KEY': response.data.apiKey,
             },
           }
-        )
-        return response.data.apiKey;
+        );
       // eslint-disable-next-line no-unused-vars
       } catch (e) {
         console.error("Error generating API key");
       }
     // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      console.error("Error connecting to ESP");
+      console.error('Error connecting to FloraLink via BLE:');
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const ssid = ssidRef.current.value;
-    const password = passwordRef.current.value;
-    connectToEsp(ssid, password);
+    const wifi_ssid = ssidRef.current.value;
+    const wifi_password = passwordRef.current.value;
+    connectToEsp(wifi_ssid, wifi_password);
   };
 
   useEffect(() => {
@@ -101,7 +117,6 @@ export default function EspConfiguration({ onClose }) {
   return (
     <div className="z-10 bg-white/90 rounded-xl p-10 max-w-lg w-full flex flex-col items-center shadow-lg mx-2">
       <h2 className="mb-6 text-2xl font-bold text-green-700">FloraLink Configuration</h2>
-
       <form onSubmit={handleSubmit} className="w-full">
         <div className="mb-4">
           <Input
@@ -122,7 +137,8 @@ export default function EspConfiguration({ onClose }) {
             placeholder="Type your WiFi password..."
             required
             className={`${baseInputClass} ${noErrorClass}`}
-            autoComplete="off"          />
+            autoComplete="off"
+          />
         </div>
         <div className="mb-4">
           <label
@@ -155,7 +171,7 @@ export default function EspConfiguration({ onClose }) {
             />
           </div>
           <div className="flex justify-end">
-            <CloseButton onClick={onClose}/>
+            <CloseButton onClick={onClose} />
           </div>
         </div>
       </form>

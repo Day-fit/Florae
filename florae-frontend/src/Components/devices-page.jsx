@@ -14,18 +14,42 @@
  */
 
 import { use, useState, useEffect } from 'react';
+import { useFloraWebSocket } from './useWebSockets.jsx';
 import { UserContext } from '../store/user-context.jsx';
 import InformationComponent from './information-component.jsx';
 import { devicesGuestContent, devicesVisitorContent } from '../util/devices-page-data.js';
 import axios from 'axios';
 import DevicesCard from './devices-card.jsx';
 import EspConfiguration from './esp-configuration.jsx';
-import Button from './button.jsx';
 
 export default function DevicesPage({ setModal }) {
   const { isLogged } = use(UserContext);
   const [devices, setDevices] = useState([]);
   const [showEspModal, setShowEspModal] = useState(false);
+
+  useFloraWebSocket({
+    onMessage: (data) => {
+      if (data.sensorId && data.sensorData) {
+        setDevices((prevDevices) => {
+          const idx = prevDevices.findIndex(device => device.floraLinkId === data.sensorId);
+          const updatedDevice = {
+            floraLinkId: data.sensorId,
+            humidity: data.sensorData.find(d => d.type === 'ENV_HUMIDITY')?.value,
+            temperature: data.sensorData.find(d => d.type === 'ENV_TEMPERATURE')?.value,
+            soilMoisture: data.sensorData.find(d => d.type === 'SOIL_MOISTURE')?.value,
+            lightLux: data.sensorData.find(d => d.type === 'LIGHT_LUX')?.value,
+          };
+          if (idx !== -1) {
+            // Aktualizuj istniejące urządzenie
+            return prevDevices.map((device, i) => i === idx ? { ...device, ...updatedDevice } : device);
+          } else {
+            // Dodaj nowe urządzenie
+            return [...prevDevices, updatedDevice];
+          }
+        });
+      }
+    }
+  });
 
   useEffect(() => {
     if (showEspModal) {
@@ -73,7 +97,14 @@ export default function DevicesPage({ setModal }) {
           <>
             <div className="flex flex-wrap justify-center gap-8 mt-4 mb-4">
               {devices.map((device) => (
-                <DevicesCard key={device.floraLinkId} name={device.name} id={device.floraLinkId} />
+                <DevicesCard
+                  key={device.floraLinkId}
+                  id={device.floraLinkId}
+                  humidity={device.humidity}
+                  temperature={device.temperature}
+                  soilMoisture={device.soilMoisture}
+                  lightLux={device.lightLux}
+                />
               ))}
             </div>
             <div className="h-8"></div>
