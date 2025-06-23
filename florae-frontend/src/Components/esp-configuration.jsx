@@ -165,7 +165,7 @@ export default function EspConfiguration({ onClose }) {
         <div className="flex flex-row justify-between mt-4 w-full">
           <div className="flex justify-start">
             <Button
-              buttonText="Sign in"
+              buttonText="Connect"
               type="submit"
               className="max-w-lg text-white bg-green-700 text-center rounded-lg pt-2 pb-2 px-20"
             />
