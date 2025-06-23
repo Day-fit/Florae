@@ -22,7 +22,6 @@ import { useState, useEffect } from 'react';
 
 export default function AnimatedModal({ children }) {
   const [show, setShow] = useState(false);
-
   useEffect(() => {
     setShow(true);
   }, []);
