@@ -1,7 +1,7 @@
 import useWebSocket from 'react-use-websocket';
 
 export function useFloraWebSocket({ onMessage }) {
-  const { sendMessage, lastMessage } = useWebSocket('ws://localhost:8080/ws/floralink', {
+  useWebSocket('ws://florae.dayfit.pl/ws/fanout', {
     onOpen: () => console.log("Flora WebSocket Connected"),
     onMessage: (event) => {
       const data = JSON.parse(event.data);
@@ -10,6 +10,4 @@ export function useFloraWebSocket({ onMessage }) {
     onError: (event) => console.error("Flora WebSocket Error:", event),
     shouldReconnect: () => true,
   });
-
-  return { sendMessage, lastMessage };
 }
