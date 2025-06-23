@@ -37,7 +37,7 @@ export default function EspConfiguration({ onClose }) {
         }
       );
       apiKey = response.data.apiKey;
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (e) {
       console.log('Error generating API key');
       return;
@@ -45,7 +45,7 @@ export default function EspConfiguration({ onClose }) {
 
     try {
       const device = await navigator.bluetooth.requestDevice({
-        filters: [{ name: 'FloraLink' }],
+        filters: [{ namePrefix: 'FloraLink' }],
         optionalServices: [ESP_SERVICE_UUID],
       });
 
@@ -59,23 +59,37 @@ export default function EspConfiguration({ onClose }) {
 
       // Optionally, connect API after BLE config
       try {
-        const csrfToken2 = await getCsrfToken();
+        let csrfToken = await getCsrfToken();
+
+        const response = await axios.post(
+          '/api/v1/generate-key',
+          { plantId: selectedPlant },
+          {
+            withCredentials: true,
+            headers: {
+              'X-XSRF-TOKEN': csrfToken,
+            },
+          }
+        );
+
+        csrfToken = await getCsrfToken();
+
         await axios.post(
           '/api/v1/connect-api',
           {},
           {
             withCredentials: true,
             headers: {
-              'X-XSRF-TOKEN': csrfToken2,
-              'X-API-KEY': apiKey,
+              'X-XSRF-TOKEN': csrfToken,
+              'X-API-KEY': response.data.apiKey,
             },
           }
         );
-      // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars
       } catch (e) {
-        console.log('Error connecting API after BLE config');
+        console.error("Error generating API key");
       }
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       console.error('Error connecting to FloraLink via BLE:');
     }
@@ -101,8 +115,8 @@ export default function EspConfiguration({ onClose }) {
   }, []);
 
   return (
-    <div className="z-10 bg-white rounded-xl p-10 max-w-lg w-full flex flex-col items-center shadow-lg mx-2">
-      <h2 className="mb-6 text-2xl font-bold text-green-700">Konfiguracja ESP</h2>
+    <div className="z-10 bg-white/90 rounded-xl p-10 max-w-lg w-full flex flex-col items-center shadow-lg mx-2">
+      <h2 className="mb-6 text-2xl font-bold text-green-700">FloraLink Configuration</h2>
       <form onSubmit={handleSubmit} className="w-full">
         <div className="mb-4">
           <Input
@@ -127,8 +141,11 @@ export default function EspConfiguration({ onClose }) {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="plant-select" className="text-left mb-1 font-bold text-">
-            Roślina
+          <label
+            htmlFor="plant-select"
+            className="text-left mb-1 font-bold text-"
+          >
+            Plant
           </label>
           <select
             className={`${baseInputClass} ${noErrorClass}`}

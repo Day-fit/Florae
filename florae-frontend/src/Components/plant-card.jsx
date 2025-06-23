@@ -47,7 +47,7 @@ export default function PlantCard({ primaryPhoto, speciesName, requirements, gue
   return (
     <div className="w-[20vw] border-stone-400 rounded-2xl border-2 flex flex-col items-center justify-center min-w-90 min-h-150 bg-white shadow-lg">
       {/* Guest name centered */}
-      <div className="flex justify-center mt-5 w-full">
+      <div className="flex justify-center mt-5 mb-3 w-full">
         <h1 className="text-green-700 text-2xl font-bold text-center w-full">{guestName}</h1>
       </div>
       {/* Image centered */}
