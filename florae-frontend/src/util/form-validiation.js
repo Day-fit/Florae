@@ -31,12 +31,17 @@ export function isEmail(value) {
 // XSS Prevention - Remove HTML tags and special characters
 const sanitizeString = (value) => {
   if (typeof value !== 'string') return value;
-  return value
-    .replace(/<[^>]*>/g, '') // Remove HTML tags
-    .replace(/[<>]/g, '') // Remove < and > characters
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, '') // Remove event handlers
-    .trim();
+  let sanitized = value;
+  let previous;
+  do {
+    previous = sanitized;
+    sanitized = sanitized
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/[<>]/g, '') // Remove < and > characters
+      .replace(/javascript:/gi, '') // Remove javascript: protocol
+      .replace(/on\w+=/gi, ''); // Remove event handlers
+  } while (sanitized !== previous);
+  return sanitized.trim();
 };
 
 // Plant name validation - alphanumeric, spaces, hyphens, apostrophes only
