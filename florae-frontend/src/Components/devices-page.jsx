@@ -67,7 +67,7 @@ export default function DevicesPage({ setModal }) {
       try {
         const response = await axios.get('/api/v1/get-floralinks', { withCredentials: true });
         setDevices(response.data);
-      // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars
       } catch (error) {
         console.error('Failed to fetch devices');
       }
@@ -112,7 +112,8 @@ export default function DevicesPage({ setModal }) {
         )}
       </div>
       {showEspModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30">
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/80">
+          <div className="absolute inset-0 bg-black/50" style={{ pointerEvents: 'auto' }} />
           <EspConfiguration onClose={closeEspModal} />
         </div>
       )}

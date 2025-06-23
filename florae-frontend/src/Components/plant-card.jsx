@@ -4,6 +4,8 @@ export default function PlantCard({ primaryPhoto, speciesName, requirements, gue
   const imgSrc = `data:image/png;base64,${primaryPhoto}`;
 
   function handleOptionChange(e) {
+    e.stopPropagation();
+
     if (onSelectionChange) {
       onSelectionChange(e.target.value);
     }
@@ -67,6 +69,7 @@ export default function PlantCard({ primaryPhoto, speciesName, requirements, gue
         hover:bg-green-10"
           value={selection}
           onChange={handleOptionChange}
+          onClick={(e) => e.stopPropagation()}
         >
           <option value="optimal">Optimal</option>
           <option value="max">Max</option>
