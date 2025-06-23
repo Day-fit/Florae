@@ -1,12 +1,14 @@
-import { useState } from 'react';
 import { reqMeta, reqUnits } from '../util/snippets-values.jsx';
 
-export default function PlantCard({ primaryPhoto, speciesName, requirements, guestName }) {
+export default function PlantCard({ primaryPhoto, speciesName, requirements, guestName, selection = 'optimal', onSelectionChange }) {
   const imgSrc = `data:image/png;base64,${primaryPhoto}`;
-  const [selection, setSelection] = useState('optimal');
 
   function handleOptionChange(e) {
-    setSelection(e);
+    e.stopPropagation();
+
+    if (onSelectionChange) {
+      onSelectionChange(e.target.value);
+    }
   }
 
   function renderRequirements() {
@@ -66,7 +68,8 @@ export default function PlantCard({ primaryPhoto, speciesName, requirements, gue
         focus:outline-none focus:ring-2 focus:ring-green-400 bg-green-50 text-green-700 transition
         hover:bg-green-10"
           value={selection}
-          onChange={(e) => handleOptionChange(e.target.value)}
+          onChange={handleOptionChange}
+          onClick={(e) => e.stopPropagation()}
         >
           <option value="optimal">Optimal</option>
           <option value="max">Max</option>

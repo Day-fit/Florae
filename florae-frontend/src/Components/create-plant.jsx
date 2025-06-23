@@ -47,7 +47,7 @@ export default function CreatePlant({ onClose }) {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/80">
       <div className="absolute inset-0 bg-black/50" style={{ pointerEvents: 'auto' }} />
       <AnimatedModal>
         <div className="z-10 bg-white/90 rounded-xl p-4 md:p-10 max-w-lg w-full flex flex-col items-center shadow-lg mx-2 relative"

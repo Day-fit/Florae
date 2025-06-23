@@ -114,8 +114,9 @@ export default function EspConfiguration({ onClose }) {
     fetchPlants();
   }, []);
 
+
   return (
-    <div className="z-10 bg-white/90 rounded-xl p-10 max-w-lg w-full flex flex-col items-center shadow-lg mx-2">
+    <div className="z-100 bg-white/90 rounded-xl p-10 max-w-lg w-full flex flex-col items-center shadow-lg mx-2">
       <h2 className="mb-6 text-2xl font-bold text-green-700">FloraLink Configuration</h2>
       <form onSubmit={handleSubmit} className="w-full">
         <div className="mb-4">

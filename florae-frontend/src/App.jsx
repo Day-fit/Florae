@@ -22,11 +22,11 @@ function App() {
 
   return (
     <UiContext value={UIContextValue}>
-      <div className="sticky bg-white top-0 z-50">
+      <div className="sticky bg-white top-0 z-11">
         <Header />
       </div>
       <MainSection />
-      <div className="sticky bg-white z-49">
+      <div className="sticky bg-white z-10">
         <Footer />
       </div>
     </UiContext>
