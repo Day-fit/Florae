@@ -7,6 +7,7 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 
@@ -26,6 +27,7 @@ import java.time.Duration;
  * These beans enable the application to efficiently interact with the Redis data store and leverage caching capabilities.
  */
 @Configuration
+@EnableRedisRepositories(basePackages = "pl.Dayfit.Florae.Repositories.Redis")
 public class RedisConfiguration {
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory)

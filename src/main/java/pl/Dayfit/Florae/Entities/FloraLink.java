@@ -3,7 +3,6 @@ package pl.Dayfit.Florae.Entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import pl.Dayfit.Florae.Entities.Sensors.DailyReportData;
 
 /**
  * Represents an ESP device entity in the system.
@@ -38,7 +37,4 @@ public class FloraLink {
 
     @Column(nullable = false)
     private String name;
-
-    @OneToOne(mappedBy = "floraLink", cascade = CascadeType.ALL)
-    private DailyReportData dailyReportData;
 }

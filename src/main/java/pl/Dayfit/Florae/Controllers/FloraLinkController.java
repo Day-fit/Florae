@@ -1,19 +1,16 @@
 package pl.Dayfit.Florae.Controllers;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
 import pl.Dayfit.Florae.DTOs.FloraLinkSetNameDTO;
-import pl.Dayfit.Florae.DTOs.Sensors.DailySensorDataDTO;
+import pl.Dayfit.Florae.DTOs.Sensors.EnableBleDTO;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 import pl.Dayfit.Florae.Services.FloraLinkCacheService;
 import pl.Dayfit.Florae.Services.FloraLinkService;
@@ -29,11 +26,18 @@ public class FloraLinkController {
     private final FloraLinkCacheService floraLinkCacheService;
     private final FloraeUserCacheService floraeUserCacheService;
 
-    @PostMapping("/api/v1/floralink/upload-daily-report")
-    public ResponseEntity<?> uploadReport(@RequestBody @Valid List<DailySensorDataDTO> uploadedData, Authentication authentication)
+    @PostMapping("/api/v1/floralink/enable-ble")
+    public ResponseEntity<Map<String, String>> sendRequestToEnableBle(@RequestBody EnableBleDTO dto, @AuthenticationPrincipal UserPrincipal userPrincipal)
     {
-        floraLinkService.handleReportUpload(uploadedData, authentication);
-        return ResponseEntity.ok(Map.of("message", "Report uploaded successfully."));
+        Integer floralinkId = dto.getFloraLinkId();
+
+        if (floralinkId == null)
+        {
+            throw new IllegalArgumentException("Incorrect request body");
+        }
+
+        floraLinkService.handleEnablingBle(floralinkId, userPrincipal.getUsername());
+        return ResponseEntity.ok(Map.of("message", "Request to enable BLE has been sent to the floralink device."));
     }
 
     @GetMapping("/api/v1/floralink/get-all-daily-data")
@@ -42,7 +46,7 @@ public class FloraLinkController {
         return ResponseEntity.ok(floraLinkService.getDailyDataReport((userPrincipal).getUsername()));
     }
 
-    @PostMapping("/api/v1/floralink/set-name")
+    @PutMapping("/api/v1/floralink/set-name")
     public ResponseEntity<?> setFloraLinkName(@RequestBody FloraLinkSetNameDTO floraLinkSetNameDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) throws AccessDeniedException
     {
         if (floraLinkSetNameDTO == null || floraLinkSetNameDTO.getId() == null || floraLinkSetNameDTO.getName() == null || floraLinkSetNameDTO.getName().isBlank())

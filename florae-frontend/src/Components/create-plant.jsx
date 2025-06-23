@@ -32,10 +32,9 @@ export default function CreatePlant({ onClose }) {
 
   // Wrap handleSubmit to include volume
   function handleSubmitWithVolume(e) {
-    e.preventDefault();
     // Attach volume to the ref for useCreatePlant
     if (volumeRef.current) {
-      nameRef.current.form.volume = volumeRef.current.value;
+      // Volume is passed directly to handleSubmit
     }
     handleSubmit(e, volumeRef.current?.value);
   }

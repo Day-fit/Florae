@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.Dayfit.Florae.Auth.UserPrincipal;
 import pl.Dayfit.Florae.DTOs.GenerateApiKeyDTO;
 import pl.Dayfit.Florae.Entities.Plant;
-import pl.Dayfit.Florae.Exceptions.ApiKeyAssociationException;
+import pl.Dayfit.Florae.Exceptions.AssociationException;
 import pl.Dayfit.Florae.Services.Auth.API.ApiKeyService;
 import pl.Dayfit.Florae.Services.PlantCacheService;
 
@@ -31,7 +31,7 @@ public class ApiKeyController {
     private final PlantCacheService plantCacheService;
 
     @PostMapping("/api/v1/generate-key")
-    public ResponseEntity<Map<String, String>> generateApiKey(@RequestBody GenerateApiKeyDTO apiKeyDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) throws ApiKeyAssociationException
+    public ResponseEntity<Map<String, String>> generateApiKey(@RequestBody GenerateApiKeyDTO apiKeyDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) throws AssociationException
     {
         Plant plant = plantCacheService.getPlantById(apiKeyDTO.getPlantId());
 
@@ -44,14 +44,14 @@ public class ApiKeyController {
     }
 
     @PostMapping("/api/v1/connect-api")
-    public ResponseEntity<?> connectApi(Authentication authentication) throws ApiKeyAssociationException
+    public ResponseEntity<?> connectApi(Authentication authentication) throws AssociationException
     {
         apiKeyService.connectApi(authentication);
         return ResponseEntity.ok(Map.of("message", "API connected successfully."));
     }
 
     @DeleteMapping("/api/v1/revoke-key")
-    public ResponseEntity<Map<String, String>> deleteApiKey(@RequestParam String apiKey, @AuthenticationPrincipal UserPrincipal userPrincipal) throws ApiKeyAssociationException
+    public ResponseEntity<Map<String, String>> deleteApiKey(@RequestParam String apiKey, @AuthenticationPrincipal UserPrincipal userPrincipal) throws AssociationException
     {
         if (!apiKeyService.isValidApiKey(apiKey) && !apiKeyService.isOwner(apiKey, userPrincipal.getUsername())) // Avoid access denied to prevent exposing API key
         {

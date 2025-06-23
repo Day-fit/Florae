@@ -7,8 +7,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import pl.Dayfit.Florae.DTOs.FloraeUserLoginDTO;
-import pl.Dayfit.Florae.DTOs.FloraeUserRegisterDTO;
+import pl.Dayfit.Florae.DTOs.FloraeUsers.FloraeUserLoginDTO;
+import pl.Dayfit.Florae.DTOs.FloraeUsers.FloraeUserRegisterDTO;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 
 /**

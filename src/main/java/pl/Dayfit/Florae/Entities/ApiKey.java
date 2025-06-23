@@ -11,7 +11,7 @@ import java.time.Instant;
 /**
  * Represents an API key entity in the system.
  * This class is used to store and manage API key information, including its association
- * with users, creation date, revocation status, and linkage to specific FloraLink and FloraeUser entities.
+ * with users, creation date, revocation status, and linkage to specific FloraLink and FloraeUsers entities.
 
  * Fields:
  * - {@code id}: The unique identifier for the API key, automatically generated.
@@ -30,7 +30,7 @@ import java.time.Instant;
  * - {@code @GeneratedValue}: Indicates the primary key value is automatically generated.
  * - {@code @Temporal}: Used to map the {@code createdDate} field to the {@code TIMESTAMP} type in the database.
  * - {@code @Column}: Configures database column properties for fields, such as nullability.
- * - {@code @ManyToOne}: Sets up many-to-one relationships with FloraeUser entities.
+ * - {@code @ManyToOne}: Sets up many-to-one relationships with FloraeUsers entities.
  * - {@code @OneToOne}: Sets up a one-to-one relationship with the FloraLink entity.
  */
 @Entity

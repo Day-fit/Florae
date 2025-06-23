@@ -21,13 +21,14 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import pl.Dayfit.Florae.DTOs.FloraLinkResponseDTO;
-import pl.Dayfit.Florae.DTOs.PlantRequirementsDTO;
-import pl.Dayfit.Florae.DTOs.PlantResponseDTO;
+import pl.Dayfit.Florae.DTOs.*;
+import pl.Dayfit.Florae.DTOs.Plants.PlantFetchDTO;
+import pl.Dayfit.Florae.DTOs.Plants.PlantRequirementsDTO;
+import pl.Dayfit.Florae.DTOs.Plants.PlantResponseDTO;
+import pl.Dayfit.Florae.DTOs.Plants.PlantSetVolumeDTO;
 import pl.Dayfit.Florae.Entities.FloraLink;
 import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Entities.Plant;
-import pl.Dayfit.Florae.DTOs.PlantFetchDTO;
 import pl.Dayfit.Florae.Entities.PlantRequirements;
 import pl.Dayfit.Florae.Repositories.JPA.FloraeUserRepository;
 import pl.Dayfit.Florae.Utils.ImageOptimizer;
@@ -59,6 +60,12 @@ public class PlantsService {
 
     public boolean isNotOwner(Integer plantId, String username) {
         Plant plant = plantCacheService.getPlantById(plantId);
+
+        if (plant == null)
+        {
+            throw new NoSuchElementException("Plant with id " + plantId + " not found");
+        }
+
         return !plant.getLinkedUser().getUsername().equals(username);
     }
 
@@ -121,13 +128,32 @@ public class PlantsService {
         plantCacheService.savePlant(plantToModify);
     }
 
+    public void setPlantVolume(PlantSetVolumeDTO plantSetVolumeDTO)
+    {
+        Plant plantToEdit = plantCacheService.getPlantById(plantSetVolumeDTO.getPlantId());
+
+        if (plantToEdit == null)
+        {
+            throw new NoSuchElementException("Plant with id " + plantSetVolumeDTO.getPlantId() + " not found");
+        }
+
+        plantToEdit.setPotVolume(plantSetVolumeDTO.getVolume());
+        plantCacheService.savePlant(plantToEdit);
+    }
+
     private PlantResponseDTO mapPlantDTO(Plant plant)
     {
         if(plant == null){
             return null;
         }
 
-        FloraLink floraLink = plant.getLinkedApiKey().getLinkedFloraLink();
+        FloraLink floraLink = null;
+
+        if (plant.getLinkedApiKey() != null)
+        {
+            floraLink = plant.getLinkedApiKey().getLinkedFloraLink();
+        }
+
         FloraLinkResponseDTO floraLinkResponseDTO = null;
 
         if(floraLink != null)
@@ -140,6 +166,7 @@ public class PlantsService {
         mappedElement.setId(plant.getId());
         mappedElement.setOwner(plant.getLinkedUser().getUsername());
         mappedElement.setName(plant.getName());
+        mappedElement.setVolume(plant.getPotVolume());
         mappedElement.setSpeciesName(plant.getSpeciesName());
         mappedElement.setPrimaryPhoto(plant.getPrimaryPhoto());
         mappedElement.setLinkedFloraLink(floraLinkResponseDTO);

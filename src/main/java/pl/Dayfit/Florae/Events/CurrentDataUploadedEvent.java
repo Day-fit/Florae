@@ -5,5 +5,6 @@ import pl.Dayfit.Florae.DTOs.Sensors.CurrentSensorDataDTO;
 
 import java.util.List;
 
-public record CurrentDataUploadedEvent(List<CurrentSensorDataDTO> data, Authentication authentication) {
+public record CurrentDataUploadedEvent(List<CurrentSensorDataDTO> data, Authentication authentication,
+                                       pl.Dayfit.Florae.Entities.Plant plant) {
 }
