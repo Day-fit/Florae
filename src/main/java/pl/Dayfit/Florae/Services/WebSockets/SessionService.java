@@ -80,13 +80,13 @@ public class SessionService {
 
         if (connectionType == ConnectionType.USER)
         {
-            if (!floralinkSessions.containsKey(session.getId()))
+            if (!userSessions.containsKey(session.getId()))
             {
                 log.debug("User Session id was not in session map, at {}", session.getId());
                 return;
             }
 
-            floralinkSessions.remove(session.getId());
+            userSessions.remove(session.getId());
         }
     }
 
