@@ -34,8 +34,8 @@ public class PlantCacheService {
     @Transactional
     @CacheEvict(value = "plant", key = "#plantId")
     public void deletePlant(Integer plantId) {
-        plantRepository.deletePlantById(plantId); //I've tried many things to make this work with just `deleteById` but even when code runs fine locally, it fails at production. Feel free to change that
         apiKeyRepository.deleteApiKeyByLinkedPlant_Id(plantId);
+        plantRepository.deletePlantById(plantId); //I've tried many things to make this work with just `deleteById` but even when code runs fine locally, it fails at production. Feel free to change that
     }
 
     @CachePut(value = "plant", key = "#plant.id")
