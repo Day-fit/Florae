@@ -2,15 +2,16 @@ import Button from './button.jsx';
 import { MdLocalFlorist } from 'react-icons/md';
 import { use } from 'react';
 import { UserContext } from '../store/user-context.jsx';
+import { UiContext } from '../store/ui-context.jsx';
 
 export default function InformationComponent({
-  setModal,
   handleTask,
   guestContent,
   visitorContent,
   withOutButton = false,
   showFor = 'both',
 }) {
+  const { setModal } = use(UiContext);
   const { isLogged } = use(UserContext);
 
   if (showFor !== 'both') {
