@@ -19,7 +19,7 @@
  * - Disables submit button while submitting.
  */
 
-import useCreatePlant from "./useCreatePlant.jsx";
+import useCreatePlant from './useCreatePlant.jsx';
 import AnimatedModal from './animated-modal.jsx';
 import Input from './input.jsx';
 import Button from './button.jsx';
@@ -50,8 +50,10 @@ export default function CreatePlant({ onClose }) {
     <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/80">
       <div className="absolute inset-0 bg-black/50" style={{ pointerEvents: 'auto' }} />
       <AnimatedModal>
-        <div className="z-10 bg-white/90 rounded-xl p-4 md:p-10 max-w-lg w-full flex flex-col items-center shadow-lg mx-2 relative"
-             style={{ maxWidth: '95vw', width: '100%', minWidth: 0 }}>
+        <div
+          className="z-10 bg-white/90 rounded-xl p-4 md:p-10 max-w-lg w-full flex flex-col items-center shadow-lg mx-2 relative"
+          style={{ maxWidth: '95vw', width: '100%', minWidth: 0 }}
+        >
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700"
@@ -98,17 +100,17 @@ export default function CreatePlant({ onClose }) {
               {errors.file && <p className="text-red-500 text-xs mt-1">{errors.file}</p>}
             </div>
             {errors.submit && <p className="text-red-500 text-xs mt-1">{errors.submit}</p>}
-            <div className="flex flex-row justify-between mt-4 w-full">
-              <div className="flex justify-start">
+            <div className="flex flex-col sm:flex-row gap-4 mt-6 w-full">
+              <div className="flex-1 flex justify-center sm:justify-start">
                 <Button
                   buttonText={submitting ? 'Creating...' : 'Create'}
                   type="submit"
-                  className="max-w-lg text-white bg-green-700 text-center rounded-lg pt-2 pb-2 px-20"
+                  className="min-w-[200px] text-white bg-green-700 text-center flex items-center justify-center rounded-lg py-2.5"
                   disabled={submitting}
                 />
               </div>
-              <div className="flex justify-end">
-                <CloseButton onClick={onClose} />
+              <div className="flex justify-center sm:justify-end">
+                <CloseButton onClick={onClose} className="min-w-[100px]" />
               </div>
             </div>
           </form>

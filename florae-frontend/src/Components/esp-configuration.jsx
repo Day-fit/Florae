@@ -3,24 +3,24 @@
  * @param {Object} props
  * @param {() => void} props.onClose - Callback to close the configuration modal.
  */
-import { useEffect, useRef, useState } from 'react'
-import Input from './input.jsx'
-import Button from './button.jsx'
-import CloseButton, { baseInputClass, noErrorClass } from './close-button.jsx'
-import axios from 'axios'
-import getCsrfToken from '../util/getCsrfToken.js'
-import { espConfigSchema } from '../util/form-validiation.js'
+import { useEffect, useRef, useState } from 'react';
+import Input from './input.jsx';
+import Button from './button.jsx';
+import CloseButton, { baseInputClass, noErrorClass } from './close-button.jsx';
+import axios from 'axios';
+import getCsrfToken from '../util/getCsrfToken.js';
+import { espConfigSchema } from '../util/form-validiation.js';
 
 export default function EspConfiguration({ onClose }) {
-  const ssidRef = useRef(null)
-  const passwordRef = useRef(null)
-  const [plants, setPlants] = useState([])
-  const [selectedPlant, setSelectedPlant] = useState('')
-  const [errors, setErrors] = useState({})
-  const [submitting, setSubmitting] = useState(false)
+  const ssidRef = useRef(null);
+  const passwordRef = useRef(null);
+  const [plants, setPlants] = useState([]);
+  const [selectedPlant, setSelectedPlant] = useState('');
+  const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
-  const ESP_SERVICE_UUID = '53020f00-319c-4d97-a2b1-9e706baba77a'
-  const WIFI_CREDENTIALS_CHAR_UUID = 'f87709b3-63a7-4605-9bb5-73c383462296'
+  const ESP_SERVICE_UUID = '53020f00-319c-4d97-a2b1-9e706baba77a';
+  const WIFI_CREDENTIALS_CHAR_UUID = 'f87709b3-63a7-4605-9bb5-73c383462296';
 
   /**
    * Sends WiFi credentials and API key to the ESP device over BLE.
@@ -30,9 +30,9 @@ export default function EspConfiguration({ onClose }) {
    * @param {string} api_key
    */
   async function sendWiFiCredentials(service, wifi_ssid, wifi_password, api_key) {
-    const characteristic = await service.getCharacteristic(WIFI_CREDENTIALS_CHAR_UUID)
-    const payload = JSON.stringify({ wifi_ssid, wifi_password, api_key })
-    await characteristic.writeValue(new TextEncoder().encode(payload))
+    const characteristic = await service.getCharacteristic(WIFI_CREDENTIALS_CHAR_UUID);
+    const payload = JSON.stringify({ wifi_ssid, wifi_password, api_key });
+    await characteristic.writeValue(new TextEncoder().encode(payload));
   }
 
   /**
@@ -41,18 +41,31 @@ export default function EspConfiguration({ onClose }) {
    * @param {string} password
    */
   async function connectToEsp(ssid, password) {
-    if (!selectedPlant) return
+    if (!selectedPlant) return;
 
-    let apiKey
+    let apiKey;
 
     try {
-      const csrfToken = await getCsrfToken()
+      const csrfToken = await getCsrfToken();
       const { data } = await axios.post(
         '/api/v1/generate-key',
         { plantId: selectedPlant },
         { withCredentials: true, headers: { 'X-XSRF-TOKEN': csrfToken } }
-      )
-      apiKey = data.apiKey
+      );
+      apiKey = data.apiKey;
+
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: 'FloraLink' }],
+          optionalServices: [ESP_SERVICE_UUID],
+        });
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService(ESP_SERVICE_UUID);
+        await sendWiFiCredentials(service, ssid, password, apiKey);
+      } catch (err) {
+        console.error('BLE error');
+      }
+
       await axios.post(
         '/api/v1/connect-api',
         {},
@@ -63,22 +76,9 @@ export default function EspConfiguration({ onClose }) {
             'X-API-KEY': apiKey,
           },
         }
-      )
+      );
     } catch (err) {
-      console.error('API key error:', err)
-      return
-    }
-
-    try {
-      const device = await navigator.bluetooth.requestDevice({
-        filters: [{ namePrefix: 'FloraLink' }],
-        optionalServices: [ESP_SERVICE_UUID],
-      })
-      const server = await device.gatt.connect()
-      const service = await server.getPrimaryService(ESP_SERVICE_UUID)
-      await sendWiFiCredentials(service, ssid, password, apiKey)
-    } catch (err) {
-      console.error('BLE error:', err)
+      console.error('API key error');
     }
   }
 
@@ -87,44 +87,44 @@ export default function EspConfiguration({ onClose }) {
    * @param {Event} e
    */
   async function handleSubmit(e) {
-    e.preventDefault()
-    setErrors({})
-    setSubmitting(true)
+    e.preventDefault();
+    setErrors({});
+    setSubmitting(true);
 
-    const wifiSsid = ssidRef.current?.value?.trim()
-    const wifiPassword = passwordRef.current?.value?.trim()
+    const wifiSsid = ssidRef.current?.value?.trim();
+    const wifiPassword = passwordRef.current?.value?.trim();
 
     try {
       await espConfigSchema.validate(
         { wifiSsid, wifiPassword, selectedPlant },
         { abortEarly: false }
-      )
+      );
     } catch (validationError) {
-      const fieldErrors = {}
+      const fieldErrors = {};
       validationError.inner.forEach(({ path, message }) => {
-        fieldErrors[path] = message
-      })
-      setErrors(fieldErrors)
-      setSubmitting(false)
-      return
+        fieldErrors[path] = message;
+      });
+      setErrors(fieldErrors);
+      setSubmitting(false);
+      return;
     }
 
-    await connectToEsp(wifiSsid, wifiPassword)
-    setSubmitting(false)
+    await connectToEsp(wifiSsid, wifiPassword);
+    setSubmitting(false);
   }
 
   useEffect(() => {
     async function loadPlants() {
       try {
-        const { data } = await axios.get('/api/v1/plants', { withCredentials: true })
-        setPlants(data)
+        const { data } = await axios.get('/api/v1/plants', { withCredentials: true });
+        setPlants(data);
       } catch (err) {
-        console.error('Plant list error:', err)
+        console.error('Plant list error:', err);
       }
     }
 
-    loadPlants()
-  }, [])
+    loadPlants();
+  }, []);
 
   return (
     <div className="z-10 bg-white/90 rounded-xl p-10 max-w-lg w-full flex flex-col items-center shadow-lg mx-2">
@@ -155,7 +155,9 @@ export default function EspConfiguration({ onClose }) {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="plant-select" className="block mb-1 font-bold">Plant</label>
+          <label htmlFor="plant-select" className="block mb-1 font-bold">
+            Plant
+          </label>
           <select
             id="plant-select"
             required
@@ -163,23 +165,33 @@ export default function EspConfiguration({ onClose }) {
             onChange={(e) => setSelectedPlant(e.target.value)}
             className={`${baseInputClass} ${errors.selectedPlant ? 'border-red-500' : noErrorClass}`}
           >
-            <option value="" disabled>Select a plant</option>
+            <option value="" disabled>
+              Select a plant
+            </option>
             {plants.map(({ id, name }) => (
-              <option key={id} value={id}>{name}</option>
+              <option key={id} value={id}>
+                {name}
+              </option>
             ))}
           </select>
-          {errors.selectedPlant && <p className="text-red-800 text-sm mt-1">{errors.selectedPlant}</p>}
+          {errors.selectedPlant && (
+            <p className="text-red-800 text-sm mt-1">{errors.selectedPlant}</p>
+          )}
         </div>
-        <div className="flex justify-between mt-4 w-full">
-          <Button
-            type="submit"
-            buttonText={submitting ? 'Connecting...' : 'Connect'}
-            disabled={submitting}
-            className="max-w-lg text-white bg-green-700 rounded-lg py-2 px-20"
-          />
-          <CloseButton onClick={onClose} />
+        <div className="flex flex-col sm:flex-row gap-4 mt-6 w-full">
+          <div className="flex-1 flex justify-center sm:justify-start">
+            <Button
+              type="submit"
+              buttonText={submitting ? 'Connecting...' : 'Connect'}
+              disabled={submitting}
+              className="min-w-[200px] text-white bg-green-700 text-center flex items-center justify-center rounded-lg py-2.5"
+            />
+          </div>
+          <div className="flex justify-center sm:justify-end">
+            <CloseButton onClick={onClose} className="min-w-[100px]" />
+          </div>
         </div>
       </form>
     </div>
-  )
+  );
 }

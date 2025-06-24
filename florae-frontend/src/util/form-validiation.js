@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
 import zxcvbn from 'zxcvbn';
+import DOMPurify from 'dompurify';
 
 /**
  * validateForm - Validates the input values against a Yup schema.
@@ -28,15 +29,9 @@ export function isEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-// XSS Prevention - Remove HTML tags and special characters using sanitize-html
-import sanitizeHtml from 'sanitize-html';
-
 const sanitizeString = (value) => {
   if (typeof value !== 'string') return value;
-  return sanitizeHtml(value, {
-    allowedTags: [], // Disallow all HTML tags
-    allowedAttributes: {}, // Disallow all attributes
-  }).trim();
+  return DOMPurify.sanitize(value).trim();
 };
 
 // Plant name validation - alphanumeric, spaces, hyphens, apostrophes only
@@ -88,7 +83,10 @@ export default async function validateForm(values, mode = 'signIn') {
         .transform(sanitizeString)
         .min(1, 'Plant name is required')
         .max(50, 'Plant name must be 50 characters or less')
-        .matches(plantNameRegex, 'Plant name can only contain letters, numbers, spaces, hyphens, and apostrophes')
+        .matches(
+          plantNameRegex,
+          'Plant name can only contain letters, numbers, spaces, hyphens, and apostrophes'
+        )
         .required('Plant name is required'),
       volume: Yup.string()
         .transform(sanitizeString)
@@ -106,7 +104,10 @@ export default async function validateForm(values, mode = 'signIn') {
         .transform(sanitizeString)
         .min(1, 'WiFi SSID is required')
         .max(32, 'WiFi SSID must be 32 characters or less')
-        .matches(wifiSsidRegex, 'WiFi SSID can only contain letters, numbers, spaces, hyphens, and underscores')
+        .matches(
+          wifiSsidRegex,
+          'WiFi SSID can only contain letters, numbers, spaces, hyphens, and underscores'
+        )
         .required('WiFi SSID is required'),
       wifiPassword: Yup.string()
         .transform(sanitizeString)
@@ -124,7 +125,10 @@ export default async function validateForm(values, mode = 'signIn') {
         .transform(sanitizeString)
         .min(1, 'Plant name is required')
         .max(50, 'Plant name must be 50 characters or less')
-        .matches(plantNameRegex, 'Plant name can only contain letters, numbers, spaces, hyphens, and apostrophes')
+        .matches(
+          plantNameRegex,
+          'Plant name can only contain letters, numbers, spaces, hyphens, and apostrophes'
+        )
         .required('Plant name is required'),
       volume: Yup.string()
         .transform(sanitizeString)
@@ -142,14 +146,12 @@ export default async function validateForm(values, mode = 'signIn') {
         })
         .test('file-type', 'Only image files are allowed', (value) => {
           if (!value || !value.files) return false;
-          return Array.from(value.files).every(file =>
-            file.type.startsWith('image/')
-          );
+          return Array.from(value.files).every((file) => file.type.startsWith('image/'));
         })
         .test('file-size', 'Each image must be less than 10MB', (value) => {
           if (!value || !value.files) return false;
-          return Array.from(value.files).every(file =>
-            file.size <= 10 * 1024 * 1024 // 10MB
+          return Array.from(value.files).every(
+            (file) => file.size <= 10 * 1024 * 1024 // 10MB
           );
         })
         .required('Photos are required'),
@@ -159,31 +161,21 @@ export default async function validateForm(values, mode = 'signIn') {
     schema = Yup.object().shape({
       username: Yup.string()
         .transform(sanitizeString)
-        .test(
-          'email-or-username',
-          'Enter a valid email or username',
-          function (value) {
-            const { email } = this.parent;
-            if (!email && !value) return false;
-            if (!value) return true;
-            return /^[a-zA-Z0-9_]{3,20}$/.test(value);
-          }
-        ),
+        .test('email-or-username', 'Enter a valid email or username', function (value) {
+          const { email } = this.parent;
+          if (!email && !value) return false;
+          if (!value) return true;
+          return /^[a-zA-Z0-9_]{3,20}$/.test(value);
+        }),
       email: Yup.string()
         .transform(sanitizeString)
-        .test(
-          'email-or-username',
-          'Enter a valid email or username',
-          function (value) {
-            const { username } = this.parent;
-            if (!value && !username) return false;
-            if (!value) return true;
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-          }
-        ),
-      password: Yup.string()
-        .transform(sanitizeString)
-        .required('Password is required'),
+        .test('email-or-username', 'Enter a valid email or username', function (value) {
+          const { username } = this.parent;
+          if (!value && !username) return false;
+          if (!value) return true;
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+        }),
+      password: Yup.string().transform(sanitizeString).required('Password is required'),
     });
   }
 
@@ -238,7 +230,10 @@ export const editPlantSchema = Yup.object().shape({
     .transform(sanitizeString)
     .min(1, 'Plant name is required')
     .max(50, 'Plant name must be 50 characters or less')
-    .matches(plantNameRegex, 'Plant name can only contain letters, numbers, spaces, hyphens, and apostrophes')
+    .matches(
+      plantNameRegex,
+      'Plant name can only contain letters, numbers, spaces, hyphens, and apostrophes'
+    )
     .required('Plant name is required'),
   volume: Yup.string()
     .transform(sanitizeString)
@@ -256,7 +251,10 @@ export const espConfigSchema = Yup.object().shape({
     .transform(sanitizeString)
     .min(1, 'WiFi SSID is required')
     .max(32, 'WiFi SSID must be 32 characters or less')
-    .matches(wifiSsidRegex, 'WiFi SSID can only contain letters, numbers, spaces, hyphens, and underscores')
+    .matches(
+      wifiSsidRegex,
+      'WiFi SSID can only contain letters, numbers, spaces, hyphens, and underscores'
+    )
     .required('WiFi SSID is required'),
   wifiPassword: Yup.string()
     .transform(sanitizeString)
@@ -274,7 +272,10 @@ export const createPlantSchema = Yup.object().shape({
     .transform(sanitizeString)
     .min(1, 'Plant name is required')
     .max(50, 'Plant name must be 50 characters or less')
-    .matches(plantNameRegex, 'Plant name can only contain letters, numbers, spaces, hyphens, and apostrophes')
+    .matches(
+      plantNameRegex,
+      'Plant name can only contain letters, numbers, spaces, hyphens, and apostrophes'
+    )
     .required('Plant name is required'),
   volume: Yup.string()
     .transform(sanitizeString)
@@ -292,14 +293,12 @@ export const createPlantSchema = Yup.object().shape({
     })
     .test('file-type', 'Only image files are allowed', (value) => {
       if (!value || !value.files) return false;
-      return Array.from(value.files).every(file =>
-        file.type.startsWith('image/')
-      );
+      return Array.from(value.files).every((file) => file.type.startsWith('image/'));
     })
     .test('file-size', 'Each image must be less than 10MB', (value) => {
       if (!value || !value.files) return false;
-      return Array.from(value.files).every(file =>
-        file.size <= 10 * 1024 * 1024 // 10MB
+      return Array.from(value.files).every(
+        (file) => file.size <= 10 * 1024 * 1024 // 10MB
       );
     })
     .required('Photos are required'),

@@ -19,17 +19,29 @@ export default function HomePage() {
     setView(action);
   }
   return (
-    <div className="bg-gray-50 m-[4vw] rounded-lg shadow-lg">
+    <div className="bg-gray-50 m-[4vw] rounded-lg shadow-lg overflow-hidden">
       <InformationComponent
         setModal={setModal}
         handleTask={() => handlePlants('plants')}
         visitorContent={homeVisitorContent}
         guestContent={homeGuestContent}
       />
-      <div className="flex flex-col md:flex-row px-[4vw] justify-center gap-4 md:gap-8 lg:gap-[12vw]  items-center">
-        {/* Images */}
-        <img alt="plant1" src={plant1} className="w-full max-w-[480px] lgmax-w-[640px] :h-auto aspect-[3/2] object-cover rounded-md" />
-        <img alt="plant2" src={plant2} className="w-full max-w-[480px] lgmax-w-[640px] :h-auto aspect-[3/2] object-cover rounded-md" />
+      <div className="flex flex-col md:flex-row px-[4vw] justify-center gap-4 md:gap-8 lg:gap-[12vw] items-center">
+        {/* Obrazy bez ramek */}
+        <div className="w-full max-w-[480px] lg:max-w-[640px] rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300">
+          <img
+            alt="plant1"
+            src={plant1}
+            className="w-full h-auto aspect-[3/2] object-cover rounded-2xl"
+          />
+        </div>
+        <div className="w-full max-w-[480px] lg:max-w-[640px] rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300">
+          <img
+            alt="plant2"
+            src={plant2}
+            className="w-full h-auto aspect-[3/2] object-cover rounded-2xl"
+          />
+        </div>
       </div>
       <div className="w-full py-8 bg-gray-50">
         <h1 className="text-3xl md:text-4xl font-bold text-green-800 mb-4 md:ml-22 text-center md:text-left">

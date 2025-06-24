@@ -29,9 +29,9 @@ export default function PlantsPage({ setModal }) {
   }
 
   function handleSelectionChange(plantId, selection) {
-    setPlantSelections(prev => ({
+    setPlantSelections((prev) => ({
       ...prev,
-      [plantId]: selection
+      [plantId]: selection,
     }));
   }
 
@@ -41,12 +41,12 @@ export default function PlantsPage({ setModal }) {
       setOwnedPlants(response.data);
       // Initialize selections for new plants
       const newSelections = {};
-      response.data.forEach(plant => {
+      response.data.forEach((plant) => {
         if (!plantSelections[plant.id]) {
           newSelections[plant.id] = 'optimal';
         }
       });
-      setPlantSelections(prev => ({ ...prev, ...newSelections }));
+      setPlantSelections((prev) => ({ ...prev, ...newSelections }));
     } catch (error) {
       console.log(error);
       setOwnedPlants([]);
@@ -67,7 +67,7 @@ export default function PlantsPage({ setModal }) {
       <InformationComponent
         setModal={setModal}
         withOutButton={isLogged}
-        showFor={isLogged ? "logged-in" : "not-logged-in"}
+        showFor={isLogged ? 'logged-in' : 'not-logged-in'}
         guestContent={isLogged ? plantsGuestContent : undefined}
         visitorContent={!isLogged ? plantsVisitorContent : undefined}
       />

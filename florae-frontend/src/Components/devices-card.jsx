@@ -81,7 +81,7 @@ export default function DevicesCard({ id, humidity, lightLux, temperature, soilM
         const response = await axios.get('/api/v1/plants');
         const connectedPlant = response.data.find((p) => p.linkedFloraLink.floraLinkId === id);
         setPlant(connectedPlant || null);
-      // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars
       } catch (error) {
         setPlant(null);
       }

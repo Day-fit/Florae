@@ -7,7 +7,7 @@ export default async function getCsrfToken() {
       withCredentials: true,
     });
     return response.data.token;
-  // eslint-disable-next-line no-unused-vars
+    // eslint-disable-next-line no-unused-vars
   } catch (e) {
     return null;
   }
