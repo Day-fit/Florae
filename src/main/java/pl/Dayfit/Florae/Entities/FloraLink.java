@@ -40,6 +40,5 @@ public class FloraLink {
     @Column(nullable = false)
     private String name;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Instant wateringDate;
 }
