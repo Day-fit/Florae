@@ -22,7 +22,6 @@ import java.util.List;
 @AllArgsConstructor
 public class PlantCacheService {
     private final PlantRepository plantRepository;
-    private final ApiKeyRepository apiKeyRepository;
 
     @Transactional(readOnly = true)
     @Cacheable(value = "plant", key = "#id")
@@ -34,8 +33,7 @@ public class PlantCacheService {
     @Transactional
     @CacheEvict(value = "plant", key = "#plantId")
     public void deletePlant(Integer plantId) {
-        apiKeyRepository.deleteApiKeyByLinkedPlant_Id(plantId);
-        plantRepository.deletePlantById(plantId); //I've tried many things to make this work with just `deleteById` but even when code runs fine locally, it fails at production. Feel free to change that
+        plantRepository.deleteById(plantId);
     }
 
     @CachePut(value = "plant", key = "#plant.id")
