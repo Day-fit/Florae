@@ -67,6 +67,9 @@ function getRequirementRows(requirements) {
 
 export default function DevicesCard({ id, humidity, lightLux, temperature, soilMoisture }) {
   const [plant, setPlant] = useState(null);
+  const [selection, setSelection] = useState('current');
+  const [dailyReport, setDailyReport] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const sensorData = {
     humidity,
@@ -89,6 +92,26 @@ export default function DevicesCard({ id, humidity, lightLux, temperature, soilM
     fetchPlant();
   }, [id]);
 
+  useEffect(() => {
+    const fetchDailyReport = async () => {
+      if (selection === 'daily' && plant) {
+        setLoading(true);
+        try {
+          const response = await axios.get('/api/v1/floralink/get-all-daily-data');
+          const deviceReport = response.data.find(report => report.sensorId === id);
+          setDailyReport(deviceReport || null);
+        } catch (error) {
+          console.error('Failed to fetch daily report:', error);
+          setDailyReport(null);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchDailyReport();
+  }, [selection, plant, id]);
+
   function getImgSrc(plant) {
     if (!plant || !plant.primaryPhoto) return null;
     if (plant.primaryPhoto.startsWith('http') || plant.primaryPhoto.startsWith('data:')) {
@@ -103,71 +126,176 @@ export default function DevicesCard({ id, humidity, lightLux, temperature, soilM
     return val >= min && val <= max;
   }
 
+  function handleOptionChange(e) {
+    e.stopPropagation();
+    setSelection(e.target.value);
+  }
+
+  function renderSensorData() {
+    if (selection === 'current') {
+      return [
+        {
+          label: 'Env. Humidity',
+          key: 'humidity',
+          value: sensorData.humidity,
+          metaIdx: 0,
+        },
+        {
+          label: 'Light (lux)',
+          key: 'light',
+          value: sensorData.light,
+          metaIdx: 1,
+        },
+        {
+          label: 'Soil Moisture',
+          key: 'moisture',
+          value: sensorData.moisture,
+          metaIdx: 2,
+        },
+        {
+          label: 'Temperature',
+          key: 'temperature',
+          value: sensorData.temperature,
+          metaIdx: 3,
+        },
+      ];
+    } else {
+      // daily report
+      if (!dailyReport || !dailyReport.sensorData) {
+        return [];
+      }
+
+      const sensorTypeMap = {
+        'ENV_HUMIDITY': { label: 'Env. Humidity', metaIdx: 0 },
+        'LIGHT_LUX': { label: 'Light (lux)', metaIdx: 1 },
+        'SOIL_MOISTURE': { label: 'Soil Moisture', metaIdx: 2 },
+        'ENV_TEMPERATURE': { label: 'Temperature', metaIdx: 3 },
+      };
+
+      return dailyReport.sensorData.map(data => {
+        const typeInfo = sensorTypeMap[data.type];
+        if (!typeInfo) return null;
+
+        return {
+          label: typeInfo.label,
+          key: data.type.toLowerCase(),
+          value: data.averageValue,
+          min: data.minValue,
+          max: data.maxValue,
+          metaIdx: typeInfo.metaIdx,
+          isDaily: true,
+        };
+      }).filter(Boolean);
+    }
+  }
+
   // Only use min/max for thresholds
   const thresholds = getRequirementRows(plant?.requirements);
+  const sensorDataToRender = renderSensorData();
 
   return (
-    <div className="rounded-3xl bg-white w-[350px] shadow-lg flex flex-col items-center border-2 border-stone-400 transition-transform duration-200 hover:scale-[1.025] hover:shadow-2xl min-h-[460px]">
-      <div className="flex flex-col items-center px-5 pt-7 pb-4 w-full h-full">
-        <h2 className="font-bold text-2xl text-center truncate w-full">
+    <div className="w-full max-w-[340px] min-w-[220px] sm:w-[22vw] sm:max-w-[320px] sm:min-w-[220px] border-stone-400 rounded-2xl border-2 flex flex-col items-center justify-center min-h-150 bg-white shadow-lg mx-auto my-4 p-4 transition-transform duration-200 hover:scale-105">
+      {/* Plant name centered */}
+      <div className="flex justify-center mt-3 mb-2 w-full">
+        <h1 className="text-green-700 text-xl sm:text-2xl font-bold text-center w-full break-words">
           {plant ? plant.name : 'No plant connected'}
-        </h2>
-        <div className="w-40 h-40 bg-stone-200 rounded-2xl mb-5 overflow-hidden flex items-center justify-center">
-          {plant && plant.primaryPhoto ? (
-            <img src={getImgSrc(plant)} alt={plant.name} className="object-cover w-full h-full" />
-          ) : (
-            <span className="text-stone-400 text-5xl">🌱</span>
-          )}
-        </div>
-        {plant && (
-          <p className="text-stone-400 font-medium text-center truncate w-full mt-1 mb-2">
-            {plant.speciesName}
-          </p>
+        </h1>
+      </div>
+      {/* Image centered */}
+      <div className="w-full h-36 sm:h-40 bg-stone-200 rounded-2xl mb-4 overflow-hidden flex items-center justify-center">
+        {plant && plant.primaryPhoto ? (
+          <img src={getImgSrc(plant)} alt={plant.name} className="object-cover w-full h-full" />
+        ) : (
+          <span className="text-stone-400 text-5xl">🌱</span>
         )}
-
-        <div className="flex flex-col items-center gap-2 mt-4 w-full">
-          {(() => {
-            const rows = [];
-            for (let i = 0; i < thresholds.length; i += 2) {
-              rows.push(thresholds.slice(i, i + 2));
-            }
-            return rows.map((row, rowIdx) => (
-              <div className="flex flex-row justify-center gap-1 w-full" key={rowIdx}>
-                {row.map((req) => {
-                  const sensorValue =
-                    sensorData && sensorData[req.key] != null ? sensorData[req.key] : '--';
-                  const isGood = isValueGood(sensorValue, req.min, req.max);
-
-                  return (
-                    <div
-                      key={req.key}
-                      className={`flex flex-col items-center justify-center h-[10vh] w-[9vw] rounded-xl shadow-lg border-2 mx-auto my-2 min-w-28 min-h-28
-                              ${isGood ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-400'}
-                            `}
-                    >
-                      <div className="flex items-center justify-center pt-4">
-                        <span className={isGood ? 'text-green-500' : 'text-red-800'}>
-                          {reqMeta[req.metaIdx]?.icon}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-center">
-                        <span className="text-2xl font-bold">
-                          {sensorValue}
-                          {req.unit}
-                        </span>
-                      </div>
-                      <div
-                        className={`pb-3 pt-2 text-xs font-medium ${isGood ? 'text-green-600' : 'text-red-800'}`}
-                      >
-                        {req.label}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ));
-          })()}
+      </div>
+      {/* Species name centered */}
+      {plant && (
+        <div className="flex justify-center font-bold w-full mb-2">
+          <h1 className="text-center w-full break-words text-base sm:text-lg">{plant.speciesName}</h1>
         </div>
+      )}
+      {/* Select centered */}
+      <div className="flex justify-center w-full mb-2">
+        <select
+          className="border w-[70%] sm:w-[60%] border-stone-400 rounded-lg px-2 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-green-400 bg-green-50 text-green-700 transition hover:bg-green-10"
+          value={selection}
+          onChange={handleOptionChange}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <option value="current">Current Report</option>
+          <option value="daily">Daily Report</option>
+        </select>
+      </div>
+      {/* Sensor data grid, centered */}
+      <div className="flex flex-col items-center gap-2 w-full">
+        {(() => {
+          if (loading) {
+            return (
+              <div className="flex justify-center items-center h-32">
+                <div className="text-green-700">Loading daily report...</div>
+              </div>
+            );
+          }
+
+          if (sensorDataToRender.length === 0) {
+            return (
+              <div className="flex justify-center items-center h-32">
+                <div className="text-stone-400">No data available</div>
+              </div>
+            );
+          }
+
+          const rows = [];
+          for (let i = 0; i < sensorDataToRender.length; i += 2) {
+            rows.push(sensorDataToRender.slice(i, i + 2));
+          }
+          return rows.map((row, rowIdx) => (
+            <div className="flex flex-row justify-center gap-2 sm:gap-4 w-full" key={rowIdx}>
+              {row.map((sensor, idx) => {
+                const realIdx = rowIdx * 2 + idx;
+                const threshold = thresholds.find(t => t.key === sensor.key);
+                const isGood = threshold ? isValueGood(sensor.value, threshold.min, threshold.max) : true;
+                const isDaily = sensor.isDaily;
+
+                return (
+                  <div
+                    key={sensor.key}
+                    className={`flex flex-col items-center justify-center h-[120px] sm:h-[140px] w-[45%] sm:w-[40%] md:w-[35%] rounded-xl shadow-lg border-2 mx-auto my-2 ${
+                      isDaily
+                        ? 'border-blue-500 bg-blue-50'
+                        : isGood
+                          ? 'border-green-500 bg-green-50'
+                          : 'border-red-500 bg-red-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center pt-4">
+                      <span className={isDaily ? 'text-blue-500' : isGood ? 'text-green-500' : 'text-red-500'}>
+                        {reqMeta[sensor.metaIdx]?.icon}
+                      </span>
+                    </div>
+                    <div className="flex flex-col xs:flex-row items-center justify-center break-words w-full px-2">
+                      <span className="text-base sm:text-lg md:text-xl font-bold text-center truncate max-w-full">
+                        {sensor.value?.toFixed(1) || '--'}
+                        {String(sensor.value?.toFixed(1) || '--').length <= 5 ? reqUnits[sensor.metaIdx] : ''}
+                      </span>
+                      {String(sensor.value?.toFixed(1) || '--').length > 5 && (
+                        <span className="text-base sm:text-lg md:text-xl font-bold text-center ml-0 xs:ml-1 truncate max-w-full">
+                          {reqUnits[sensor.metaIdx]}
+                        </span>
+                      )}
+                    </div>
+                    <div className={`pb-3 pt-2 text-xs font-medium ${
+                      isDaily ? 'text-blue-600' : isGood ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {sensor.label}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ));
+        })()}
       </div>
     </div>
   );
