@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
+
 /**
  * Represents an ESP device entity in the system.
  * This class is used to map ESP-related data to the database.
@@ -37,4 +39,6 @@ public class FloraLink {
 
     @Column(nullable = false)
     private String name;
+
+    private Instant wateringDate;
 }
