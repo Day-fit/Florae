@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
 import axios from 'axios';
 import getCsrfToken from '../util/getCsrfToken.js';
-import { createPlantSchema } from '../util/form-validiation.js';
 
 export default function useCreatePlant({ onClose }) {
   const nameRef = useRef('');
@@ -41,23 +40,20 @@ export default function useCreatePlant({ onClose }) {
     e.preventDefault();
 
     const files = fileRef.current.files;
-    const name = nameRef.current.value;
 
     setErrors({});
-
-    // Validate using Yup schema
-    try {
-      await createPlantSchema.validate({
-        name,
-        volume: volumeValue,
-        files: fileRef.current
-      }, { abortEarly: false });
-    } catch (validationError) {
-      const newErrors = {};
-      validationError.inner.forEach((error) => {
-        newErrors[error.path] = error.message;
-      });
-      setErrors(newErrors);
+    if (files.length < 1 || files.length > 5) {
+      setErrors((prev) => ({
+        ...prev,
+        file: 'You must select between 1 and 5 photos.',
+      }));
+      return;
+    }
+    if (!volumeValue || isNaN(parseFloat(volumeValue)) || parseFloat(volumeValue) <= 0) {
+      setErrors((prev) => ({
+        ...prev,
+        volume: 'Volume is required and must be a positive number.',
+      }));
       return;
     }
 
@@ -77,9 +73,9 @@ export default function useCreatePlant({ onClose }) {
         withCredentials: true,
       });
       try {
-        await setPlantName(response.data.id, name);
+        await setPlantName(response.data.id, nameRef.current.value);
         await setPlantVolume(response.data.id, volumeValue);
-        // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
       } catch (e) {
         console.error('Failed to set plant name or volume:');
       }

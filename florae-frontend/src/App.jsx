@@ -22,7 +22,7 @@ function App() {
 
   return (
     <UiContext value={UIContextValue}>
-      <div className="sticky bg-white top-0 z-11">
+      <div className="sticky bg-white top-0 z-30">
         <Header />
       </div>
       <MainSection />
