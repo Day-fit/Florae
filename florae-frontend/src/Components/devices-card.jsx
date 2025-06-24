@@ -98,7 +98,7 @@ export default function DevicesCard({ id, humidity, lightLux, temperature, soilM
         setLoading(true);
         try {
           const response = await axios.get('/api/v1/floralink/get-all-daily-data');
-          const deviceReport = response.data.find(report => report.sensorId === id);
+          const deviceReport = response.data.find((report) => report.sensorId === id);
           setDailyReport(deviceReport || null);
         } catch (error) {
           console.error('Failed to fetch daily report:', error);
@@ -166,26 +166,28 @@ export default function DevicesCard({ id, humidity, lightLux, temperature, soilM
       }
 
       const sensorTypeMap = {
-        'ENV_HUMIDITY': { label: 'Env. Humidity', metaIdx: 0 },
-        'LIGHT_LUX': { label: 'Light (lux)', metaIdx: 1 },
-        'SOIL_MOISTURE': { label: 'Soil Moisture', metaIdx: 2 },
-        'ENV_TEMPERATURE': { label: 'Temperature', metaIdx: 3 },
+        ENV_HUMIDITY: { label: 'Env. Humidity', metaIdx: 0 },
+        LIGHT_LUX: { label: 'Light (lux)', metaIdx: 1 },
+        SOIL_MOISTURE: { label: 'Soil Moisture', metaIdx: 2 },
+        ENV_TEMPERATURE: { label: 'Temperature', metaIdx: 3 },
       };
 
-      return dailyReport.sensorData.map(data => {
-        const typeInfo = sensorTypeMap[data.type];
-        if (!typeInfo) return null;
+      return dailyReport.sensorData
+        .map((data) => {
+          const typeInfo = sensorTypeMap[data.type];
+          if (!typeInfo) return null;
 
-        return {
-          label: typeInfo.label,
-          key: data.type.toLowerCase(),
-          value: data.averageValue,
-          min: data.minValue,
-          max: data.maxValue,
-          metaIdx: typeInfo.metaIdx,
-          isDaily: true,
-        };
-      }).filter(Boolean);
+          return {
+            label: typeInfo.label,
+            key: data.type.toLowerCase(),
+            value: data.averageValue,
+            min: data.minValue,
+            max: data.maxValue,
+            metaIdx: typeInfo.metaIdx,
+            isDaily: true,
+          };
+        })
+        .filter(Boolean);
     }
   }
 
@@ -212,7 +214,9 @@ export default function DevicesCard({ id, humidity, lightLux, temperature, soilM
       {/* Species name centered */}
       {plant && (
         <div className="flex justify-center font-bold w-full mb-2">
-          <h1 className="text-center w-full break-words text-base sm:text-lg">{plant.speciesName}</h1>
+          <h1 className="text-center w-full break-words text-base sm:text-lg">
+            {plant.speciesName}
+          </h1>
         </div>
       )}
       {/* Select centered */}
@@ -253,8 +257,10 @@ export default function DevicesCard({ id, humidity, lightLux, temperature, soilM
           return rows.map((row, rowIdx) => (
             <div className="flex flex-row justify-center gap-2 sm:gap-4 w-full" key={rowIdx}>
               {row.map((sensor) => {
-                const threshold = thresholds.find(t => t.key === sensor.key);
-                const isGood = threshold ? isValueGood(sensor.value, threshold.min, threshold.max) : true;
+                const threshold = thresholds.find((t) => t.key === sensor.key);
+                const isGood = threshold
+                  ? isValueGood(sensor.value, threshold.min, threshold.max)
+                  : true;
                 const isDaily = sensor.isDaily;
 
                 return (
@@ -269,24 +275,38 @@ export default function DevicesCard({ id, humidity, lightLux, temperature, soilM
                     }`}
                   >
                     <div className="flex items-center justify-center pt-4">
-                      <span className={isDaily ? 'text-blue-500' : isGood ? 'text-green-500' : 'text-red-500'}>
+                      <span
+                        className={
+                          isDaily ? 'text-blue-500' : isGood ? 'text-green-500' : 'text-red-500'
+                        }
+                      >
                         {reqMeta[sensor.metaIdx]?.icon}
                       </span>
                     </div>
                     <div className="flex flex-col xs:flex-row items-center justify-center break-words w-full px-2">
                       <span className="text-base sm:text-lg md:text-xl font-bold text-center truncate max-w-full">
-                        {sensor.value?.toFixed(1) || '--'}
-                        {String(sensor.value?.toFixed(1) || '--').length <= 5 ? reqUnits[sensor.metaIdx] : ''}
+                        {sensor.value !== null && sensor.value !== undefined
+                          ? sensor.value?.toFixed(1)
+                          : '--'}
+                        {sensor.value !== null &&
+                        sensor.value !== undefined &&
+                        String(sensor.value?.toFixed(1)).length <= 5
+                          ? reqUnits[sensor.metaIdx]
+                          : ''}
                       </span>
-                      {String(sensor.value?.toFixed(1) || '--').length > 5 && (
-                        <span className="text-base sm:text-lg md:text-xl font-bold text-center ml-0 xs:ml-1 truncate max-w-full">
-                          {reqUnits[sensor.metaIdx]}
-                        </span>
-                      )}
+                      {sensor.value !== null &&
+                        sensor.value !== undefined &&
+                        String(sensor.value?.toFixed(1)).length > 5 && (
+                          <span className="text-base sm:text-lg md:text-xl font-bold text-center ml-0 xs:ml-1 truncate max-w-full">
+                            {reqUnits[sensor.metaIdx]}
+                          </span>
+                        )}
                     </div>
-                    <div className={`pb-3 pt-2 text-xs font-medium ${
-                      isDaily ? 'text-blue-600' : isGood ? 'text-green-600' : 'text-red-600'
-                    }`}>
+                    <div
+                      className={`pb-3 pt-2 text-xs font-medium ${
+                        isDaily ? 'text-blue-600' : isGood ? 'text-green-600' : 'text-red-600'
+                      }`}
+                    >
                       {sensor.label}
                     </div>
                   </div>

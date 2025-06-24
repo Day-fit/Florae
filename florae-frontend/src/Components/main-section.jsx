@@ -31,9 +31,9 @@ export default function MainSection() {
       <div className="fixed inset-0 bg-black/40 pointer-events-none"></div>
       {/* Content Overlay */}
       <div className="relative">
-        {viewMode === 'home' && <HomePage/>}
-        {viewMode === 'plants' && <PlantsPage/>}
-        {viewMode === 'devices' && <DevicesPage/>}
+        {viewMode === 'home' && <HomePage />}
+        {viewMode === 'plants' && <PlantsPage />}
+        {viewMode === 'devices' && <DevicesPage />}
       </div>
     </div>
   );
