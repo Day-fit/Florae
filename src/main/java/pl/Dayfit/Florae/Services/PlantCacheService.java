@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.Events.ApiKeyRevokedEvent;
-import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
 import pl.Dayfit.Florae.Repositories.JPA.PlantRepository;
 
 import java.util.List;
