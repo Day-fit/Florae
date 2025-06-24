@@ -253,7 +253,6 @@ export default function DevicesCard({ id, humidity, lightLux, temperature, soilM
           return rows.map((row, rowIdx) => (
             <div className="flex flex-row justify-center gap-2 sm:gap-4 w-full" key={rowIdx}>
               {row.map((sensor, idx) => {
-                const realIdx = rowIdx * 2 + idx;
                 const threshold = thresholds.find(t => t.key === sensor.key);
                 const isGood = threshold ? isValueGood(sensor.value, threshold.min, threshold.max) : true;
                 const isDaily = sensor.isDaily;
