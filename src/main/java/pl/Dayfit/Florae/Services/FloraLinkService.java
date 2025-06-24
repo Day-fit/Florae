@@ -62,7 +62,7 @@ public class FloraLinkService {
 
         FloraLink floraLink = cacheService.getFloraLink(floraLinkId);
 
-        if (soilMoistureData != null && minimalSoilMoisture != null && linkedPlant.getRequirements().getMinSoilMoist() > soilMoistureData.getValue() && Duration.between(floraLink.getWateringDate(), Instant.now()).toMinutes() > 30)
+        if (soilMoistureData != null && minimalSoilMoisture != null && linkedPlant.getRequirements().getMinSoilMoist() > soilMoistureData.getValue() && (floraLink.getWateringDate() == null || Duration.between(floraLink.getWateringDate(), Instant.now()).toMinutes() > 30))
         {
             redisTemplate.convertAndSend("floralink." + floraLinkId, new CommandMessage(
                     CommandType.WATERING,
