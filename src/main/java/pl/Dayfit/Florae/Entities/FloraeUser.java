@@ -57,7 +57,7 @@ public class FloraeUser {
     @Column(nullable = false, length = MAX_PASSWORD_LENGTH)
     private String password;
 
-    @OneToMany(mappedBy = "linkedUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "linkedUser", cascade = CascadeType.ALL)
     private List<Plant> linkedPlants;
 
     @Column(nullable = false)

@@ -70,20 +70,14 @@ public class ApiKeyService {
             cacheService.save(linkedApiKey);
         }
 
-        else if (linkedApiKey.getLinkedFloraLink() != null)
-        {
-            throw new AssociationException("Plant is already linked to a FloraLink");
-        }
-
         else
         {
             linkedApiKey.setCreatedDate(Instant.now());
             linkedApiKey.setKeyValue(encryptedUUID);
             linkedApiKey.setShortKey(apiKeyHelper.generateShortKey(generatedUUID));
             linkedApiKey.setIsRevoked(false);
-            cacheService.saveAndFlush(linkedApiKey);
 
-            return generatedUUID;
+            cacheService.saveAndFlush(linkedApiKey);
         }
 
         final ApiKey apiKey = linkedApiKey;
@@ -132,11 +126,6 @@ public class ApiKeyService {
     @Transactional
     public void connectApi(Authentication authentication) throws AssociationException {
         ApiKey apiKey = apiKeyCacheService.getApiKeyByHash(((ApiKey) authentication.getCredentials()).getKeyValue());
-
-        if (apiKey.getLinkedFloraLink() != null)
-        {
-            throw new AssociationException("This API key is already linked to a FloraLink");
-        }
 
         FloraLink floraLink = new FloraLink();
         floraLink.setId(null);

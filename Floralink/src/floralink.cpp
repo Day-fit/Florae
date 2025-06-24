@@ -173,7 +173,7 @@ void handleWebSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 
         Serial.println(commandType);
 
-        if (commandType.equalsIgnoreCase("ADD_WATER"))
+        if (commandType.equalsIgnoreCase("WATERING"))
         {
           handleAddingWater(doc["value"]);
         }

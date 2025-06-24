@@ -4,6 +4,7 @@ services:
     container_name: spring
     depends_on:
       - postgres
+      - redis
     environment:
       - 'DB_NAME=${DB_NAME}'
       - 'POSTGRES_PASSWORD=${POSTGRES_PASSWORD}'
@@ -30,7 +31,7 @@ services:
       - spring
     profiles:
       - prod
-
+      
   watchtower:
     image: 'containrrr/watchtower:1.7.1'
     environment:
@@ -54,6 +55,19 @@ services:
     profiles:
       - prod
 
+  postgres-local-prod:
+    image: 'postgres:15-alpine3.20'
+    environment:
+      - 'POSTGRES_DB=${DB_NAME}'
+      - 'POSTGRES_PASSWORD=${POSTGRES_PASSWORD}'
+      - 'POSTGRES_USER=${POSTGRES_USER}'
+    volumes:
+      - './pgdata:/var/lib/pgsql/data'
+    ports:
+      - '5432:5432'
+    profiles:
+      - local-prod
+
   postgres-dev:
     image: 'postgres:15-alpine3.20'
     ports:
@@ -71,6 +85,15 @@ services:
       - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
     profiles:
       - prod
+
+  redis-local-prod:
+    image: 'bitnami/redis:8.0.1'
+    environment:
+      - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
+    ports:
+      - '6379:6379'
+    profiles:
+      - local-prod
 
   redis-dev:
     image: 'redis:8.0.1-bookworm'
