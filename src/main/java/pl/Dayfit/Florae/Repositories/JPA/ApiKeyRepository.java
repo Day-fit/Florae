@@ -34,6 +34,8 @@ public interface ApiKeyRepository extends JpaRepository<ApiKey, Integer> {
             " AND a.linkedFloraLink IS NULL")
     List<ApiKey> findUnusedApiKey(Integer id);
 
+    void deleteApiKeyByLinkedPlant_Id(Integer linkedPlantId);
+    
     @Modifying
     @Query("DELETE FROM ApiKey a WHERE a.isRevoked = TRUE")
     int deleteRevokedApiKeys();

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.Events.ApiKeyRevokedEvent;
+import pl.Dayfit.Florae.Repositories.JPA.ApiKeyRepository;
 import pl.Dayfit.Florae.Repositories.JPA.PlantRepository;
 
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PlantCacheService {
     private final PlantRepository plantRepository;
+    private final ApiKeyRepository apiKeyRepository;
 
     @Transactional(readOnly = true)
     @Cacheable(value = "plant", key = "#id")
@@ -32,7 +34,8 @@ public class PlantCacheService {
     @Transactional
     @CacheEvict(value = "plant", key = "#plantId")
     public void deletePlant(Integer plantId) {
-        plantRepository.deletePlantById(plantId);
+        plantRepository.deletePlantById(plantId); //I've tried many things to make this work with just `deleteById` but even when code runs fine locally, it fails at production. Feel free to change that
+        apiKeyRepository.deleteApiKeyByLinkedPlant_Id(plantId);
     }
 
     @CachePut(value = "plant", key = "#plant.id")
