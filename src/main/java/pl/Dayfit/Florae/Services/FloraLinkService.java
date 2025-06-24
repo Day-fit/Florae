@@ -21,6 +21,8 @@ import pl.Dayfit.Florae.Repositories.Redis.DailyReportRepository;
 import pl.Dayfit.Florae.Services.Auth.JWT.FloraeUserCacheService;
 import pl.Dayfit.Florae.Services.WebSockets.SessionService;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -58,7 +60,9 @@ public class FloraLinkService {
                 .getLinkedFloraLink()
                 .getId();
 
-        if (soilMoistureData != null && minimalSoilMoisture != null && linkedPlant.getRequirements().getMinSoilMoist() > soilMoistureData.getValue())
+        FloraLink floraLink = cacheService.getFloraLink(floraLinkId);
+
+        if (soilMoistureData != null && minimalSoilMoisture != null && linkedPlant.getRequirements().getMinSoilMoist() > soilMoistureData.getValue() && Duration.between(floraLink.getWateringDate(), Instant.now()).toMinutes() > 30)
         {
             redisTemplate.convertAndSend("floralink." + floraLinkId, new CommandMessage(
                     CommandType.WATERING,
@@ -69,6 +73,8 @@ public class FloraLinkService {
                     )
                 )
             );
+
+            floraLink.setWateringDate(Instant.now());
         }
 
         CurrentSensorResponseDataDTO mappedDTO = new CurrentSensorResponseDataDTO(floraLinkId, uploadedData);
