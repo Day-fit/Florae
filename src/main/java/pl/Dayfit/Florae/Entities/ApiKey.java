@@ -43,7 +43,8 @@ public class ApiKey {
     @GeneratedValue
     private Integer id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(nullable = false)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     private FloraeUser floraeUser;
 
     @Temporal(TemporalType.TIMESTAMP)

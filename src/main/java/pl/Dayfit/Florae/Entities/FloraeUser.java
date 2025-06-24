@@ -62,4 +62,7 @@ public class FloraeUser {
 
     @Column(nullable = false)
     private String roles = "USER";
+
+    @OneToMany(mappedBy = "floraeUser", cascade = CascadeType.ALL)
+    private List<ApiKey> apiKeys;
 }
