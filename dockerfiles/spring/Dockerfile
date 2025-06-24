@@ -11,5 +11,8 @@ RUN mvn clean package -DskipTests
 ## Relocate and Rename the Jar-file
 RUN mv /app/target/Florae*.jar Florae.jar
 
+ENV SPRING_PROFILES_ACTIVE=prod
+EXPOSE 8080
+
 ## Run the jar-file
 CMD sh -c 'java -jar Florae.jar'
