@@ -9,6 +9,7 @@ import { GiHamburgerMenu } from 'react-icons/gi';
 import smallerLogo from '../assets/smaller-logo.png';
 import { RxCross1 } from 'react-icons/rx';
 import { UiContext } from '../store/ui-context.jsx';
+import useAuthHandlers from './logging-functions.jsx';
 
 /**
  * Header Component
@@ -39,6 +40,7 @@ import { UiContext } from '../store/ui-context.jsx';
  */
 
 export default function Header() {
+  const { handleLogout } = useAuthHandlers({ onClose: handleClose });
   const { setModal, modal, setView } = use(UiContext);
   const { isLogged } = use(UserContext);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -78,7 +80,7 @@ export default function Header() {
         ))}
       </div>
       {menuOpen && (
-        <div className="flex flex-col items-center gap-4 pb-4 md:hidden">
+        <div className="flex flex-col items-center gap-4 pb-4 md:hidden mt-16">
           {navButtons.map(({ name, buttonText }) => (
             <Button
               key={name}
@@ -113,7 +115,7 @@ export default function Header() {
               />
               <Button
                 buttonText="Log out"
-                onClick={() => setView('logout')}
+                onClick={handleLogout}
                 className="text-green-700 hover:text-green-900"
               />
             </>

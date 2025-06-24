@@ -31,24 +31,26 @@ export default function DevicesPage({ setModal }) {
     onMessage: (data) => {
       if (data.sensorId && data.sensorData) {
         setDevices((prevDevices) => {
-          const idx = prevDevices.findIndex(device => device.floraLinkId === data.sensorId);
+          const idx = prevDevices.findIndex((device) => device.floraLinkId === data.sensorId);
           const updatedDevice = {
             floraLinkId: data.sensorId,
-            humidity: data.sensorData.find(d => d.type === 'ENV_HUMIDITY')?.value,
-            temperature: data.sensorData.find(d => d.type === 'ENV_TEMPERATURE')?.value,
-            soilMoisture: data.sensorData.find(d => d.type === 'SOIL_MOISTURE')?.value,
-            lightLux: data.sensorData.find(d => d.type === 'LIGHT_LUX')?.value,
+            humidity: data.sensorData.find((d) => d.type === 'ENV_HUMIDITY')?.value,
+            temperature: data.sensorData.find((d) => d.type === 'ENV_TEMPERATURE')?.value,
+            soilMoisture: data.sensorData.find((d) => d.type === 'SOIL_MOISTURE')?.value,
+            lightLux: data.sensorData.find((d) => d.type === 'LIGHT_LUX')?.value,
           };
           if (idx !== -1) {
             // Aktualizuj istniejące urządzenie
-            return prevDevices.map((device, i) => i === idx ? { ...device, ...updatedDevice } : device);
+            return prevDevices.map((device, i) =>
+              i === idx ? { ...device, ...updatedDevice } : device
+            );
           } else {
             // Dodaj nowe urządzenie
             return [...prevDevices, updatedDevice];
           }
         });
       }
-    }
+    },
   });
 
   useEffect(() => {
@@ -88,9 +90,9 @@ export default function DevicesPage({ setModal }) {
       <div className="bg-gray-50 m-[4vw] rounded-lg shadow-lg min-h-250">
         <InformationComponent
           setModal={setModal}
-          handleTask={ handleEspConfig }
-          guestContent={ devicesGuestContent }
-          visitorContent={ devicesVisitorContent }
+          handleTask={handleEspConfig}
+          guestContent={devicesGuestContent}
+          visitorContent={devicesVisitorContent}
           showFor="both"
         />
         {isLogged && (

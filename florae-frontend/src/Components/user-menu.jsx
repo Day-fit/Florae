@@ -2,36 +2,13 @@ import { useEffect, useRef, use } from 'react';
 import { userMenuButtons } from '../util/data.js';
 import Button from './button.jsx';
 import { FiSettings } from 'react-icons/fi';
-import axios from '../util/axios-client.js';
 import { UserContext } from '../store/user-context.jsx';
-import getCsrfToken from '../util/getCsrfToken.js';
+import useAuthHandlers from './logging-functions.jsx';
 
 export default function UserMenu({ onClose, open = true }) {
+  const { handleLogout } = useAuthHandlers({ onClose });
   const { logOut } = use(UserContext);
   const menuRef = useRef(null);
-
-  async function handleLogout() {
-    try {
-      const csrfToken = await getCsrfToken();
-
-
-      await axios.post(
-        `/auth/logout`,
-        {},
-        {
-          headers: {
-            'X-XSRF-TOKEN': csrfToken,
-          },
-          withCredentials: true,
-        }
-      );
-
-      logOut();
-      onClose();
-    } catch (err) {
-      console.error('Logout failed', err);
-    }
-  }
 
   useEffect(() => {
     function handleClick(e) {
@@ -53,6 +30,7 @@ export default function UserMenu({ onClose, open = true }) {
       document.removeEventListener('keydown', handleKey);
     };
   }, [onClose, open]);
+
   return (
     <div className="fixed inset-0 z-100" aria-modal="true" tabIndex={-1} role="dialog">
       {/* Overlay for click-outside */}
@@ -82,7 +60,7 @@ export default function UserMenu({ onClose, open = true }) {
                 hover:bg-green-100 hover:rounded-2xl focus:bg-green-100 focus:rounded-2xl
                 outline-none"
               tabIndex={0}
-              onClick={name === 'logout' ? handleLogout : undefined}
+              onClick={name === 'logout' ? () => handleLogout() : undefined}
               role="menuitem"
             />
           ))}

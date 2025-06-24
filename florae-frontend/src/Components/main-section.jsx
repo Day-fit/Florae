@@ -28,9 +28,9 @@ export default function MainSection() {
     }
   `}</style>
       {/* Optional: semi-transparent overlay for readability */}
-      <div className="fixed inset-0 bg-black/40 z-10 pointer-events-none"></div>
+      <div className="fixed inset-0 bg-black/40 pointer-events-none"></div>
       {/* Content Overlay */}
-      <div className="relative z-11">
+      <div className="relative">
         {viewMode === 'home' && <HomePage setModal={setModal} viewMode={setView} />}
         {viewMode === 'plants' && <PlantsPage setModal={setModal} />}
         {viewMode === 'devices' && <DevicesPage setModal={setModal} />}

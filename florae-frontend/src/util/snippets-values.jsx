@@ -2,7 +2,7 @@ import { FaSeedling, FaSun, FaTemperatureHigh, FaTint } from 'react-icons/fa';
 
 export const reqMeta = [
   {
-    icon: <FaTint size={36} className="text-red-800" />,
+    icon: <FaTint size={36} />,
     color: 'bg-red-400 border-red-600',
     labelColor: 'text-red-700',
   }, // Env. Humidity - Red

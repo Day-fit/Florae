@@ -47,11 +47,14 @@ export default function useCreatePlant({ onClose }) {
 
     // Validate using Yup schema
     try {
-      await createPlantSchema.validate({
-        name,
-        volume: volumeValue,
-        files: fileRef.current
-      }, { abortEarly: false });
+      await createPlantSchema.validate(
+        {
+          name,
+          volume: volumeValue,
+          files: fileRef.current,
+        },
+        { abortEarly: false }
+      );
     } catch (validationError) {
       const newErrors = {};
       validationError.inner.forEach((error) => {
@@ -95,5 +98,5 @@ export default function useCreatePlant({ onClose }) {
       setSubmitting(false);
     }
   };
-  return({nameRef, fileRef, errors, submitting, handleSubmit, setPlantName, setPlantVolume})
+  return { nameRef, fileRef, errors, submitting, handleSubmit, setPlantName, setPlantVolume };
 }

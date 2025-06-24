@@ -12,7 +12,12 @@ import axios from 'axios';
 import getCsrfToken from '../util/getCsrfToken.js';
 import { editPlantSchema } from '../util/form-validiation.js';
 
-export default function EditPlant({ plant, onClose, currentSelection = 'optimal', onSelectionChange }) {
+export default function EditPlant({
+  plant,
+  onClose,
+  currentSelection = 'optimal',
+  onSelectionChange,
+}) {
   const [editingName, setEditingName] = useState(false);
   const [editingVolume, setEditingVolume] = useState(false);
   const [name, setName] = useState(plant.name);
@@ -120,8 +125,7 @@ export default function EditPlant({ plant, onClose, currentSelection = 'optimal'
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
       <div className="absolute inset-0 bg-black/50" style={{ pointerEvents: 'auto' }} />
       <AnimatedModal>
-        <div className="z-10 bg-white/90 rounded-xl p-4 md:p-10 max-w-2xl w-full flex flex-col items-center shadow-lg mx-2 relative"
-             style={{ maxWidth: '95vw', width: '100%', minWidth: 0 }}>
+        <div className="z-10 bg-white/90 rounded-xl p-3 sm:p-6 md:p-8 max-w-xl w-full flex flex-col items-center shadow-lg mx-2 overflow-y-auto max-h-[95vh] relative">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700"
@@ -129,7 +133,7 @@ export default function EditPlant({ plant, onClose, currentSelection = 'optimal'
           >
             ×
           </button>
-          <h2 className="mb-6 text-2xl font-bold text-green-700">Edit Plant</h2>
+          <h2 className="mb-6 text-xl sm:text-2xl font-bold text-green-700">Edit Plant</h2>
           <div className="flex flex-col md:flex-row gap-8 w-full items-start justify-center">
             <PlantCard
               guestName={name}
@@ -147,7 +151,7 @@ export default function EditPlant({ plant, onClose, currentSelection = 'optimal'
                     <Input
                       label="Plant Name"
                       value={name}
-                      onChange={e => setName(e.target.value)}
+                      onChange={(e) => setName(e.target.value)}
                       errorMsg={nameError}
                       className={`${baseInputClass} ${noErrorClass}`}
                       autoFocus
@@ -171,7 +175,7 @@ export default function EditPlant({ plant, onClose, currentSelection = 'optimal'
                     <Input
                       label="Pot Volume (L)"
                       value={volume}
-                      onChange={e => setVolume(e.target.value)}
+                      onChange={(e) => setVolume(e.target.value)}
                       errorMsg={volumeError}
                       type="number"
                       min="0.01"
@@ -180,7 +184,9 @@ export default function EditPlant({ plant, onClose, currentSelection = 'optimal'
                       autoFocus
                     />
                   ) : (
-                    <span className="text-lg text-green-900">Pot Volume: <b>{volume}</b> L</span>
+                    <span className="text-lg text-green-900">
+                      Pot Volume: <b>{volume}</b> L
+                    </span>
                   )}
                   <Button
                     icon={editingVolume ? <FiSave /> : <MdEdit />}
@@ -210,10 +216,21 @@ export default function EditPlant({ plant, onClose, currentSelection = 'optimal'
                 <div>
                   <span className="block text-gray-700 font-semibold mb-1">Requirements</span>
                   <ul className="text-sm text-gray-800 list-disc ml-5">
-                    <li>Env. Humidity: {plant.requirements.min_env_humid} - {plant.requirements.max_env_humid}%</li>
-                    <li>Light: {plant.requirements.min_light_lux} - {plant.requirements.max_light_lux} lux</li>
-                    <li>Soil Moisture: {plant.requirements.min_soil_moist} - {plant.requirements.max_soil_moist}%</li>
-                    <li>Temperature: {plant.requirements.min_temp} - {plant.requirements.max_temp}°C</li>
+                    <li>
+                      Env. Humidity: {plant.requirements.min_env_humid} -{' '}
+                      {plant.requirements.max_env_humid}%
+                    </li>
+                    <li>
+                      Light: {plant.requirements.min_light_lux} - {plant.requirements.max_light_lux}{' '}
+                      lux
+                    </li>
+                    <li>
+                      Soil Moisture: {plant.requirements.min_soil_moist} -{' '}
+                      {plant.requirements.max_soil_moist}%
+                    </li>
+                    <li>
+                      Temperature: {plant.requirements.min_temp} - {plant.requirements.max_temp}°C
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -248,7 +265,7 @@ export default function EditPlant({ plant, onClose, currentSelection = 'optimal'
                 disabled={deleting}
               />
               <Button
-                buttonText={deleting ? "Deleting..." : "Delete"}
+                buttonText={deleting ? 'Deleting...' : 'Delete'}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                 onClick={handleDeletePlant}
                 disabled={deleting}

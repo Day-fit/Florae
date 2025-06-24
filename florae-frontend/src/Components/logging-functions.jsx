@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, use } from 'react';
 import axios from 'axios';
 import getCsrfToken from '../util/getCsrfToken.js';
 import validateForm, { isEmail } from '../util/form-validiation.js';
+import { UserContext } from '../store/user-context.jsx';
 
 export default function useAuthHandlers({ logIn, onClose, setModal }) {
+  const { logOut } = use(UserContext);
   const [errors, setErrors] = useState({
     email: '',
     username: '',
@@ -64,7 +66,7 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
       setModal(null);
       setIsSubmitting(false);
       onClose();
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (err) {
       setErrors((prev) => ({
         ...prev,
@@ -110,7 +112,7 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
 
       setIsSubmitting(false);
       onClose();
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (err) {
       setErrors((prev) => ({
         ...prev,
@@ -133,6 +135,26 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
   const clearErrors = () => setErrors({});
   const clearFormData = () => setFormData({});
 
+  async function handleLogout() {
+    try {
+      const csrfToken = await getCsrfToken();
+      await axios.post(
+        `/auth/logout`,
+        {},
+        {
+          headers: {
+            'X-XSRF-TOKEN': csrfToken,
+          },
+          withCredentials: true,
+        }
+      );
+      logOut();
+      onClose();
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
+  }
+
   return {
     formData,
     setFormData,
@@ -145,5 +167,6 @@ export default function useAuthHandlers({ logIn, onClose, setModal }) {
     handleSignIn,
     handleRegister,
     handleFormInput,
+    handleLogout,
   };
 }
