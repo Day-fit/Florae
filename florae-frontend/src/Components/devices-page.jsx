@@ -21,11 +21,13 @@ import { devicesGuestContent, devicesVisitorContent } from '../util/devices-page
 import axios from 'axios';
 import DevicesCard from './devices-card.jsx';
 import EspConfiguration from './esp-configuration.jsx';
+import EditFloraLink from './edit-floralink.jsx';
 
 export default function DevicesPage({ setModal }) {
   const { isLogged } = use(UserContext);
   const [devices, setDevices] = useState([]);
   const [showEspModal, setShowEspModal] = useState(false);
+  const [editingFloraLink, setEditingFloraLink] = useState(null);
 
   useFloraWebSocket({
     onMessage: (data) => {
@@ -85,6 +87,22 @@ export default function DevicesPage({ setModal }) {
   function closeEspModal() {
     setShowEspModal(false);
   }
+
+  function handleCloseEditFloraLink() {
+    setEditingFloraLink(null);
+    // Refresh devices after editing
+    const fetchDevices = async () => {
+      try {
+        const response = await axios.get('/api/v1/get-floralinks', { withCredentials: true });
+        setDevices(response.data);
+        // eslint-disable-next-line no-unused-vars
+      } catch (error) {
+        console.error('Failed to fetch devices');
+      }
+    };
+    fetchDevices();
+  }
+
   return (
     <>
       <div className="bg-gray-50 m-[4vw] rounded-lg shadow-lg min-h-250">
@@ -99,14 +117,27 @@ export default function DevicesPage({ setModal }) {
           <>
             <div className="flex flex-wrap justify-center gap-8 mt-4 mb-4">
               {devices.map((device) => (
-                <DevicesCard
+                <div
                   key={device.floraLinkId}
-                  id={device.floraLinkId}
-                  humidity={device.humidity}
-                  temperature={device.temperature}
-                  soilMoisture={device.soilMoisture}
-                  lightLux={device.lightLux}
-                />
+                  className="cursor-pointer hover:scale-105 transition-transform"
+                  role="button"
+                  tabIndex="0"
+                  onClick={() => setEditingFloraLink(device)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setEditingFloraLink(device);
+                    }
+                  }}
+                >
+                  <DevicesCard
+                    id={device.floraLinkId}
+                    humidity={device.humidity}
+                    temperature={device.temperature}
+                    soilMoisture={device.soilMoisture}
+                    lightLux={device.lightLux}
+                  />
+                </div>
               ))}
             </div>
             <div className="h-8"></div>
@@ -118,6 +149,12 @@ export default function DevicesPage({ setModal }) {
           <div className="absolute inset-0 bg-black/50" style={{ pointerEvents: 'auto' }} />
           <EspConfiguration onClose={closeEspModal} />
         </div>
+      )}
+      {editingFloraLink && (
+        <EditFloraLink
+          floralink={editingFloraLink}
+          onClose={handleCloseEditFloraLink}
+        />
       )}
     </>
   );
