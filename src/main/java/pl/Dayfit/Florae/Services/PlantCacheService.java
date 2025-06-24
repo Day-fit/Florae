@@ -12,7 +12,6 @@ import pl.Dayfit.Florae.Events.ApiKeyRevokedEvent;
 import pl.Dayfit.Florae.Repositories.JPA.PlantRepository;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 /**
  * <p>Service responsible for managing and caching the Plant entity in various ways</p>
@@ -33,10 +32,7 @@ public class PlantCacheService {
     @Transactional
     @CacheEvict(value = "plant", key = "#plantId")
     public void deletePlant(Integer plantId) {
-        Plant plant = plantRepository.findById(plantId)
-                .orElseThrow(() -> new NoSuchElementException("Plant not found"));
-
-        plantRepository.delete(plant);
+        plantRepository.deletePlantById(plantId);
     }
 
     @CachePut(value = "plant", key = "#plant.id")
