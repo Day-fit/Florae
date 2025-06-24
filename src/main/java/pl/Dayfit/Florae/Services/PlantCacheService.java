@@ -7,7 +7,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
-import pl.Dayfit.Florae.Entities.FloraeUser;
 import pl.Dayfit.Florae.Entities.Plant;
 import pl.Dayfit.Florae.Events.ApiKeyRevokedEvent;
 import pl.Dayfit.Florae.Repositories.JPA.PlantRepository;
@@ -36,11 +35,6 @@ public class PlantCacheService {
     public void deletePlant(Integer plantId) {
         Plant plant = plantRepository.findById(plantId)
                 .orElseThrow(() -> new NoSuchElementException("Plant not found"));
-
-        FloraeUser user = plant.getLinkedUser();
-        if (user != null) {
-            user.getLinkedPlants().remove(plant);
-        }
 
         plantRepository.delete(plant);
     }
