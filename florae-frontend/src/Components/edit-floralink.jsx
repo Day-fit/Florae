@@ -261,15 +261,10 @@ export default function EditFloraLink({ floralink, onClose }) {
                 <div>
                   <span className="block text-gray-700 font-semibold mb-1">Connection Status</span>
                   <span className={`text-sm font-medium ${floralink.isOnline ? 'text-green-600' : 'text-red-600'}`}>
-                    {floralink.isOnline ? 'Online' : 'Offline'}
+                    {floralink.isOnline ? 'Online' : 'Online'}
                   </span>
                 </div>
-                <div>
-                  <span className="block text-gray-700 font-semibold mb-1">Last Seen</span>
-                  <span className="text-green-900">
-                    {floralink.lastSeen ? new Date(floralink.lastSeen).toLocaleString() : 'Never'}
-                  </span>
-                </div>
+
               </div>
 
               {/* Daily Report Data */}
