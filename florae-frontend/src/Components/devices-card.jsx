@@ -98,7 +98,6 @@ export default function DevicesCard({ id, humidity, lightLux, temperature, soilM
         setLoading(true);
         try {
           const response = await axios.get('/api/v1/floralink/get-all-daily-data');
-          console.log(response.data);
           const deviceReport = response.data.find((report) => report.sensorId === id);
           setDailyReport(deviceReport || null);
         } catch (error) {
