@@ -29,6 +29,7 @@
 
 ## Project Structure
 
+**Will change soon! Imigration to microservices is comming**
 - **Backend:** Java (Spring Boot) application for API, authentication, data storage, and business logic.
 - **Frontend:** Place your web application files in the `florae-frontend/` directory.
 - **ESP32 Integration:** Code and resources for connecting ESP32-based sensors (see `Floralink` folder for firmware and hardware schematics).
