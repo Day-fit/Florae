@@ -74,7 +74,7 @@ Contributions, issues, and feature requests are welcome! Please see the [full do
 
 ## License
 
-This project is licensed under the [BSD-3-Clause](./LICENSE) license.
+This project is licensed under the [Apache 2.0](./LICENSE) license.
 
 ---
 
