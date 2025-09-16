@@ -14,8 +14,6 @@
 - **Automated Deficiency Detection:** Get tailored recommendations to address environmental deficiencies, such as under-watering or improper lighting.
 - **Secure API & User Management:** Robust authentication and JWT token management, including blacklisting and revocation.
 - **Caching & Performance:** Utilizes Redis for caching frequent queries (API keys, user details, daily reports) to provide fast responses.
-- **Modular Architecture:** Well-structured codebase with separate modules for authentication, plant data, requirements, and reporting.
-- **Self-hostable:** Includes code and configuration for self-hosting, with Docker environment support.
 
 ---
 
