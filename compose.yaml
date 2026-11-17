@@ -80,14 +80,14 @@ services:
       - dev
 
   redis:
-    image: 'bitnami/redis:8.0.1'
+    image: 'soldevelo/redis:8.0.3'
     environment:
       - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
     profiles:
       - prod
 
   redis-local-prod:
-    image: 'bitnami/redis:8.0.1'
+    image: 'soldevelo/redis:8.0.3'
     environment:
       - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
     ports:
